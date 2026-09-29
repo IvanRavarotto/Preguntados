@@ -1,0 +1,63 @@
+schema: spec-driven
+
+# Shown to the AI when it creates artifacts. Keep it short — it is a constraint, not a briefing.
+# The full harness lives in AGENTS.md; the declared stack lives in openspec/project.md.
+context: |
+  This workspace runs the SDD harness in AGENTS.md: a fleet of specialist agents (pm, architect,
+  dev, code-reviewer, qa-manager, qa, devops) with human gates between stations.
+
+  Read openspec/project.md for the declared stack, the one build command, and the one test command.
+  Never prescribe or use anything outside it without an escalated, ADR-recorded exception.
+
+  Right-size the work first. Three tracks: Direct (no artifacts), Light (proposal + spec delta +
+  tasks, no design), Full (all four artifacts). See the sdd-workflow skill. Process disproportionate
+  to the change is a real cost — it trains reviewers to skim.
+
+  Traceability lives in openspec/, branches, commits, PRs, and releases. Never in source comments:
+  no change names, no gate references, no change history. ADR citations are the one exception.
+
+rules:
+  proposal:
+    - State what and why in under 400 words; detail belongs in design.md.
+    - Include an explicit "Out of scope" section naming where deferred work lands instead.
+    - Include an explicit "Depends on" line naming any change that must land first, or "None".
+    - List the alternatives considered and the reason each was rejected.
+
+  specs:
+    - Write ONLY the delta. Never restate unchanged behavior — the archive folds it in as a duplicate.
+    - Preserve an existing capability's full path exactly; never invent a sibling path for it.
+    - Every acceptance criterion must be observable from outside the code. "Handles errors
+      gracefully" is a wish, not a criterion.
+    - Include a measurable bar wherever one exists — a latency, a rate, a coverage number, a limit.
+    - Mark authored criteria as authored, so they are not mistaken for a stakeholder requirement.
+
+  design:
+    - Create it only for Track 2 work — a new capability, cross-cutting work, a security or data
+      path, a migration, or anything hard to reverse.
+    - Name every new outbound call and every new dependency. One added during implementation that
+      was not named here is a hole nobody reviewed.
+    - Freeze any contract between two components being built in parallel, before either side starts.
+    - Verify library, API, and SDK specifics against current documentation before prescribing them.
+    - Write prescribed mutations in the conditional — "this should redden", never "this reddens".
+      Cite where every named observable was read, or mark it "assumed, not verified".
+
+  tasks:
+    - Each task is roughly half a day and leaves the tree green.
+    - Name the files or modules where known. "Explore the codebase" is not a task — that discovery
+      belongs to the proposal phase.
+    - Tests belong to the task that introduces the behavior, never to a task at the end.
+    - If the work cannot fit one focused PR, say so instead of writing a list that cannot be
+      delivered.
+
+operations:
+  apply:
+    guidance:
+      - Re-read the artifacts from disk before starting; they may have changed at the gate.
+      - Demonstrate every mutation the spec prescribed and record the observed red in the PR.
+      - If the implementation diverges from the spec, say so explicitly — the spec is corrected
+        before archive, never silently left wrong.
+  archive:
+    guidance:
+      - Confirm QA verified the feature against the acceptance criteria before archiving.
+      - Confirm the delta describes what actually shipped; correct it first if it does not.
+      - Run openspec doctor afterwards and report what it says.

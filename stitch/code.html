@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-highest":"#34343b","on-secondary-fixed":"#320047","surface-dim":"#121319","surface-bright":"#383940","error-container":"#93000a","on-tertiary-fixed-variant":"#005230","inverse-primary":"#006970","on-background":"#e3e1eb","background":"#121319","error":"#ffb4ab","on-primary-container":"#006970","primary-fixed":"#7df4ff","primary-fixed-dim":"#00dbe9","surface-variant":"#34343b","inverse-on-surface":"#2f3037","on-error-container":"#ffdad6","secondary-container":"#cf5cff","primary":"#dbfcff","on-primary-fixed-variant":"#004f54","primary-container":"#00f0ff","surface-container-high":"#292930","on-surface-variant":"#b9cacb","secondary-fixed-dim":"#ecb2ff","tertiary-fixed":"#54ffaa","surface":"#121319","on-surface":"#e3e1eb","tertiary-fixed-dim":"#00e38e","secondary-fixed":"#f8d8ff","surface-container-lowest":"#0d0e14","on-tertiary-fixed":"#002110","surface-container-low":"#1a1b22","on-primary-fixed":"#002022","outline":"#849495","on-error":"#690005","on-secondary-container":"#480063","on-tertiary":"#003920","inverse-surface":"#e3e1eb","tertiary-container":"#00f89c","outline-variant":"#3b494b","on-tertiary-container":"#006d42","surface-container":"#1e1f26","tertiary":"#d9ffe3","on-primary":"#00363a","secondary":"#ecb2ff","surface-tint":"#00dbe9","on-secondary-fixed-variant":"#74009f","on-secondary":"#520071"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-md":"1rem","space-xs":"0.25rem","gutter-desktop":"2rem","space-xl":"2.5rem","margin-desktop":"auto","gutter-tablet":"1.5rem","space-lg":"1.5rem",margin:"1rem","space-sm":"0.5rem",gutter:"1rem","margin-tablet":"2rem"},fontFamily:{"headline-lg":["Outfit"],"headline-sm":["Outfit"],"headline-xl-mobile":["Outfit"],"label-lg":["Space Mono"],"display-lg-mobile":["Outfit"],"body-sm":["Outfit"],"label-sm":["Space Mono"],"label-md":["Space Mono"],"body-lg":["Outfit"],"headline-xl":["Outfit"],"display-lg":["Outfit"],"body-md":["Outfit"]},fontSize:{"headline-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-xl-mobile":["28px",{lineHeight:"36px",letterSpacing:"-0.01em",fontWeight:"700"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.05em",fontWeight:"700"}],"display-lg-mobile":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"800"}],"body-sm":["13px",{lineHeight:"18px",fontWeight:"400"}],"label-sm":["10px",{lineHeight:"14px",letterSpacing:"0.1em",fontWeight:"500"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.08em",fontWeight:"500"}],"body-lg":["18px",{lineHeight:"26px",fontWeight:"400"}],"headline-xl":["36px",{lineHeight:"44px",letterSpacing:"-0.02em",fontWeight:"700"}],"display-lg":["56px",{lineHeight:"64px",letterSpacing:"-0.03em",fontWeight:"800"}],"body-md":["15px",{lineHeight:"22px",fontWeight:"400"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-20 w-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="TriviaNeon Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UklsSzyZkVd8DndV3-IhhE1bD1p_mpNczZ2RfFZh4AbFC65zuI_7s-5Qcv1BeWKElEjA8Vtg1vLkcudGAzOgEpT0hs1WuqcpUOzAzbALvVr5RDMI3Wlhkn01zirnkmYi8TjBsPwkBMLJqgTHeKjLoZVNSkyVnAJRveLWYiwjTnaP1TAwrpNWfy5QwsHdyxI3ipSzAiKTJLc2ywRvtquDAvetsuucR25uwsC4pxxrxVykazupKVSdZVU2_l"/><span class="font-headline-lg text-headline-lg text-primary tracking-wider uppercase drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]">TRIVIANEON</span></div><nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-headline-sm text-headline-sm rounded-lg shadow-[0_0_16px_rgba(0,240,255,0.35)]"><a aria-current="page" class="px-space-md py-space-xs transition-all bg-primary-container text-on-primary-container font-headline-sm text-headline-sm rounded-lg shadow-[0_0_16px_rgba(0,240,255,0.35)]" data-path="ruleta" href="#">Ruleta</a><a class="px-space-md py-space-xs rounded-lg font-headline-sm text-headline-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="categorias" href="#">Categorías</a><a class="px-space-md py-space-xs rounded-lg font-headline-sm text-headline-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="duelos-1v1" href="#">Duelos 1v1</a><a class="px-space-md py-space-xs rounded-lg font-headline-sm text-headline-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="clasificacion" href="#">Clasificación</a><a class="px-space-md py-space-xs rounded-lg font-headline-sm text-headline-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tienda" href="#">Tienda</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-xs"><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-low shadow-[inset_0_0_8px_rgba(0,0,0,0.5)]"><span class="text-tertiary-fixed-dim font-label-md text-label-md select-none">⚡</span><span class="font-label-md text-label-md text-tertiary-fixed font-bold tracking-wider">5/5</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-low shadow-[inset_0_0_8px_rgba(0,0,0,0.5)]"><span class="text-secondary font-label-md text-label-md select-none">🪙</span><span class="font-label-md text-label-md text-secondary font-bold tracking-wider">2,450</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-low shadow-[inset_0_0_8px_rgba(0,0,0,0.5)]"><span class="font-label-md text-label-md text-on-surface-variant">Nv.</span><span class="font-label-md text-label-md text-primary font-bold tracking-wider">28</span></div></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer transition-transform hover:scale-105"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-surface min-h-[calc(100vh-3.5rem)]"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1440px] mx-auto px-gutter-desktop py-space-lg flex flex-col gap-space-lg">
+<!-- Sub-header minimalista de contexto de partida -->
+<div class="w-full flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs px-space-md py-1 bg-surface-container-high rounded-full">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse shadow-[0_0_8px_#00f0ff]"></span>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Sincronizado • Servidor Neon-04</span>
+</div>
+<div class="h-4 w-px bg-surface-variant"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">SALA #CY-9021</span>
+</div>
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">schedule</span>
+<span>TIEMPO DE TURNO: <strong class="text-on-surface font-label-md text-label-md">00:45</strong></span>
+</div>
+<div class="flex items-center gap-space-xs px-space-md py-1 bg-surface-container-low rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-outline">MULTIPLICADOR:</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed font-bold tracking-widest">x1.5 XP</span>
+</div>
+</div>
+</div>
+<!-- Grid principal: 3 Columnas -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- ================= COLUMNA IZQUIERDA: PROGRESO Y MODOS ================= -->
+<aside class="lg:col-span-3 flex flex-col gap-space-md w-full">
+<!-- Tarjeta de Progreso de Categorías -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-xl flex flex-col gap-space-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">equalizer</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Dominio de Temas</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">TEMPORADA 3</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Nivel de maestría calculado según precisión y velocidad de respuesta.
+          </p>
+<!-- Lista de las 6 Categorías Oficiales -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<!-- 1. Historia (#FFD000) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FFD000] shadow-[0_0_8px_#FFD000]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Historia</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-[#FFD000]">68%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-[#FFD000] rounded-full shadow-[0_0_6px_#FFD000]" style="width: 68%;"></div>
+</div>
+</div>
+<!-- 2. Geografía (#00F0FF) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_#00F0FF]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Geografía</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-primary-container">91%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full shadow-[0_0_6px_#00F0FF]" style="width: 91%;"></div>
+</div>
+</div>
+<!-- 3. Arte (#FF2A6D) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF2A6D] shadow-[0_0_8px_#FF2A6D]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Arte</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-[#FF2A6D]">54%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-[#FF2A6D] rounded-full shadow-[0_0_6px_#FF2A6D]" style="width: 54%;"></div>
+</div>
+</div>
+<!-- 4. Deportes (#FF6B00) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Deportes</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-[#FF6B00]">76%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-[#FF6B00] rounded-full shadow-[0_0_6px_#FF6B00]" style="width: 76%;"></div>
+</div>
+</div>
+<!-- 5. Ciencia (#05FFA1) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container shadow-[0_0_8px_#05FFA1]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Ciencia</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-tertiary-container">82%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full shadow-[0_0_6px_#05FFA1]" style="width: 82%;"></div>
+</div>
+</div>
+<!-- 6. Entretenimiento (#BD00FF) -->
+<div class="flex flex-col gap-1 p-space-xs rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container shadow-[0_0_8px_#BD00FF]"></span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Entretenimiento</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-secondary-container">61%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full shadow-[0_0_6px_#BD00FF]" style="width: 61%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Selector Rápido de Modos -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">MODO ACTIVO</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">1v1 RANKED</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<button class="w-full flex items-center justify-between p-space-sm rounded-lg bg-surface-container-highest text-on-surface transition-all hover:bg-surface-bright" type="button">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-[20px]">bolt</span>
+<div class="flex flex-col text-left">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Partida Rápida</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">6 rondas directas</span>
+</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_6px_#00f0ff]"></span>
+</button>
+<button class="w-full flex items-center justify-between p-space-sm rounded-lg bg-surface-container text-on-surface-variant transition-all hover:bg-surface-container-high hover:text-on-surface" type="button">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px]">local_fire_department</span>
+<div class="flex flex-col text-left">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Supervivencia</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 fallo elimina</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">BLOQ</span>
+</button>
+<button class="w-full flex items-center justify-between p-space-sm rounded-lg bg-surface-container text-on-surface-variant transition-all hover:bg-surface-container-high hover:text-on-surface" type="button">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px]">flag</span>
+<div class="flex flex-col text-left">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Reto Diario</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Reinicio en 4h</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary-fixed">LISTO</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- ================= COLUMNA CENTRAL: LA RULETA (PROTAGONISTA) ================= -->
+<section class="lg:col-span-6 flex flex-col items-center justify-center gap-space-md w-full relative">
+<!-- Header central de la arena -->
+<div class="flex flex-col items-center text-center gap-space-xs">
+<div class="flex items-center gap-space-xs px-space-md py-0.5 rounded-full bg-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#00f0ff]"></span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-primary">RONDA 4 • MODALIDAD CLÁSICA</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface uppercase tracking-tight">
+            Gira la Ruleta
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+            El selector determinará la categoría de tu siguiente desafío contra el rival.
+          </p>
+</div>
+<!-- Contenedor geométrico de la Ruleta -->
+<div class="relative w-full max-w-[480px] aspect-square flex items-center justify-center my-space-xs">
+<!-- Resplandor ambiental trasero -->
+<div class="absolute inset-0 bg-primary-container/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Puntero Selector Superior (Indica el sector activo) -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none filter drop-shadow-[0_0_12px_#00f0ff]">
+<svg fill="none" height="42" viewbox="0 0 34 42" width="34">
+<path d="M17 40L2 10C0.5 7 2.5 3 6 3H28C31.5 3 33.5 7 32 10L17 40Z" fill="#00F0FF"></path>
+<circle cx="17" cy="14" fill="#121319" r="5"></circle>
+</svg>
+</div>
+<!-- Anillo exterior de soporte con marcas de grado -->
+<div class="absolute inset-0 rounded-full p-2 bg-surface-container-lowest/80 backdrop-blur-md shadow-[0_0_35px_rgba(0,240,255,0.2)] flex items-center justify-center">
+<!-- SVG DE LA RULETA: 6 SECTORES EXACTOS DE 60 GRADOS CADA UNO -->
+<!-- Centro: (250, 250), Radio: 230 -->
+<!-- 0° a 60°: HISTORIA (#FFD000) -->
+<!-- 60° a 120°: GEOGRAFÍA (#00F0FF) -->
+<!-- 120° a 180°: ARTE (#FF2A6D) -->
+<!-- 180° a 240°: DEPORTES (#FF6B00) -->
+<!-- 240° a 300°: CIENCIA (#05FFA1) -->
+<!-- 300° a 360°: ENTRETENIMIENTO (#BD00FF) -->
+<svg class="w-full h-full transition-transform duration-[4000ms] cubic-bezier-[0.15,0.9,0.2,1]" id="triviaWheel" viewbox="0 0 500 500">
+<defs>
+<!-- Filtro resplandor suave -->
+<filter height="140%" id="neonGlow" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="4"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+<!-- Gradientes radiales oscuros para profundidad de cada sector -->
+<lineargradient id="gradHistoria" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#FFD000" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#A68200" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="gradGeografia" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#00F0FF" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#007F88" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="gradArte" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#FF2A6D" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#8F0530" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="gradDeportes" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#FF6B00" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#8E3800" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="gradCiencia" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#05FFA1" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#00804D" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="gradEntretenimiento" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#BD00FF" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#600085" stop-opacity="0.95"></stop>
+</lineargradient>
+</defs>
+<!-- Base de fondo oscura de seguridad -->
+<circle cx="250" cy="250" fill="#121319" r="235"></circle>
+<!-- SECTOR 1: HISTORIA (0° a 60°) -->
+<!-- P0: (250,250), P1: (480, 250), P2: (365, 449.19) -->
+<g>
+<path d="M 250 250 L 480 250 A 230 230 0 0 1 365 449.19 Z" fill="url(#gradHistoria)"></path>
+<path d="M 250 250 L 480 250 A 230 230 0 0 1 365 449.19 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(365, 330) rotate(30)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#FFD000" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">hourglass_top</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">HISTORIA</text>
+</g>
+</g>
+<!-- SECTOR 2: GEOGRAFÍA (60° a 120°) -->
+<!-- P1: (365, 449.19), P2: (135, 449.19) -->
+<g>
+<path d="M 250 250 L 365 449.19 A 230 230 0 0 1 135 449.19 Z" fill="url(#gradGeografia)"></path>
+<path d="M 250 250 L 365 449.19 A 230 230 0 0 1 135 449.19 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(250, 410) rotate(90)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#00F0FF" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">public</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">GEOGRAFÍA</text>
+</g>
+</g>
+<!-- SECTOR 3: ARTE (120° a 180°) -->
+<!-- P1: (135, 449.19), P2: (20, 250) -->
+<g>
+<path d="M 250 250 L 135 449.19 A 230 230 0 0 1 20 250 Z" fill="url(#gradArte)"></path>
+<path d="M 250 250 L 135 449.19 A 230 230 0 0 1 20 250 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(135, 330) rotate(150)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#FF2A6D" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">palette</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">ARTE</text>
+</g>
+</g>
+<!-- SECTOR 4: DEPORTES (180° a 240°) -->
+<!-- P1: (20, 250), P2: (135, 50.81) -->
+<g>
+<path d="M 250 250 L 20 250 A 230 230 0 0 1 135 50.81 Z" fill="url(#gradDeportes)"></path>
+<path d="M 250 250 L 20 250 A 230 230 0 0 1 135 50.81 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(135, 170) rotate(210)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#FF6B00" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">sports_soccer</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">DEPORTES</text>
+</g>
+</g>
+<!-- SECTOR 5: CIENCIA (240° a 300°) -->
+<!-- P1: (135, 50.81), P2: (365, 50.81) -->
+<g>
+<path d="M 250 250 L 135 50.81 A 230 230 0 0 1 365 50.81 Z" fill="url(#gradCiencia)"></path>
+<path d="M 250 250 L 135 50.81 A 230 230 0 0 1 365 50.81 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(250, 90) rotate(270)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#05FFA1" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">science</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">CIENCIA</text>
+</g>
+</g>
+<!-- SECTOR 6: ENTRETENIMIENTO (300° a 360°) -->
+<!-- P1: (365, 50.81), P2: (480, 250) -->
+<g>
+<path d="M 250 250 L 365 50.81 A 230 230 0 0 1 480 250 Z" fill="url(#gradEntretenimiento)"></path>
+<path d="M 250 250 L 365 50.81 A 230 230 0 0 1 480 250 Z" fill="rgba(0,0,0,0.18)"></path>
+<g transform="translate(365, 170) rotate(330)">
+<circle cx="0" cy="0" fill="#121319" opacity="0.88" r="26"></circle>
+<text fill="#BD00FF" font-family="'Material Symbols Outlined'" font-size="24" text-anchor="middle" x="0" y="7">movie</text>
+<text fill="#FFFFFF" font-family="'Space Mono'" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle" x="0" y="32">SHOW</text>
+</g>
+</g>
+<!-- Radios divisores de 60 grados (Líneas sutiles de corte) -->
+<line stroke="#121319" stroke-width="4" x1="250" x2="480" y1="250" y2="250"></line>
+<line stroke="#121319" stroke-width="4" x1="250" x2="365" y1="250" y2="449.19"></line>
+<line stroke="#121319" stroke-width="4" x1="250" x2="135" y1="250" y2="449.19"></line>
+<line stroke="#121319" stroke-width="4" x1="250" x2="20" y1="250" y2="250"></line>
+<line stroke="#121319" stroke-width="4" x1="250" x2="135" y1="250" y2="50.81"></line>
+<line stroke="#121319" stroke-width="4" x1="250" x2="365" y1="250" y2="50.81"></line>
+<!-- Anillo decorativo interior -->
+<circle cx="250" cy="250" fill="none" r="230" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"></circle>
+</svg>
+<!-- BOTÓN CENTRAL ULTRA-PULSANTE: ¡GIRAR! -->
+<button class="absolute z-20 w-32 h-32 rounded-full bg-surface-container-lowest p-2 shadow-[0_0_30px_rgba(0,240,255,0.4)] transition-all hover:scale-105 active:scale-95 group focus:outline-none" id="spinBtn" type="button">
+<div class="w-full h-full rounded-full bg-gradient-to-br from-primary-container via-surface-tint to-inverse-primary flex flex-col items-center justify-center text-center shadow-inner group-hover:brightness-110">
+<span class="font-label-sm text-label-sm text-on-primary font-bold uppercase tracking-widest leading-tight">PRESIÓN</span>
+<span class="font-headline-lg text-headline-lg text-on-primary font-extrabold tracking-tight drop-shadow-sm">¡GIRAR!</span>
+<span class="font-label-sm text-label-sm text-on-primary opacity-80 mt-0.5">1 LIBRE</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Controles secundarios inferiores -->
+<div class="flex items-center gap-space-lg pt-space-xs">
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all shadow-md" id="quickSpinBtn" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">keyboard</span>
+<span class="font-label-md text-label-md">Giro Rápido <kbd class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary text-xs">Espacio</kbd></span>
+</button>
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">volume_up</span>
+<span class="font-label-sm text-label-sm uppercase">SFX</span>
+<span class="w-2 h-2 rounded-full bg-tertiary-container shadow-[0_0_6px_#05FFA1]"></span>
+</div>
+</div>
+<!-- Notificación de resultado en vivo tras el giro -->
+<div class="w-full p-space-sm rounded-lg bg-surface-container-high flex items-center justify-between transition-opacity duration-300" id="resultBanner">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded-full bg-primary-container shadow-[0_0_10px_#00f0ff]"></span>
+<span class="font-label-md text-label-md text-on-surface tracking-wide">Listo para seleccionar sector aleatorio</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">ESTADO: ESPERANDO_ACCION</span>
+</div>
+</section>
+<!-- ================= COLUMNA DERECHA: DUELO, MISIONES Y RACHA ================= -->
+<aside class="lg:col-span-3 flex flex-col gap-space-md w-full">
+<!-- Tarjeta de Duelo Actual (VS) -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">DUELO EN CURSO</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary-container font-bold">VIVO</span>
+</div>
+<!-- Marcador VS -->
+<div class="flex items-center justify-between gap-space-sm p-space-sm bg-surface-container rounded-lg">
+<!-- Tú -->
+<div class="flex flex-col items-center text-center gap-1">
+<div class="relative w-12 h-12 rounded-full overflow-hidden shadow-[0_0_10px_rgba(0,240,255,0.4)]">
+<img class="w-full h-full object-cover" data-alt="Cyberpunk trivia gamer avatar glowing neon cyan headset dark background profile picture digital art sharp lighting high contrast modern vector portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDymEJZww-cVrqetQDkWsTRdQGjxiuGQ9VO4-VNR-PKttYSGt2Bp57r4lL2Fdx68aZijP1wvgDzSajOnWAWTVU3QlbKm4bKfqG13PjHypgz_eXp0DvwprXx_d-wil5vlNItn2Ebe4V8iB_QO1F9gmOOEGUvgZcasEE_SL1XnwTvMM6jkiiosrrIXDwHFsSlw210m983SNhJXPjU5PzaOcuFdeGxaJYiWIVG-76x5TTsZr9WL9kL0NumHw"/>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight text-xs truncate max-w-[80px]">TÚ</span>
+<span class="font-label-sm text-label-sm text-primary">Nv. 28</span>
+</div>
+<!-- Score Scoreboard -->
+<div class="flex flex-col items-center justify-center">
+<div class="flex items-center gap-space-xs font-headline-xl text-headline-xl text-on-surface font-black">
+<span class="text-primary">3</span>
+<span class="text-outline text-lg">:</span>
+<span class="text-[#FF2A6D]">2</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">RONDA 4/7</span>
+</div>
+<!-- Rival -->
+<div class="flex flex-col items-center text-center gap-1">
+<div class="relative w-12 h-12 rounded-full overflow-hidden shadow-[0_0_10px_rgba(255,42,109,0.3)]">
+<img class="w-full h-full object-cover" data-alt="Futuristic cyber competitor portrait neon magenta tinted goggles dark mood tournament player digital illustration sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3BfvsiT-E2K6_njiQrV1TTlZWDUlGl7QC1AuZ9nMGN_q3ADlKDe3bIjOUbh5UQxjLlr3OoZBtASBt2XFbFk85pjObloplbY-8RBtQ8ftpfPKoDi1hahNreHiRsEa8In3qa4OCLnip0WyL6oXIBFqGqhhD-7cPrxQbKptkuWRJEGNfVTobpA0b2ZjnusZUSvIxuNb207RATiYSddHVJZYLUYYZsq1mrtwC_D1H9Y-t_20-kxv3m105eQ"/>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight text-xs truncate max-w-[80px]">VEX_09</span>
+<span class="font-label-sm text-label-sm text-[#FF2A6D]">Nv. 31</span>
+</div>
+</div>
+<!-- Racha Activa Destacada -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="text-xl">🔥</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold uppercase tracking-wider">Racha Activa</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Respuestas sin fallar</span>
+</div>
+</div>
+<div class="px-space-sm py-1 rounded bg-surface-container-highest">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">x4</span>
+</div>
+</div>
+</div>
+<!-- Misiones Diarias -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary-fixed text-[20px]">task_alt</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Misiones Diarias</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">2/3</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Misión 1: Ciencia -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Acierta 3 de Ciencia</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim font-bold">+150 🪙</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 66%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">2/3</span>
+</div>
+</div>
+<!-- Misión 2: Arte Racha -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Acierta 2 de Arte</span>
+<span class="font-label-sm text-label-sm text-[#FF2A6D] font-bold">+250 🪙</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-[#FF2A6D] rounded-full" style="width: 100%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary-fixed font-bold">LISTO</span>
+</div>
+</div>
+<!-- Misión 3: Victoria Clásica -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Gana 1 Duelo 1v1</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">+50 ⚡</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-surface-container-highest rounded-full" style="width: 0%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">0/1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Telemetría / Atajo rápido de reglas -->
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex items-center justify-between text-outline font-label-sm text-label-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>Regla: 6 sectores de 60° sin comodines</span>
+</div>
+<span class="text-on-surface font-mono">LATENCIA 18ms</span>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<script>
+  (function () {
+    const wheel = document.getElementById('triviaWheel');
+    const spinBtn = document.getElementById('spinBtn');
+    const quickSpinBtn = document.getElementById('quickSpinBtn');
+    const resultBanner = document.getElementById('resultBanner');
+
+    // 6 Sectores exactos de 60 grados.
+    // El puntero está fijo en la parte SUPERIOR (270 grados en círculo estándar).
+    // Con centro de giro en 0:
+    // Sector 1: Historia (0° - 60°)
+    // Sector 2: Geografía (60° - 120°)
+    // Sector 3: Arte (120° - 180°)
+    // Sector 4: Deportes (180° - 240°)
+    // Sector 5: Ciencia (240° - 300°)
+    // Sector 6: Entretenimiento (300° - 360°)
+    const categories = [
+      { name: "CIENCIA", color: "#05FFA1", icon: "science" },
+      { name: "ENTRETENIMIENTO", color: "#BD00FF", icon: "movie" },
+      { name: "HISTORIA", color: "#FFD000", icon: "hourglass_top" },
+      { name: "GEOGRAFÍA", color: "#00F0FF", icon: "public" },
+      { name: "ARTE", color: "#FF2A6D", icon: "palette" },
+      { name: "DEPORTES", color: "#FF6B00", icon: "sports_soccer" }
+    ];
+
+    let currentRotation = 0;
+    let isSpinning = false;
+
+    function spinWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      // Actualizar estado visual
+      resultBanner.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-primary animate-ping"></span>
+          <span class="font-label-md text-label-md text-primary tracking-wide">Girando a alta velocidad...</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-outline font-mono">CALCULANDO_SECTOR</span>
+      `;
+
+      // 5 a 8 vueltas completas + sector aleatorio
+      const randomExtra = Math.floor(Math.random() * 360);
+      const spins = 360 * 5;
+      const totalDegree = spins + randomExtra;
+      currentRotation += totalDegree;
+
+      wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        
+        // Calcular sector ganador bajo el puntero superior
+        const normalized = (currentRotation % 360);
+        // Cada cuña es de 60 grados
+        const sectorIndex = Math.floor(((360 - normalized + 30) % 360) / 60);
+        const selected = categories[sectorIndex % categories.length];
+
+        resultBanner.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full shadow-[0_0_10px_${selected.color}]" style="background-color: ${selected.color};"></span>
+            <span class="font-label-md text-label-md text-on-surface font-bold tracking-wider">¡CATEGORÍA SELECCIONADA: ${selected.name}!</span>
+          </div>
+          <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider" style="color: ${selected.color}">CARGANDO PREGUNTA...</span>
+        `;
+      }, 4000);
+    }
+
+    if (spinBtn) spinBtn.addEventListener('click', spinWheel);
+    if (quickSpinBtn) quickSpinBtn.addEventListener('click', spinWheel);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        spinWheel();
+      }
+    });
+  })();
+</script></main><footer class="w-full bg-surface-container-lowest/80 backdrop-blur-md shadow-[0_-1px_10px_rgba(0,0,0,0.3)] py-space-xs"><div class="w-full px-gutter flex items-center justify-between text-on-surface-variant"><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">volume_up</span><span class="font-label-sm text-label-sm hidden sm:inline uppercase">Audio</span></button><button class="flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">fullscreen</span><span class="font-label-sm text-label-sm hidden sm:inline uppercase">Pantalla Completa</span></button></div><div class="flex items-center gap-space-sm font-label-sm text-label-sm uppercase tracking-wider text-outline"><span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary-container shadow-[0_0_8px_rgba(0,248,156,0.6)]"></span><span>v2.4.0-neon</span></div></div></footer></body></html>

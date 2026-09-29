@@ -1,0 +1,256 @@
+================================================================================
+SEGUIMIENTO DEL PROYECTO — Preguntados 1v1
+================================================================================
+Archivo de traspaso entre sesiones. Si se corta la sesión, seguí desde la
+seccion 5 ("COMO RETOMAR").
+
+Ultima actualizacion: 2026-09-29
+Estado general: cambio apply-neon-obsidian-theme con 24 de 29 tareas hechas.
+                 Todo el codigo esta en disco. Falta evidencia humana y un
+                 control de maquina. NO esta archivado todavia.
+
+--------------------------------------------------------------------------------
+1. QUE ES EL PROYECTO
+--------------------------------------------------------------------------------
+Trivia local para 2 personas en un mismo navegador. Rueda de 6 categorias,
+turnos alternados, 4 opciones, timer de 20 segundos, gana el primero en llegar
+a 10 puntos. Sin autenticacion, sin persistencia, sin multijugador remoto. El
+estado de la partida vive entero en el navegador y se pierde al recargar.
+
+Stack (declarado en openspec/project.md, NO se re-debate):
+  - Python 3.14.7, FastAPI, Uvicorn en el puerto 8000
+  - SQLAlchemy 2.1 + psycopg2 contra PostgreSQL 15 en Docker Compose (5432)
+  - frontend/index.html estatico: HTML + CSS + JS embebidos, sin bundler
+  - Categorizacion IA OFFLINE (fuera del request path):
+        load_data -> categorize (BART-large-mnli zero-shot) -> human_review (HITL)
+
+Rutas de la API (6, todas GET):
+  GET /                                        sirve el frontend
+  GET /questions                               listado paginado
+  GET /questions/{question_id}                 pregunta por id
+  GET /questions/category/{category_name}      preguntas por categoria
+  GET /categories                              lista de categorias
+  GET /categories/stats                        conteos de categorizacion
+
+Datos cargados: 201 preguntas, 201 categorizadas (27 automaticas IA, 174
+manuales). Reparto: historia 89, entretenimiento 57, geografia 24, deportes 17,
+arte 8, ciencia 6.
+
+--------------------------------------------------------------------------------
+2. LO QUE YA ESTA HECHO  [X]
+--------------------------------------------------------------------------------
+Infraestructura del proyecto
+  [X] Analisis completo del repositorio y declaracion de stack en project.md
+  [X] Harness de spec-driven development montado:
+        openspec/       tablero de cambios
+        harness/agents/ 7 subagentes con su charter
+        harness/skills/ 17 skills
+        .claude/ y .opencode/  copias generadas para clonar sin build
+  [X] scripts/sync-harness.mjs verificado como mecanismo de sincronizacion
+
+API y datos
+  [X] API FastAPI con las 6 rutas funcionando
+  [X] 201 preguntas cargadas en PostgreSQL desde el CSV
+  [X] Pipeline de categorizacion IA completo (zero-shot + revision humana)
+  [X] GET /categories/stats reporta categorized=201, uncategorized=0
+
+Frontend
+  [X] Juego completo: 4 paneles, rueda de 6 sectores, turnos, timer 20s,
+      4 opciones barajadas, marcador, pantalla de ganador, revancha
+  [X] Sin reutilizar preguntas dentro de una categoria durante la partida
+  [X] Resiliencia: si falla GET /categories usa la lista FALLBACK y la rueda
+      sigue renderizando 6 sectores (verificado por sonda, no por navegador)
+
+Cambio apply-neon-obsidian-theme (reescribe el tema visual)
+  [X] Delta de spec de 1007 lines, la primera capability del proyecto
+        (game-presentation) — openspec/specs/ sigue VACIO hasta archivar
+  [X] tasks.md con 1395 lines y test-plan.md con 2059 lines
+  [X] openspec validate --strict en verde (14 requirements, 23 scenarios)
+  [X] ADR-001 paleta neon registrada + project.md linea 46 enmendada
+  [X] Tareas 1.1 a 1.4: matematica de la rueda extraida a funciones puras sin
+        DOM, TIMER_SECONDS como fuente unica, gate node --check, sonda de
+        42 pares (42/42 en ruta API y en ruta FALLBACK)
+  [X] Tareas 2.1 a 2.4: capa de tokens, vidrio, radios, cero drop-shadows,
+        tipografia por roles
+  [X] Tareas 3.1 a 3.4: paleta por NOMBRE (no por indice), 6 glifos SVG inline,
+        rueda derivada en tiempo de ejecucion, boton girar al centro
+  [X] Tareas 4.1 a 4.6: los 4 paneles, breakpoints 768/1024, markup muerto
+        eliminado
+  [X] Tarea 5.1: estado de timeout (#FFD000) que el diseno nunca specifics
+  [X] Tareas 6.1, 6.2, 6.6: controles de maquina, precondicion de datos,
+        verificacion de contencion por SHA-256
+  [X] Tarea 7.2: codigo muerto eliminado (soft:, currentQuestion, wrapper
+        pickQuestion()) — se CONSERVO sectorUnderPointer a proposito, es el
+        oraculo independiente del que dependen los controles
+  [X] Tarea 7.3: 15 referencias de linea obsoletas en el delta corregidas
+
+Higiene de git (hecho en esta sesion, 2026-09-29)
+  [X] .gitignore escrito. ESTABA VACIO: sin el, __pycache__/*.pyc se sube a
+        git, que es exactamente el error que cometio el commit 60e8f6f del
+        remoto anterior
+  [X] .gitattributes escrito con LF forzado y -text en los archivos
+        byte-exactos. Sin esto git normaliza a CRLF en Windows y todos los
+        SHA-256 registrados quedan invalidos
+  [X] Verificado que la linea base HASH-1 sigue intacta: 10 de 10 archivos
+        protegidos byte-identicos
+  [X] Verificado que el hash del frontend en disco coincide con el ultimo
+        registrado (F8947FE3...06610, 796 lineas, 32.431 bytes, 0 CRLF)
+  [X] Corregido el texto obsoleto de reconciliacion en tasks.md, que decia
+        "22 checked, 7 not checked" cuando el estado real es 24 y 5
+
+--------------------------------------------------------------------------------
+3. LO QUE FALTA  [ ]
+--------------------------------------------------------------------------------
+PRIORIDAD ALTA — sin esto el cambio no se puede archivar ni Gate C
+
+  [ ] Subir la linea base al repo nuevo IvanRavarotto/practica_2-modulo_1
+        (en curso en esta sesion) y borrar el commit 60e8f6f del remoto
+        anterior, que es una historia divergente de la API
+
+  [ ] Tarea 7.1 — implementar AT-2b, el control de geometria renderizada.
+        ES EL CONTROL QUE MAS IMPORTA Y EL UNICO QUE FALTA POR CODIGO.
+        Por que: el check de 42/42 NO detecta el defecto de "categoria
+        equivocada", y esta demostrado por mutacion. La funcion de rotacion y
+        un oraculo independiente leen el MISMO array categories, asi que el
+        orden del array se cancela en la comparacion. Con la rueda hardcodeada
+        del mockup el check sigue en 42/42 VERDE. Medido: la rueda real da 6
+        de 6 sectores bound, la del mockup da 0 de 6.
+        La especificacion completa esta en la nota de correccion de R4 del
+        delta (3 capas de aserciones, 1 adicion al stub, 2 controles
+        negativos, camino API y camino FALLBACK).
+
+  [ ] Arreglar el identificador de SM-21 en test-plan.md. Tal como esta
+        escrito llama ACCENT[c.name], pero la pagina exporta ACCENT_BY_NAME y
+        getAccent. El snippet tira ReferenceError antes de su primera
+        asercion, o sea que el control mas valioso del cambio no corre. Es
+        trabajo de qa-manager, no de dev.
+
+PRIORIDAD HUMANA — pasos de navegador, ninguno lo puede hacer un agente
+(declarados como NOT RUN en los artefactos, nunca como aprobados)
+
+  [ ] 6.3 — Ctrl+F5 en http://localhost:800/ antes de observar. GET / se sirve
+        por FileResponse en cada request (no hace falta reiniciar Uvicorn),
+        pero la respuesta NO trae cache-control, asi que el navegador puede
+        servir el documento viejo y parece que el restyle fallo por completo
+  [ ] 6.4 — partida completa hasta que alguien llegue a 10 puntos, con
+        pass/fail por criterio nombrado. Incluye los pasos de categoria
+        equivocada que el 42/42 no cubre: leer el sector bajo el puntero y el
+        chip de categoria y DECIRLOS EN VOZ ALTA, y confirmar que {name} en la
+        red coincide con el chip
+  [ ] 6.5 — panel de red abierto de la pantalla de nombres a la de ganador:
+        solo host local y solo /, /categories y
+        /questions/category/{name}?limit=200. Luego con la API apagada, la
+        rueda debe renderizar 6 sectores de respaldo sin romperse
+  [ ] 6.7 — revision visual humana. stitch/screen.png es la unica
+        representacion del diseno y NINGUN agente de la flota puede leer
+        imagenes, asi que la fidelidad visual no esta revisada por maquina.
+        No se afirma que el resultado se parezca al screenshot.
+        Se espera iteracion en screen-question: es el panel mas cargado de los
+        cuatro y el unico sin mockup, solo prosa
+
+PUERTA HUMANA
+
+  [ ] Gate C — aprobar el merge de apply-neon-obsidian-theme (tras 7.1 y 6.7)
+  [ ] Gate D — aprobar el deploy (hoy es un proceso local, no hay pipeline)
+
+CIERRE
+
+  [ ] openspec archive apply-neon-obsidian-theme. Sin esto openspec/specs/
+        sigue vacio y el tablero miente sobre el sistema. Recien ahi se crea
+        la spec viva game-presentation.
+
+--------------------------------------------------------------------------------
+4. DEUDA Y AGUJEROS CONOCIDOS
+--------------------------------------------------------------------------------
+Huecos de tooling, declarados en project.md como brecha pre-release:
+  [ ] No hay linter (ni Ruff ni Black)
+  [ ] No hay type-checker (ni mypy ni pyright)
+  [ ] No hay suite de tests de comportamiento automatizada
+  [ ] No hay umbral de cobertura ni pipeline de CI/CD
+  Nada de esto tiene red de seguridad. Todo el andamiaje de verificacion de
+  este cambio es un harness ad-hoc de linea de comando.
+
+Riesgos abiertos:
+  [!] El repo remoto IvanRavarotto/practica_2-modulo_1 es PUBLICO, y
+      app/database.py tiene la credencial de desarrollo hardcodeada
+      (postgresql+psycopg2://admin:admin123@localhost:5432/questions_db).
+      Es una credencial local de aula, no un secreto de servicio real, y
+      project.md la registra como excepcion local. Aun asi, publicarla es
+      exactamente lo que la regla de secretos prohibe. Queda pendiente
+      pasarla a variables de entorno.
+  [ ] Dos divergencias registradas y NO pineadas, escaladas al humano, sin
+      requisito que las gobierne: el tag de indice .opt .letra es opaco
+      donde el diseno pide una pastilla translucida con inset; y el chip
+      .q-cat no declara fondo y va a alpha 1 donde el diseno pide 40%.
+      La regla que saldo de ahi: una excepcion sin guardia necesita una frase,
+      un valor sin gobernar necesita un registro.
+  [ ] prefers-reduced-motion: diferido a su propio cambio. El tratamiento
+      neon agrega un giro de 4s, un nodo pulsante y transiciones de glow, y
+      nada en el diseno cubre sensibilidad al movimiento.
+  [ ] Ambiguedad de foco en la pantalla de nombres: el diseno dice que el
+      input hace snap al glow de CATEGORIA, pero esa pantalla no tiene
+      categoria. Queda abierta y registrada, sin resolver.
+
+Informacion que se pierde si no se anota aca:
+  - El diseno se llama "Obsidian Lumina" y vive en stitch/ (DESIGN.md,
+    code.html, screen.png). code.html es un export generado: lleva
+    cdn.tailwindcss.com, 3 Google Fonts, avatares remotos y hardcodea 6
+    sectores en SVG. Es REFERENCIA de tokens y geometria, su markup no se
+    copia. Copiarlo introduce el bug de categoria equivocada.
+  - stitch/DESIGN.md se contradice a si mismo en 4 puntos. Resueltos y
+    registrados en proposal.md: gana el frontmatter sobre la prosa; el radio
+    9999px del frontmatter gana sobre la escala del export; blur(16px) de la
+    prosa gana sobre backdrop-blur-md; y CERO drop-shadows, porque el prose lo
+    dice y el export arrastra 7 sombras de Tailwind por forgot de definirlas.
+  - Costes aceptados que ya no son secreto: los glifos SVG son aproximaciones
+    escritas a mano, no los Material Symbols; y el acento de una categoria ya
+    no se puede afinar para contraste contra fondo claro, asi que una
+    respuesta correcta en arte y una incorrecta en ciencia son el mismo coral.
+    Por eso el feedback lo lleva el tratamiento de superficie y el texto
+    revelado, no solo el tono.
+
+--------------------------------------------------------------------------------
+5. COMO RETOMAR
+--------------------------------------------------------------------------------
+  1. Leé este archivo de arriba abajo.
+  2. Board:      openspec list
+                 openspec list --specs
+                 openspec doctor
+  3. Estado:     openspec validate apply-neon-obsidian-theme --strict
+  4. Reanudar por este orden:
+       a) 7.1  (unico trabajo de codigo que queda)
+       b) SM-21 fix del identificador
+       c) 6.3 6.4 6.5 6.7  (persona, en navegador)
+       d) Gate C
+       e) openspec archive
+  5. Antes de tocar frontend/index.html, entendé esto:
+
+     El archivo esta CONGELADO por evidencia, no por regla. La tarea 6.6
+     demuestra por SHA-256 que el cambio no toco nada mas alla del restyle, y
+     7.2 demuestra que sus 8 lineas borradas se revierten byte a byte. Si
+     editas el frontend, ROMPES esa prueba de contencion y hay que
+     recalcularla. Si tenes que editarlo, anota el nuevo hash.
+
+     Hash actual de frontend/index.html (796 lineas, 32.431 bytes, LF puro):
+     F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610
+
+     4F598508...BE60C0CF5E1E es el estado PRE-7.2 (804 lineas, 32.601 bytes).
+     Sirve como destino del inverso de la prueba de contencion, no como
+     estado actual.
+
+  6. Comandos utiles:
+       Base de datos    docker compose up -d
+       Servidor         poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+       Sintaxis Python  poetry run python -m compileall -q app
+       Sintaxis JS      node --check sobre el <script> extraido
+       Comprobacion     curl.exe -s http://localhost:8000/categories/stats
+                        (debe dar categorized=201, uncategorized=0)
+
+  7. Recordatorio de PowerShell en esta maquina: la ruta del proyecto tiene
+     acentos y corchetes, y Get-FileHash / Get-Content con ruta relativa
+     FALLAN porque PowerShell la resuelve mal. Usa python para leer bytes y
+     calcular hashes, o git, que heredan el CWD real del proceso.
+
+================================================================================
+Leyenda:  [X] hecho   [ ] pendiente   [!] riesgo abierto
+================================================================================

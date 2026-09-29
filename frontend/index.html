@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Preguntados 1v1!</title>
+<style>
+  /* Every accent, surface and radius the presentation uses. The six category hues are
+     consumed by name, never by the position a category happens to occupy in an array. */
+  :root {
+    --canvas: #121319;
+    --surface-lowest: #0d0e14;
+    --surface-low: #1a1b22;
+    --surface: #1e1f26;
+    --surface-high: #292930;
+    --surface-highest: #34343b;
+    --text: #e3e1eb;
+    --text-dim: #b9cacb;
+    --outline: #849495;
+    --ink: #090a10;
+    --stroke: rgba(255, 255, 255, 0.08);
+    --stroke-strong: rgba(255, 255, 255, 0.15);
+    --stroke-input: rgba(255, 255, 255, 0.10);
+
+    --historia: #FFD000;
+    --geografia: #00F0FF;
+    --arte: #FF2A6D;
+    --deportes: #FF6B00;
+    --ciencia: #05FFA1;
+    --entretenimiento: #BD00FF;
+    --accent: var(--geografia);
+    --accent-soft: rgba(0, 240, 255, 0.08);
+    --accent-glow: rgba(0, 240, 255, 0.35);
+    --accent-glow-inset: rgba(0, 240, 255, 0.15);
+
+    --ok: #05FFA1;
+    --fail: #FF2A6D;
+    --timeout: #FFD000;
+    --timeout-border: rgba(255, 208, 0, 0.4);
+
+    --p1: #00F0FF;
+    --p1-glow: rgba(0, 240, 255, 0.35);
+    --p2: #BD00FF;
+    --p2-glow: rgba(189, 0, 255, 0.35);
+
+    --r-sm: 0.25rem;
+    --r-md: 0.375rem;
+    --r-lg: 0.5rem;
+    --r-pill: 9999px;
+
+    --glass: rgba(18, 19, 25, 0.7);
+    --glass-strong: rgba(18, 19, 25, 0.85);
+    --glass-option: rgba(18, 19, 25, 0.8);
+    --glass-blur: blur(16px);
+    --wheel-size: min(75vw, 460px);
+
+    --sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", Consolas, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  [hidden] { display: none !important; }
+
+  /* Neon bloom replaces every offset shadow: an x and y of zero, radius only. */
+  body {
+    font-family: var(--sans);
+    background: var(--canvas);
+    color: var(--text);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .panel {
+    position: fixed; inset: 0; z-index: 10;
+    display: none; flex-direction: column; align-items: center;
+    padding: 1.25rem 1rem;
+    background: var(--canvas);
+  }
+  .panel.active { display: flex; animation: panelIn 0.28s ease; }
+  .panel > * { position: relative; z-index: 1; }
+  @keyframes panelIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+  .card {
+    width: 100%; max-width: 560px; padding: 1.375rem;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--stroke);
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  .btn {
+    cursor: pointer; border: 1px solid transparent; border-radius: var(--r-md);
+    font-family: var(--sans); font-weight: 700; letter-spacing: 0.04em;
+    color: var(--ink); background: linear-gradient(135deg, var(--geografia), var(--ciencia));
+    box-shadow: 0 0 1.25rem rgba(0, 240, 255, 0.35);
+    transition: filter 0.15s ease;
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn:focus-visible { outline: none; border-color: var(--text); box-shadow: 0 0 0 1px var(--text), 0 0 1.5rem rgba(0, 240, 255, 0.5); }
+  .btn:disabled { cursor: default; filter: grayscale(0.5) brightness(0.85); }
+
+  /* start screen */
+  .names-form { display: flex; flex-direction: column; gap: 0.875rem; }
+  .player-input { display: flex; align-items: center; gap: 0.75rem; }
+  .player-input .pv {
+    flex: none; width: 2.875rem; height: 2.875rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-lg);
+    font-family: var(--mono); font-size: 1.25rem; font-weight: 700; color: var(--ink);
+  }
+  .pv1 { background: var(--p1); }
+  .pv2 { background: var(--p2); }
+  .player-input input {
+    flex: 1; min-width: 0; padding: 0.8125rem 0.875rem;
+    border: 1px solid var(--stroke-input); border-radius: var(--r-md);
+    background: var(--surface-low); color: var(--text); caret-color: var(--geografia);
+    font-family: var(--sans); font-size: 1rem; font-weight: 600;
+  }
+  .player-input input::placeholder { color: var(--outline); }
+  /* A 1px ring plus bloom, so the focus state never changes the element's box. */
+  .player-input input:focus {
+    outline: none; border-color: var(--geografia);
+    box-shadow: 0 0 0 1px var(--geografia), 0 0 1rem rgba(0, 240, 255, 0.35);
+  }
+  .start-btn { margin-top: 0.25rem; padding: 0.9375rem 2.5rem; font-size: clamp(1.125rem, 5vw, 1.5rem); }
+  .err { color: var(--fail); font-size: 0.875rem; font-weight: 700; text-align: center; }
+  .rules { margin-top: 1rem; max-width: 32rem; text-align: center; font-size: 0.875rem; line-height: 1.5; color: var(--text-dim); }
+
+  /* wheel screen */
+  .scoreboard { display: flex; width: 100%; max-width: 560px; gap: 0.75rem; }
+  .score-card {
+    flex: 1; padding: 0.75rem 0.875rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    border: 1px solid var(--stroke); border-radius: var(--r-md);
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+  }
+  .score-card.turn { border-color: var(--p-accent); box-shadow: 0 0 1.25rem var(--p-accent-glow); }
+  .score-card .srow { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .score-card .sname { font-weight: 700; font-size: 0.9375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score-card .spoints { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; color: var(--p-accent); }
+  .score-card .sbar { display: flex; gap: 0.1875rem; }
+  .score-card .slot { flex: 1; height: 0.625rem; border-radius: var(--r-sm); background: var(--surface-high); }
+  .score-card .slot.on { background: var(--p-accent); box-shadow: 0 0 0.5rem var(--p-accent-glow); }
+
+  .turn-chip {
+    display: flex; align-items: center; gap: 0.375rem; margin-top: 0.75rem;
+    padding: 0.5rem 1rem; border-radius: var(--r-md);
+    border: 1px solid var(--p-accent); background: var(--glass-strong);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: 0 0 1.25rem var(--p-accent-glow);
+    font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .turn-chip b { font-family: var(--sans); letter-spacing: 0; text-transform: none; }
+
+  .wheel-wrap { position: relative; width: var(--wheel-size); height: var(--wheel-size); margin: 1rem auto 0; }
+  .wheel-wrap::before {
+    content: ""; position: absolute; left: 50%; top: 50%; z-index: 0;
+    width: 128%; height: 128%; transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 66%);
+    pointer-events: none;
+  }
+  .wheel-pin {
+    position: absolute; top: -0.75rem; left: 50%; z-index: 5; width: 1.75rem; height: 1.75rem;
+    transform: translateX(-50%);
+    color: var(--geografia);
+    filter: drop-shadow(0 0 0.5rem rgba(0, 240, 255, 0.6));
+  }
+  .wheel-pin svg { width: 100%; height: 100%; display: block; fill: currentColor; }
+
+  /* The sector gradient on .wheel carries one stop per category; the vignette, the
+     dividers and the labels are all derived from that same list in buildWheel. */
+  .wheel {
+    position: relative; width: 100%; height: 100%; z-index: 1;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--stroke-strong);
+    transform: rotate(0deg);
+  }
+  .wheel::before {
+    content: ""; position: absolute; inset: 0; border-radius: var(--r-pill); pointer-events: none;
+    background: radial-gradient(circle, rgba(18, 19, 25, 0) 38%, rgba(18, 19, 25, 0.5) 100%);
+  }
+  .wheel-divider {
+    position: absolute; left: 50%; top: 50%; width: 1px; height: 50%;
+    margin-left: -0.5px; transform-origin: top center; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(18, 19, 25, 0) 0%, rgba(18, 19, 25, 0.55) 20%, rgba(18, 19, 25, 0.55) 80%, rgba(18, 19, 25, 0) 100%);
+  }
+  .seg-label {
+    --seg-r: calc(var(--wheel-size) * -0.36);
+    position: absolute; left: 50%; top: 50%; width: 5.75rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
+    text-align: center; pointer-events: none;
+    transform: translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a)));
+  }
+  .seg-label .ic { display: flex; }
+  .seg-label .ic svg { width: 1.375rem; height: 1.375rem; display: block; fill: currentColor; }
+  .seg-label .lb {
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.15; color: currentColor;
+  }
+  .spin-btn {
+    position: absolute; left: 50%; top: 50%; z-index: 3;
+    width: 30%; aspect-ratio: 1; transform: translate(-50%, -50%);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-pill);
+    font-size: clamp(0.8125rem, 3.2vw, 1.375rem);
+    background: linear-gradient(135deg, var(--geografia), var(--ciencia));
+  }
+  .spin-btn:active:not(:disabled) { filter: brightness(0.95); }
+
+  /* question screen */
+  #screen-question::before {
+    content: ""; position: absolute; left: 50%; top: 45%; z-index: 0;
+    width: min(92vw, 660px); aspect-ratio: 1; transform: translate(-50%, -50%);
+    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 68%);
+    pointer-events: none;
+  }
+  #screen-question h1 { margin-top: 0.5rem; }
+  .timer {
+    width: 100%; max-width: 560px; height: 0.5rem; margin: 1rem 0 0.5rem;
+    border: 1px solid var(--stroke); border-radius: var(--r-pill);
+    background: rgba(255, 255, 255, 0.08); overflow: hidden;
+  }
+  .timer-bar {
+    width: 100%; height: 100%; border-radius: var(--r-pill);
+    background: var(--accent); box-shadow: 0 0 1rem var(--accent);
+  }
+  .timer-bar[data-phase="urgent"] { background: var(--fail); box-shadow: 0 0 1rem var(--fail); }
+  .timer-bar[data-phase="timeout"] { background: var(--timeout); box-shadow: 0 0 1rem var(--timeout); }
+
+  .q-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .q-cat {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.3125rem 0.625rem; border-radius: var(--r-md);
+    border: 1px solid var(--accent);
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--text);
+  }
+  .q-cat .dot { width: 0.375rem; height: 0.375rem; flex: none; border-radius: var(--r-pill); background: var(--accent); box-shadow: 0 0 0.5rem var(--accent); }
+  .q-player {
+    padding: 0.3125rem 0.75rem; border-radius: var(--r-md);
+    border: 1px solid var(--stroke-strong);
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .question-text { font-size: clamp(1.125rem, 4.5vw, 1.625rem); font-weight: 700; line-height: 1.3; min-height: 5.25rem; }
+
+  .options { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 1rem; }
+  @media (min-width: 768px) { .options { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .card { max-width: 840px; } }
+
+  .opt {
+    display: flex; align-items: center; gap: 0.625rem;
+    min-height: 3rem; padding: 0.75rem 0.875rem; text-align: left; cursor: pointer;
+    border: 1px solid var(--stroke); border-radius: var(--r-md);
+    background: var(--glass-option);
+    backdrop-filter: var(--glass-blur);
+    font-family: var(--sans); font-size: 0.9375rem; font-weight: 600; color: var(--text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 0 1.25rem var(--accent-glow), inset 0 0 12px var(--accent-glow-inset); }
+  .opt:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 1.25rem var(--accent-glow), inset 0 0 12px var(--accent-glow-inset); }
+  .opt:disabled { cursor: default; }
+  .opt .letra {
+    flex: none; width: 1.75rem; height: 1.75rem;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--stroke); border-radius: var(--r-sm);
+    background: var(--surface-high);
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-dim);
+  }
+  .opt.right { border-color: var(--ok); box-shadow: 0 0 1.25rem rgba(5, 255, 161, 0.35); }
+  .opt.right .letra { border-color: var(--ok); background: var(--ok); color: var(--ink); }
+  .opt.wrong { border-color: var(--fail); box-shadow: 0 0 1.25rem rgba(255, 42, 109, 0.35); }
+  .opt.wrong .letra { border-color: var(--fail); background: var(--fail); color: var(--ink); }
+
+  .feedback {
+    margin-top: 1rem; padding: 0.75rem 1rem; text-align: center;
+    border: 1px solid var(--stroke-strong); border-radius: var(--r-md);
+    font-size: 0.9375rem; font-weight: 600; color: var(--text);
+  }
+  .feedback.ok { background: rgba(5, 255, 161, 0.2); border-color: var(--ok); }
+  .feedback.ko { background: rgba(255, 42, 109, 0.2); border-color: var(--fail); }
+  .feedback.timeout { background: rgba(255, 208, 0, 0.2); border-color: var(--timeout-border); }
+  .next-btn { margin-top: 1rem; padding: 0.75rem 1.75rem; font-size: 1.125rem; }
+
+  /* winner screen */
+  .winner-box { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .winner-box .wname {
+    font-size: clamp(1.75rem, 8vw, 3.25rem); font-weight: 800; letter-spacing: -0.02em; text-align: center;
+  }
+  .winner-box .wscore { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.06em; }
+
+  @media (max-width: 640px) {
+    /* A narrow viewport cannot hold a 0.36-radius label without its corner crossing the
+       rim, so the compact tier pulls the labels inward and shrinks the box to match. */
+    :root { --wheel-size: min(84vw, 440px); }
+    .seg-label { --seg-r: calc(var(--wheel-size) * -0.32); width: 4.25rem; }
+    .seg-label .ic svg { width: 1.125rem; height: 1.125rem; }
+    .seg-label .lb { font-size: 0.5625rem; }
+  }
+</style>
+</head>
+<body>
+  <section id="screen-start" class="panel active">
+    <h1>¡Preguntados 1v1!</h1>
+    <div class="card names-form">
+      <div class="player-input">
+        <span class="pv pv1" aria-hidden="true">1</span>
+        <input id="name1" maxlength="14" placeholder="Nombre del jugador 1" aria-label="Nombre del jugador 1" autocomplete="off">
+      </div>
+      <div class="player-input">
+        <span class="pv pv2" aria-hidden="true">2</span>
+        <input id="name2" maxlength="14" placeholder="Nombre del jugador 2" aria-label="Nombre del jugador 2" autocomplete="off">
+      </div>
+      <button id="start" class="btn start-btn">¡A JUGAR!</button>
+      <p id="err" class="err" role="alert" hidden></p>
+    </div>
+    <p class="rules">
+      Mejor de 10: el primero en juntar 10 puntos gana.<br>Giran la ruleta por turnos y responden la pregunta de su turno.
+    </p>
+  </section>
+
+  <section id="screen-wheel" class="panel">
+    <div class="scoreboard" id="scoreboard"></div>
+    <div id="turnchip" class="turn-chip"></div>
+    <div class="wheel-wrap">
+      <div class="wheel-pin">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 22 2 4h20z"/></svg>
+      </div>
+      <div id="wheel" class="wheel"></div>
+      <button id="spin" class="btn spin-btn">¡GIRAR!</button>
+    </div>
+  </section>
+
+  <section id="screen-question" class="panel">
+    <h1>¡PON A PRUEBA TU CONOCIMIENTO!</h1>
+    <div id="q-timer" class="timer" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuenow="0">
+      <div id="tbar" class="timer-bar"></div>
+    </div>
+    <div class="card question-card">
+      <div class="q-top">
+        <span class="q-cat" id="q-cat"></span>
+        <span class="q-player" id="q-player"></span>
+      </div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="q-opts"></div>
+      <div class="feedback" id="q-feedback" aria-live="polite" hidden></div>
+      <button class="btn next-btn" id="q-next" hidden>Siguiente turno</button>
+    </div>
+  </section>
+
+  <section id="screen-winner" class="panel">
+    <div class="winner-box">
+      <div id="w-name" class="wname"></div>
+      <div id="w-score" class="wscore"></div>
+      <button class="btn start-btn" id="rematch">¡Jugar de nuevo!</button>
+    </div>
+  </section>
+
+<script>
+  const API = "";
+  const WIN_POINTS = 10;
+  const TIMER_SECONDS = 20;
+  const TIMER_URGENT_RATIO = 0.2;
+  const TURN_MS = TIMER_SECONDS * 1000;
+  const TURN_TICK_MS = 100;
+  const SPIN_MS = 4200;
+  const SPIN_SETTLE_MS = SPIN_MS + 100;
+  const SPIN_TURNS = 5;
+  const SPIN_EASING = "cubic-bezier(0.24, 0.9, 0.3, 0.98)";
+  const INK = "#090a10";
+  const NEUTRAL_ACCENT = "#849495";
+
+  /* The neon palette, keyed by category name. `on` is the ink that stays legible on that
+     accent: the dark ink carries every hue except the entertainment violet. */
+  const ACCENT_BY_NAME = {
+    historia: { accent: "#FFD000", on: INK },
+    geografia: { accent: "#00F0FF", on: INK },
+    arte: { accent: "#FF2A6D", on: INK },
+    deportes: { accent: "#FF6B00", on: INK },
+    ciencia: { accent: "#05FFA1", on: INK },
+    entretenimiento: { accent: "#BD00FF", on: "#FFFFFF" }
+  };
+
+  /* One hand-authored monochrome glyph per category, filled with currentColor. The wheel
+     hands the label the category's contrast ink rather than its accent, because the sector
+     behind it is already that accent and an accent-on-accent glyph would disappear. */
+  const GLYPH_BY_NAME = {
+    historia:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<rect x="5" y="2" width="14" height="2.5" rx="1.25"/><rect x="5" y="19.5" width="14" height="2.5" rx="1.25"/>' +
+      '<path d="M7 4.5h10L12 12z"/><path d="M7 19.5h10L12 12z"/></svg>',
+    geografia:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2.2A7.8 7.8 0 1 1 4.2 12 7.8 7.8 0 0 1 12 4.2Z"/>' +
+      '<path d="M12 2.6c3 3.4 3 15.4 0 18.8-3-3.4-3-15.4 0-18.8Z"/>' +
+      '<rect x="2.2" y="11" width="19.6" height="2"/></svg>',
+    arte:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path fill-rule="evenodd" d="M12 2a10 10 0 0 0 0 20c1.7 0 2.6-1.1 2.6-2.3 0-.7-.3-1.2-.7-1.7-.4-.5-.6-1-.6-1.5 0-1.1.9-2 2-2H18a4 4 0 0 0 4-4c0-4.8-4.5-8.5-10-8.5Zm-4.2 6.6a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2Zm4-3.4a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2Zm4.6.6a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2Z"/></svg>',
+    deportes:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 3.6 3.5 2.5-1.3 4.1H9.8L8.5 8.1 12 5.6Z"/></svg>',
+    ciencia:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<rect x="9" y="2" width="6" height="3" rx="1.25"/>' +
+      '<path d="M10 5v6.2L5.4 18.6A3 3 0 0 0 8.1 23h7.8a3 3 0 0 0 2.7-4.4L14 11.2V5z"/></svg>',
+    entretenimiento:
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path fill-rule="evenodd" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm6.5 3.9v6.2l5.2-3.1-5.2-3.1Z"/></svg>'
+  };
+  const GENERIC_GLYPH =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/>' +
+    '<path d="M12 7.5v6"/><circle cx="12" cy="16.6" r="1.4"/></svg>';
+
+  const FALLBACK = [
+    { name: "arte", label: "Arte y Cultura" },
+    { name: "ciencia", label: "Ciencia" },
+    { name: "deportes", label: "Deportes" },
+    { name: "entretenimiento", label: "Entretenimiento" },
+    { name: "geografia", label: "Geografía" },
+    { name: "historia", label: "Historia" }
+  ];
+  const SEATS = [
+    { accent: "var(--p1)", glow: "var(--p1-glow)" },
+    { accent: "var(--p2)", glow: "var(--p2-glow)" }
+  ];
+
+  let categories = [];
+  let players = [];
+  let turn = 0;
+  let currentCat = null;
+  let answered = false;
+  let timerId = null;
+  let tickId = null;
+  let catCache = {};
+  let usedIds = {};
+  let wheelRotation = 0;
+  let spinning = false;
+
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const player = () => players[turn];
+
+  function getAccent(name) {
+    const entry = ACCENT_BY_NAME[name];
+    return entry ? entry.accent : NEUTRAL_ACCENT;
+  }
+
+  function getGlyph(name) {
+    return GLYPH_BY_NAME[name] || GENERIC_GLYPH;
+  }
+
+  /* Hex accents reach the stylesheet as rgba() so one sector stays one gradient entry. */
+  function toRgba(hex, alpha) {
+    const value = hex.replace("#", "");
+    return `rgba(${parseInt(value.slice(0, 2), 16)}, ${parseInt(value.slice(2, 4), 16)}, ${parseInt(value.slice(4, 6), 16)}, ${alpha})`;
+  }
+
+  function toCategory(source) {
+    const name = source.name;
+    const accent = getAccent(name);
+    return {
+      name: name,
+      label: source.label || name,
+      accent: accent,
+      fill: toRgba(accent, 1),
+      on: (ACCENT_BY_NAME[name] || {}).on || INK,
+      glyph: getGlyph(name)
+    };
+  }
+
+  function normalizeDegrees(degrees) {
+    return ((degrees % 360) + 360) % 360;
+  }
+
+  function sectorCenterAngle(sectorIndex, sectorCount) {
+    return sectorIndex * 360 / sectorCount + 180 / sectorCount;
+  }
+
+  // The pointer rests at the top, so a sector arrives beneath it when the rotation
+  // carries that sector's centre onto the angle opposite the wheel's own zero.
+  function rotationDeltaForSector(sectorIndex, sectorCount, currentRotation) {
+    return normalizeDegrees(-sectorCenterAngle(sectorIndex, sectorCount) - currentRotation) + 360 * SPIN_TURNS;
+  }
+
+  function sectorUnderPointer(rotation, sectorCount) {
+    return Math.min(sectorCount - 1, Math.floor(normalizeDegrees(360 - rotation) / (360 / sectorCount)));
+  }
+
+  function timerState(elapsedMs) {
+    const remaining = Math.max(0, TURN_MS - elapsedMs);
+    return {
+      ratio: remaining / TURN_MS,
+      urgent: remaining < TURN_MS * TIMER_URGENT_RATIO,
+      expired: remaining <= 0
+    };
+  }
+
+  function init() {
+    fetch(`${API}/categories`)
+      .then(r => r.json())
+      .then(data => {
+        categories = (Array.isArray(data) && data.length ? data : FALLBACK).map(toCategory);
+        buildWheel();
+      })
+      .catch(() => {
+        categories = FALLBACK.map(toCategory);
+        buildWheel();
+      });
+    $("start").addEventListener("click", beginMatch);
+    $("spin").addEventListener("click", spinWheel);
+    $("q-next").addEventListener("click", nextTurn);
+    $("rematch").addEventListener("click", () => show("screen-start"));
+    ["name1", "name2"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") beginMatch(); }));
+  }
+
+  function buildWheel() {
+    const wheel = $("wheel");
+    const n = categories.length;
+    const span = 360 / n;
+    wheel.style.background = `conic-gradient(${categories.map((c, i) => `${c.fill} ${i * span}deg ${(i + 1) * span}deg`).join(", ")})`;
+    for (let i = 0; i < n; i++) {
+      const divider = document.createElement("div");
+      divider.className = "wheel-divider";
+      divider.style.transform = `rotate(${i * span + 180}deg)`;
+      wheel.appendChild(divider);
+    }
+    categories.forEach((cat, i) => {
+      const label = document.createElement("div");
+      label.className = "seg-label";
+      label.style.setProperty("--a", `${sectorCenterAngle(i, n)}deg`);
+      label.style.color = cat.on;
+      label.innerHTML = `<span class="ic">${cat.glyph}</span><span class="lb">${cat.label}</span>`;
+      wheel.appendChild(label);
+    });
+  }
+
+  function beginMatch() {
+    const n1 = $("name1").value.trim() || "Jugador 1";
+    const n2 = $("name2").value.trim() || "Jugador 2";
+    const err = $("err");
+    if (n1.toLowerCase() === n2.toLowerCase()) {
+      err.textContent = "Los nombres no pueden ser iguales.";
+      err.hidden = false;
+      return;
+    }
+    err.hidden = true;
+    players = [
+      { name: n1, points: 0, accent: SEATS[0].accent, glow: SEATS[0].glow },
+      { name: n2, points: 0, accent: SEATS[1].accent, glow: SEATS[1].glow }
+    ];
+    catCache = {};
+    usedIds = {};
+    turn = Math.random() < 0.5 ? 0 : 1;
+    currentCat = null;
+    show("screen-wheel");
+    renderScoreboard();
+    $("spin").disabled = false;
+  }
+
+  function renderScoreboard() {
+    const sb = $("scoreboard");
+    sb.textContent = "";
+    players.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = i === turn ? "score-card turn" : "score-card";
+      card.style.setProperty("--p-accent", p.accent);
+      card.style.setProperty("--p-accent-glow", p.glow);
+      const row = document.createElement("div");
+      row.className = "srow";
+      const name = document.createElement("span");
+      name.className = "sname";
+      name.textContent = p.name;
+      const points = document.createElement("span");
+      points.className = "spoints";
+      points.textContent = p.points;
+      row.append(name, points);
+      const bar = document.createElement("div");
+      bar.className = "sbar";
+      for (let k = 0; k < WIN_POINTS; k++) {
+        const slot = document.createElement("span");
+        slot.className = k < p.points ? "slot on" : "slot";
+        bar.appendChild(slot);
+      }
+      card.append(row, bar);
+      sb.appendChild(card);
+    });
+    const chip = $("turnchip");
+    chip.style.setProperty("--p-accent", player().accent);
+    chip.style.setProperty("--p-accent-glow", player().glow);
+    chip.textContent = "Turno de:";
+    const strong = document.createElement("b");
+    strong.textContent = player().name;
+    chip.appendChild(strong);
+  }
+
+  function spinWheel() {
+    if (spinning) return;
+    spinning = true;
+    $("spin").disabled = true;
+    const idx = Math.floor(Math.random() * categories.length);
+    currentCat = categories[idx];
+    const n = categories.length;
+    const delta = rotationDeltaForSector(idx, n, wheelRotation);
+    wheelRotation += delta;
+    const wheel = $("wheel");
+    wheel.style.transition = "none";
+    wheel.style.transform = `rotate(${wheelRotation - delta}deg)`;
+    void wheel.offsetWidth;
+    wheel.style.transition = `transform ${SPIN_MS}ms ${SPIN_EASING}`;
+    wheel.style.transform = `rotate(${wheelRotation}deg)`;
+    let done = false;
+    const finish = () => { if (!done) { done = true; spinning = false; pickQuestionAsync(); } };
+    wheel.addEventListener("transitionend", finish, { once: true });
+    setTimeout(finish, SPIN_SETTLE_MS);
+  }
+
+  function quiz() {
+    const pending = (catCache[currentCat.name] || []).filter(q => !usedIds[currentCat.name + ":" + q.id]);
+    if (!pending.length) return null;
+    const q = pending[Math.floor(Math.random() * pending.length)];
+    usedIds[currentCat.name + ":" + q.id] = 1;
+    return q;
+  }
+
+  async function pickQuestionAsync() {
+    const name = currentCat.name;
+    if (!catCache[name]) {
+      try {
+        const r = await fetch(`${API}/questions/category/${name}?limit=200`);
+        catCache[name] = await r.json();
+      } catch (e) { catCache[name] = []; }
+    }
+    const q = quiz();
+    if (!q) { nextTurn(); return; }
+    renderQuestion(q);
+    show("screen-question");
+  }
+
+  function startTurnClock(onExpire) {
+    const bar = $("tbar");
+    const track = $("q-timer");
+    const startedAt = performance.now();
+    clearTimeout(timerId);
+    clearInterval(tickId);
+    track.setAttribute("aria-valuemax", String(TIMER_SECONDS));
+    track.setAttribute("aria-valuenow", String(TIMER_SECONDS));
+    bar.style.transition = "none";
+    bar.style.width = "100%";
+    bar.dataset.phase = "";
+    void bar.offsetWidth;
+    bar.style.transition = `width ${TIMER_SECONDS}s linear`;
+    bar.style.width = "0%";
+    timerId = setTimeout(onExpire, TURN_MS);
+    tickId = setInterval(() => {
+      const state = timerState(performance.now() - startedAt);
+      bar.dataset.phase = state.urgent ? "urgent" : "";
+      track.setAttribute("aria-valuenow", String(Math.ceil(TURN_MS * state.ratio / 1000)));
+      if (state.expired) clearInterval(tickId);
+    }, TURN_TICK_MS);
+  }
+
+  function stopTurnClock() {
+    clearTimeout(timerId);
+    clearInterval(tickId);
+    $("tbar").style.transition = "none";
+    $("tbar").dataset.phase = "";
+  }
+
+  function renderQuestion(q) {
+    answered = false;
+    const accent = currentCat ? currentCat.accent : NEUTRAL_ACCENT;
+    const panel = $("screen-question");
+    panel.style.setProperty("--accent", accent);
+    panel.style.setProperty("--accent-soft", toRgba(accent, 0.08));
+    panel.style.setProperty("--accent-glow", toRgba(accent, 0.35));
+    panel.style.setProperty("--accent-glow-inset", toRgba(accent, 0.15));
+    const chip = $("q-cat");
+    chip.textContent = "";
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    const label = document.createElement("span");
+    label.textContent = currentCat ? currentCat.label : (q.category || "Sin categoría");
+    chip.append(dot, label);
+    $("q-player").textContent = `Turno: ${player().name}`;
+    $("q-text").textContent = q.question;
+    const opts = shuffle([{ t: q.option_a, k: "A" }, { t: q.option_b, k: "B" }, { t: q.option_c, k: "C" }, { t: q.option_d, k: "D" }]);
+    const grid = $("q-opts");
+    grid.textContent = "";
+    opts.forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      const key = document.createElement("span");
+      key.className = "letra";
+      key.textContent = opt.k;
+      const text = document.createElement("span");
+      text.textContent = opt.t;
+      b.append(key, text);
+      b.onclick = () => pickAnswer(b, opt.t, q);
+      grid.appendChild(b);
+    });
+    const fb = $("q-feedback");
+    fb.textContent = "";
+    fb.className = "feedback";
+    fb.hidden = true;
+    $("q-next").hidden = true;
+    startTurnClock(() => onTimeout(q));
+  }
+
+  function finishQuestion(q) {
+    answered = true;
+    stopTurnClock();
+    const buttons = [...$("q-opts").children];
+    buttons.forEach(b => {
+      b.disabled = true;
+      if (b.querySelector("span:last-child").textContent === q.answer) b.classList.add("right");
+    });
+    return buttons;
+  }
+
+  function pickAnswer(btn, text, q) {
+    if (answered) return;
+    finishQuestion(q);
+    const ok = text === q.answer;
+    if (!ok) btn.classList.add("wrong");
+    if (ok) player().points++;
+    showFeedback(ok ? "ok" : "ko", q);
+    maybeEnd();
+  }
+
+  function onTimeout(q) {
+    if (answered) return;
+    finishQuestion(q);
+    $("tbar").dataset.phase = "timeout";
+    showFeedback("timeout", q);
+    maybeEnd();
+  }
+
+  /* Three named states, so a player can tell a timeout from a wrong answer by the
+     wording alone and not only by the colour of the strip. */
+  function showFeedback(state, q) {
+    const fb = $("q-feedback");
+    const answer = `Respuesta correcta: ${q.answer}`;
+    fb.className = `feedback ${state}`;
+    fb.textContent = {
+      ok: `¡${player().name} acierta! +1 punto (va ${player().points})`,
+      ko: answer,
+      timeout: `¡Se acabó el tiempo! ${answer}`
+    }[state];
+    fb.hidden = false;
+    $("q-next").hidden = false;
+    renderScoreboard();
+  }
+
+  function maybeEnd() {
+    if (player().points >= WIN_POINTS) {
+      finishMatch();
+    }
+  }
+
+  function finishMatch() {
+    stopTurnClock();
+    const w = player();
+    const loser = players[1 - turn];
+    $("w-name").textContent = `¡${w.name} GANA!`;
+    $("w-name").style.color = w.accent;
+    $("w-score").textContent = `${w.name} ${w.points} - ${loser.points} ${loser.name}`;
+    setTimeout(() => show("screen-winner"), 700);
+    $("q-next").hidden = true;
+  }
+
+  function nextTurn() {
+    turn = 1 - turn;
+    currentCat = null;
+    renderScoreboard();
+    $("spin").disabled = false;
+    show("screen-wheel");
+  }
+
+  init();
+
+</script>
+</body>
+</html>

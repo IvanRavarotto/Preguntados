@@ -46,9 +46,11 @@ poetry --version
 ## Paso 2: Inicializar el proyecto
 
 ```bash
-cd /var/home/xlmriosx/iesetyfp/ppii/pi
-poetry init --name "fastapi-questions" --description "API de preguntas con FastAPI y Hugging Face" --python "^3.10" --no-interaction
+cd "C:\Users\Iván\Desktop\Trabajos\[01] - Practica Profesionalizante II\full-app-ai-scenario"
+poetry init --name "fastapi-questions" --description "Juego de preguntados con FastAPI, PostgreSQL y dataset local" --python "^3.10" --no-interaction
 ```
+
+> **Nota:** el CSV `preguntas_preguntados.csv` con las 200 preguntas ya está en esta carpeta. El proyecto se crea acá mismo, así el CSV queda en la raíz del proyecto.
 
 Esto genera el archivo `pyproject.toml`.
 
@@ -150,45 +152,44 @@ class Question(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     question = Column(Text, nullable=False)
+    option_a = Column(Text, nullable=False)
+    option_b = Column(Text, nullable=False)
+    option_c = Column(Text, nullable=False)
+    option_d = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
     category = Column(String(100), nullable=True)
     source = Column(String(255), nullable=True)
 ```
 
+> **Nota:** al estilo "preguntados", cada pregunta tiene 4 opciones (`option_a` a `option_d`). En `answer` guardamos el **texto** de la opción correcta (quitamos la letra), para que el juego solo tenga que comparar la opción elegida por el jugador contra `answer`. La columna `source` indica el origen de los datos (ej. `preguntados.csv`).
+
 ---
 
-## Paso 7: Cargar datos desde Hugging Face
+## Paso 7: Cargar datos desde el CSV local
+
+> **Contexto:** el profe pidió que eventualmente los datos vengan de Hugging Face. Por ahora, para arrancar sin dolores de cabeza, cargamos el CSV local `preguntas_preguntados.csv`. Más adelante se migra a un dataset de Hugging Face (ver la nota al final del paso).
 
 ### `app/load_data.py`
 
 ```python
 import pandas as pd
-import requests
-import tempfile
-import os
 from app.database import SessionLocal, engine
 from app.models import Base, Question
 
-DATASET_URL = "https://huggingface.co/datasets/hello-smile6/simple-qa/resolve/main/data/train-00000-of-00001.parquet"
+CSV_PATH = "preguntas_preguntados.csv"
 
-
-def download_parquet(url: str) -> str:
-    print(f"Descargando {url}...")
-    r = requests.get(url, stream=True)
-    r.raise_for_status()
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
-    tmp.write(r.content)
-    tmp.close()
-    return tmp.name
+LETRA_A_COLUMNA = {
+    "a": "option_a",
+    "b": "option_b",
+    "c": "option_c",
+    "d": "option_d",
+}
 
 
 def load_questions():
     Base.metadata.create_all(bind=engine)
 
-    parquet_path = download_parquet(DATASET_URL)
-    df = pd.read_parquet(parquet_path)
-    os.unlink(parquet_path)
-
+    df = pd.read_csv(CSV_PATH)
     print(f"Columnas disponibles: {list(df.columns)}")
     print(f"Filas: {len(df)}")
     print(df.head(3))
@@ -196,11 +197,17 @@ def load_questions():
     session = SessionLocal()
     try:
         for _, row in df.iterrows():
+            letra = str(row["respuesta_correcta"]).strip().lower()
+            columna_correcta = LETRA_A_COLUMNA[letra]
             question = Question(
-                question=row.get("question", ""),
-                answer=row.get("answer", "") or row.get("answer_alias", ""),
-                category=row.get("category", None),
-                source=row.get("source", None),
+                question=row["pregunta"],
+                option_a=row["opcion_a"],
+                option_b=row["opcion_b"],
+                option_c=row["opcion_c"],
+                option_d=row["opcion_d"],
+                answer=row[columna_correcta],
+                category=row["categoria"],
+                source="preguntados.csv",
             )
             session.add(question)
 
@@ -217,13 +224,13 @@ if __name__ == "__main__":
     load_questions()
 ```
 
-Ejecutá el script:
+Ejecutá el script (desde la raíz del proyecto, donde está el CSV):
 
 ```bash
 poetry run python app/load_data.py
 ```
 
-> **Tip:** Si el dataset de ejemplo no existe o cambiaron la URL, buscá otro dataset en https://huggingface.co/datasets buscando "qa" o "question-answering" con formato Parquet.
+> **Nota (hoja de ruta a Hugging Face):** el CSV tiene 200 filas fijas y una estructura simple (`categoria,pregunta,opcion_a..d,respuesta_correcta`). Para migrar luego, solo habría que reemplazar el `pd.read_csv(CSV_PATH)` por la lectura de un Parquet remoto (como en la versión original) dejando intacta la lógica de `LETRA_A_COLUMNA`. Buscá un dataset de trivias/QA con formato Parquet en https://huggingface.co/datasets.
 
 ---
 
@@ -321,6 +328,6 @@ for q in data:
 
 1. Agregá un endpoint `GET /questions/category/{category}` que filtre por categoría.
 2. Agregá un endpoint `GET /stats` que devuelva cantidad total de preguntas y cantidad por categoría.
-3. Cambiá el dataset de Hugging Face por otro que te interese.
+3. Migrá la carga de datos del CSV local a un dataset de Hugging Face (reemplazando solo el `pd.read_csv` del Paso 7).
 4. Agregá un endpoint POST para crear preguntas nuevas.
 5. Escribí tests con `pytest` y `httpx`.

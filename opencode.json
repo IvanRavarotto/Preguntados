@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md", "openspec/project.md"],
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "ask",
+      "openspec *": "allow",
+      "git status": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git fetch*": "allow",
+      "git branch*": "allow",
+      "node scripts/sync-harness.mjs": "allow",
+      "git push --force*": "deny",
+      "git reset --hard*": "deny"
+    }
+  }
+}

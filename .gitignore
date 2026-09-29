@@ -1,0 +1,28 @@
+# Bytecode de Python. El commit 60e8f6f del remoto anterior versiono .pyc en git;
+# esta es la correccion de ese error.
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Herramientas
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp

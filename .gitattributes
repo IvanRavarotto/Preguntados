@@ -1,0 +1,23 @@
+# La cadena de verificacion de apply-neon-obsidian-theme (HASH-1) compara SHA-256
+# de archivos enteros, entre ellos frontend/index.html. Si git normalizara los
+# finales de linea a CRLF en el checkout, cada hash registrado quedaria invalido
+# y los controles de contencion no podrian volver a correr.
+* text=auto eol=lf
+
+# Archivos que deben ser byte-exactos, sin ninguna conversion.
+frontend/index.html -text
+app/*.py -text
+docker-compose.yml -text
+
+# El navegador exige LF en el CSS y el JS embebidos.
+*.html -text
+*.css text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+
+# Los .png y .csv se tratan como binarios/texto crudo segun corresponda.
+*.png binary
+*.csv text eol=lf

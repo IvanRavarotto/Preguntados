@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-living-specs.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Checking write target..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(openspec list*)",
+      "Bash(openspec list --specs)",
+      "Bash(openspec show*)",
+      "Bash(openspec status*)",
+      "Bash(openspec validate*)",
+      "Bash(openspec doctor*)",
+      "Bash(openspec context*)",
+      "Bash(openspec schemas*)",
+      "Bash(openspec instructions*)",
+      "Bash(openspec new change*)",
+      "Bash(node scripts/sync-harness.mjs)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git fetch*)",
+      "Bash(git show*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Write(~/.ssh/**)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)"
+    ]
+  }
+}

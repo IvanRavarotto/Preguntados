@@ -1,0 +1,202 @@
+categoria,pregunta,opcion_a,opcion_b,opcion_c,opcion_d,respuesta_correcta
+arte,¿Quién pintó "La Gioconda"?,"Miguel Ángel","Rafael","Leonardo da Vinci","Caravaggio",C
+arte,¿En qué museo de París se exhibe la Gioconda?,"El Louvre","El Musée d'Orsay","El Centro Pompidou","El Trocadero",A
+arte,¿Quién esculpió el David de Florencia en mármol?,"Donatello","Miguel Ángel","Bernini","Cellini",B
+arte,¿Qué pintor español es autor de "Las Meninas"?,"Goya","El Greco","Velázquez","Murillo",C
+arte,¿Qué artista neerlandés se cortó una oreja?,"Rembrandt","Vermeer","Van Gogh","Bosch",C
+arte,¿Quién pintó el techo de la Capilla Sixtina?,"Leonardo da Vinci","Rafael","Miguel Ángel","Botticelli",C
+arte,¿A qué movimiento pertenecía Claude Monet?,"Cubismo","Impresionismo","Surrealismo","Barroco",B
+arte,¿Quién es el autor de "El grito"?,"Edvard Munch","Gustav Klimt","Paul Cézanne","Henri Matisse",A
+arte,¿En qué ciudad se encuentra el MoMA?,"Londres","París","Nueva York","Berlín",C
+arte,¿Quién pintó "La noche estrellada"?,"Claude Monet","Vincent van Gogh","Paul Gauguin","Edgar Degas",B
+arte,¿Qué escultor creó "El pensador"?,"Auguste Rodin","Miguel Ángel","Antonio Canova","Henry Moore",A
+arte,¿Con qué corriente artística se identifica a Salvador Dalí?,"Impresionismo","Cubismo","Surrealismo","Fauvismo",C
+arte,¿Quién pintó el "Guernica"?,"Joan Miró","Pablo Picasso","Francisco Goya","Salvador Dalí",B
+arte,¿Cuál es el país de origen de Frida Kahlo?,"España","Colombia","México","Argentina",C
+arte,¿Quién pintó "La última cena"?,"Miguel Ángel","Rafael","Leonardo da Vinci","Tintoretto",C
+arte,¿En qué ciudad se encuentra el Museo del Prado?,"Barcelona","Madrid","Sevilla","Valencia",B
+arte,¿Qué artista pop pintó latas de sopa Campbell?,"Roy Lichtenstein","Andy Warhol","Jasper Johns","Robert Rauschenberg",B
+arte,¿Quién diseñó la Sagrada Familia de Barcelona?,"Antoni Gaudí","Santiago Calatrava","Rafael Moneo","Josep Puig i Cadafalch",A
+arte,¿Qué pintor ruso es considerado padre de la abstracción?,"Malévich","Kandinsky","Chagall","Repin",B
+arte,¿Quién pintó "Las señoritas de Avignon"?,"Henri Matisse","Pablo Picasso","Georges Braque","Paul Cézanne",B
+arte,¿Qué artista renacentista pintó "El nacimiento de Venus"?,"Botticelli","Masaccio","Uccello","Filippo Lippi",A
+arte,¿Quién es la autora del mural "Sueño de una tarde dominical en la Alameda"?,"Frida Kahlo","Diego Rivera","José Clemente Orozco","David Alfaro Siqueiros",B
+arte,¿Qué pintor holandés es famoso por "La ronda de noche"?,"Vermeer","Rembrandt","Frans Hals","Pieter Brueghel",B
+arte,¿Con qué técnica se asocia a Georges Seurat?,"Óleo","Acuarela","Puntillismo","Fresco",C
+arte,¿Quién pintó "La persistencia de la memoria" con relojes derretidos?,"René Magritte","Salvador Dalí","Joan Miró","Max Ernst",B
+arte,¿En qué país nació Joan Miró?,"Francia","Italia","España","Portugal",C
+arte,¿Qué arquitecto diseñó el Museo Guggenheim de Bilbao?,"Frank Gehry","Zaha Hadid","Rem Koolhaas","Norman Foster",A
+arte,¿Quién pintó el "Beso" y perteneció al modernismo austríaco?,"Egon Schiele","Gustav Klimt","Oskar Kokoschka","Alfred Kubin",B
+arte,¿Qué artista esculpió la Piedad del Vaticano?,"Donatello","Miguel Ángel","Verrocchio","Ghiberti",B
+arte,¿Quién es el autor de "El jardín de las delicias"?,"El Bosco","Brueghel","Memling","Van Eyck",A
+arte,¿Qué pintor fue famoso por sus autorretratos y se trasladó a Arlés?,"Paul Gauguin","Vincent van Gogh","Paul Cézanne","Henri de Toulouse-Lautrec",B
+arte,¿Con qué movimiento se identifica a Jackson Pollock?,"Expresionismo abstracto","Pop art","Minimalismo","Land art",A
+arte,¿Quién pintó "La gran ola de Kanagawa"?,"Hokusai","Hiroshige","Utamaro","Kuniyoshi",A
+geografia,¿Cuál es el río más largo del mundo?,"Amazonas","Nilo","Yangtsé","Misisipi",A
+geografia,¿Cuál es el desierto más grande del planeta?,"Gobi","Sahara","Kalahari","Antártida",D
+geografia,¿Cuál es el país más poblado del mundo?,"India","China","Estados Unidos","Indonesia",A
+geografia,¿En qué continente está el monte Everest?,"América","Asia","África","Europa",B
+geografia,¿Cuál es la capital de Australia?,"Sídney","Melbourne","Canberra","Perth",C
+geografia,¿Cuál es el océano más grande?,"Atlántico","Índico","Pacífico","Ártico",C
+geografia,¿Qué país tiene forma de bota?,"España","Grecia","Italia","Portugal",C
+geografia,¿Cuál es el país más grande del mundo por superficie?,"Canadá","China","Rusia","Estados Unidos",C
+geografia,¿Cuál es la capital de Japón?,"Kioto","Osaka","Tokio","Yokohama",C
+geografia,¿En qué país se encuentra el río Nilo?,"Egipto","Brasil","India","China",A
+geografia,¿Cuál es la cordillera más larga del mundo?,"Alpes","Himalaya","Andes","Rocosas",C
+geografia,¿Cuál es la capital de Canadá?,"Toronto","Ottawa","Vancouver","Montreal",B
+geografia,¿Qué océano baña las costas de Argentina?,"Pacífico","Atlántico","Índico","Glacial Ártico",B
+geografia,¿Cuál es el país con más habitantes de América Latina?,"México","Argentina","Colombia","Brasil",D
+geografia,¿Cuál es la capital de Alemania?,"Múnich","Berlín","Hamburgo","Fráncfort",B
+geografia,¿En qué continente está el desierto del Sáhara?,"Asia","Oceanía","África","América",C
+geografia,¿Cuál es el volcán más alto activo del mundo?,"Vesubio","Etna","Llaima","Ojos del Salado",D
+geografia,¿Cuál es la capital de China?,"Shanghái","Pekín","Cantón","Shenzhen",B
+geografia,¿Qué estrecho separa Europa de África?,"Bering","Gibraltar","Magallanes","Dover",B
+geografia,¿Cuál es el lago más profundo del mundo?,"Tanganica","Victoria","Baikal","Caspio",C
+geografia,¿Cuál es la capital de Brasil?,"Río de Janeiro","São Paulo","Brasilia","Salvador",C
+geografia,¿En qué país se encuentra la Gran Barrera de Coral?,"Filipinas","Australia","Indonesia","Tailandia",B
+geografia,¿Cuál es el idioma oficial más hablado por número de hablantes nativos?,"Inglés","Español","Mandarín","Hindi",C
+geografia,¿Cuál es la capital de Italia?,"Milán","Roma","Nápoles","Turín",B
+geografia,¿Qué país tienen la forma de un largo y angosto territorio al oeste de Sudamérica?,"Argentina","Chile","Perú","Venezuela",B
+geografia,¿Cuál es el punto más bajo de la Tierra en tierra firme?,"Mar Muerto","Gran Cañón","Valle de la Muerte","Lago Eyre",A
+geografia,¿Cuál es la capital de Turquía?,"Estambul","Ankara","Esmirna","Antalya",B
+geografia,¿En qué continente está el río Amazonas?,"África","Asia","Sudamérica","Oceanía",C
+geografia,¿Cuál es el segundo país más poblado del mundo?,"India","China","Estados Unidos","Pakistán",B
+geografia,¿Cuál es la capital de México?,"Guadalajara","Cancún","Ciudad de México","Monterrey",C
+geografia,¿Qué océano es el más pequeño del mundo?,"Índico","Atlántico","Ártico","Pacífico",C
+geografia,¿Cuál es la montaña más alta de África?,"Kilimanjaro","Kenya","Ruwenzori","Atlas",A
+geografia,¿Cuál es la capital de Francia?,"Lyon","Marsella","París","Burdeos",C
+geografia,¿En qué país se encuentra el río Yangtsé?,"India","China","Japón","Rusia",B
+deportes,¿Cuántos jugadores tiene un equipo de fútbol en el campo?,"9","10","11","12",C
+deportes,¿En qué país se jugó el primer Mundial de fútbol en 1930?,"Brasil","Uruguay","Argentina","Italia",B
+deportes,¿Cuánto dura un partido de fútbol reglamentario?,"80 minutos","90 minutos","100 minutos","120 minutos",B
+deportes,¿Quién es considerado el "Rey" del fútbol?,"Pelé","Maradona","Messi","Ronaldo Nazário",A
+deportes,¿Cuántas personas conforman un equipo de básquetbol en cancha?,"4","5","6","7",B
+deportes,¿Quién tiene el récord de 8 medallas de oro en una sola olimpiada de natación?,"Michael Phelps","Ian Thorpe","Mark Spitz","Usain Bolt",A
+deportes,¿En qué deporte se usa una "raqueta" y un "volante"?,"Tenis","Bádminton","Squash","Pádel",B
+deportes,¿Cuántos puntos vale un tiro libre en básquetbol?,"1","2","3","4",A
+deportes,¿Qué deporte se juega en Wimbledon?,"Golf","Natación","Tenis","Cricket",C
+deportes,¿Cuántas rondas tiene una pelea de boxeo profesional generalmente?,"8","10","12","15",C
+deportes,¿En qué país nació el fútbol moderno?,"Brasil","España","Inglaterra","Alemania",C
+deportes,¿Qué selección ganó el Mundial de fútbol 2022?,"Francia","Argentina","Brasil","Croacia",B
+deportes,¿Cuántos jugadores tiene un equipo de voleibol en cancha?,"4","5","6","7",C
+deportes,¿En qué deporte es famoso Rafael Nadal?,"Fútbol","Tenis","Golf","Baloncesto",B
+deportes,¿Cuántos kilómetros mide una maratón?,"21.1","35","42.195","50",C
+deportes,¿Qué selección ganó el Mundial femenino de fútbol 2023?,"Estados Unidos","Inglaterra","España","Japón",C
+deportes,¿En qué deporte se utiliza un "clay pigeon"?,"Tiro al plato","Tiro con arco","Dardos","Bolos",A
+deportes,¿Cuántos jugadores integran un equipo de rugby?,"11","13","15","17",C
+deportes,¿Qué país ganó el primer Mundial de baloncesto masculino?,"Estados Unidos","Argentina","Soviético","Brasil",C
+deportes,¿En qué deporte se utilizan "chándal" y "corredores" y se compite en la Fórmula 1?,"Automovilismo","Motociclismo","Ciclismo","Hípica",A
+deportes,¿Cuál es el país con más títulos de Copa Mundial de fútbol masculina?,"Alemania","Italia","Argentina","Brasil",D
+deportes,¿En qué año se celebraron los primeros Juegos Olímpicos modernos?,"1896","1900","1912","1920",A
+deportes,¿Qué evento del atletismo se llama "sprint"?,"Carrera de fondo","Carrera de velocidad","Salto largo","Lanzamiento",B
+deportes,¿Cuántos hoyos tiene una cancha de golf estándar?,"9","12","18","24",C
+deportes,¿En qué posición juega Maradona?,"Defensor","Delantero","Arquero","Mediocampista",D
+deportes,¿Qué equipo ganó la UEFA Champions League en 2024?,"Bayern Múnich","Real Madrid","Manchester City","Borussia Dortmund",C
+deportes,¿En qué deporte se anota llamando "¡Home run!"?,"Cricket","Softbol","Béisbol","Golf",C
+deportes,¿Cuántos jugadores tiene un equipo de handball?,"5","6","7","8",C
+deportes,¿Qué nadador gana más medallas de oro olímpicas de la historia?,"Mark Spitz","Michael Phelps","Katie Ledecky","Ian Thorpe",B
+deportes,¿Cuántas cuadras mide la pista de atletismo en un estadio olímpico?,"300 metros","400 metros","500 metros","1000 metros",B
+deportes,¿Qué país es conocido como la cuna del críquet?,"India","Australia","Inglaterra","Pakistán",C
+deportes,¿En qué deporte se utiliza el término "mate"?,"Rugby","Polo","Golf","Cricket",D
+deportes,¿Quién es conocido como el "Pulga" en el fútbol argentino?,"Maradona","Batistuta","Lionel Messi","Aguero",C
+entretenimiento,¿Qué serie presenta a Sheldon Cooper?,"Friends","The Big Bang Theory","How I Met Your Mother","Seinfeld",B
+entretenimiento,¿En qué película aparece el personaje Jack Sparrow?,"Piratas del Caribe","El Señor de los Anillos","La Momia","Gladiador",A
+entretenimiento,¿Quién interpretó a Batman en "El caballero de la noche"?,"Ben Affleck","Christian Bale","Robert Pattinson","Michael Keaton",B
+entretenimiento,¿Qué grupo musical cantaba "Bohemian Rhapsody"?,"The Beatles","Queen","The Rolling Stones","Pink Floyd",B
+entretenimiento,¿En qué serie los personajes viven en Central Perk?,"Friends","Seinfeld","Big Bang","The Office",A
+entretenimiento,¿Cuál es el nombre del mago de la saga "Harry Potter"?,"Ronald Weasley","Harry Potter","Neville Longbottom","Draco Malfoy",B
+entretenimiento,¿Qué película ganó el Óscar a mejor película en 2024?,"Barbie","Oppenheimer","Poor Things","Killers of the Flower Moon",B
+entretenimiento,¿En qué país transcurre "La casa de papel"?,"España","México","Argentina","Colombia",A
+entretenimiento,¿Qué actor interpretó a Iron Man?,"Chris Evans","Robert Downey Jr.","Chris Hemsworth","Mark Ruffalo",B
+entretenimiento,¿Qué canal emitió "Juego de tronos"?,"Netflix","HBO","Amazon Prime","Star+",B
+entretenimiento,¿Quién es el creador de Mickey Mouse?,"Walt Disney","Steven Spielberg","George Lucas","Tim Burton",A
+entretenimiento,¿Qué saga de películas sigue a un grupo de amigos en una cafetería?,"Seinfeld","Friends","How I Met","TBBT",B
+entretenimiento,¿Qué cantante es conocida como la "Reina del pop"?,"Beyoncé","Madonna","Lady Gaga","Rihanna",B
+entretenimiento,¿En qué película aparece "E.T."?,"E.T., el extraterrestre","Alien","Volver al futuro","Gremlins",A
+entretenimiento,¿Qué serie famosa tiene un episodio llamado "El episodio de la pecera"?,"Breaking Bad","Better Call Saul","Mad Men","The Sopranos",B
+entretenimiento,¿Qué videojuego tiene un personaje llamado Mario?,"Sonic","Super Mario Bros","Tetris","Fortnite",B
+entretenimiento,¿Quién interpretó a Jack en "Titanic"?,"Brad Pitt","Leonardo DiCaprio","Johnny Depp","Tom Cruise",B
+entretenimiento,¿Qué serie transcurre en un laboratorio y trata sobre química?,"CSI","House","Breaking Bad","The Wire",C
+entretenimiento,¿Cuál es el nombre del protagonista de "Los Simpson"?,"Bart","Homer","Marge","Ned Flanders",B
+entretenimiento,¿Qué película de Disney cuenta la historia de una princesa congelada?,"Frozen","Moana","Raya","Encanto",A
+entretenimiento,¿Qué artista tiene el álbum "Thriller"?,"Prince","Whitney Houston","Michael Jackson","Madonna",C
+entretenimiento,¿En qué serie aparece la cafetería "Central Perk"?,"Friends","How I Met Your Mother","Frasier","The Big Bang Theory",A
+entretenimiento,¿Qué película tiene la frase "Que la fuerza te acompañe"?,"Star Wars","Star Trek","Guardianes de la Galaxia","Dune",A
+entretenimiento,¿Quién escribió la saga de novelas "Canción de hielo y fuego"?,"J.R.R. Tolkien","George R.R. Martin","Stephen King","J.K. Rowling",B
+entretenimiento,¿Qué programa de televisión premió a millones con "ate"as de números?,"Quien quiere ser millonario","El precio justo","Cifras y letras","Pasapalabra",D
+entretenimiento,¿Qué grupo argentino cantó "Mariposa tecnicolor"?,"Soda Stereo","Los Redondos","La Renga","Divididos",A
+entretenimiento,¿Qué serie sigue a Walter White?,"Better Call Saul","Breaking Bad","Narcos","Ozark",B
+entretenimiento,¿En qué película aparece el personaje "Black Panther"?,"Avengers: Endgame","Captain Marvel","Black Panther","Doctor Strange",C
+entretenimiento,¿Qué cantante interpretó "Hips Don't Lie"?,"Rihanna","Shakira","Beyoncé","Jennifer Lopez",B
+entretenimiento,¿Qué película animada de Pixar trata de un chef rata?,"Ratatouille","Up","Toy Story","Finding Nemo",A
+entretenimiento,¿Qué serie trata sobre un director de publicidad en los años 60?,"Mad Men","The Sopranos","Mad Men","Boardwalk Empire",A
+entretenimiento,¿Quién canta "Despacito"?,"Daddy Yankee","Luis Fonsi","Maluma","J Balvin",B
+entretenimiento,"¿Qué juego de mesa se asocia a fichas rojas, amarillas, verdes y azules en una torre?","Jenga","Uno","Domino","Ajedrez",B
+entretenimiento,¿En qué serie hay un grupo llamado "Los Cazafantasmas"?,"Cazafantasmas","Stranger Things","Lost","Fringe",A
+ciencia,¿Cuál es el planeta más cercano al Sol?,"Venus","Mercurio","Marte","La Tierra",B
+ciencia,¿Qué gas necesitamos respirar para vivir?,"Dióxido de carbono","Oxígeno","Nitrógeno","Hidrógeno",B
+ciencia,¿Cuántos huesos tiene un adulto humano?,"106","206","306","406",B
+ciencia,¿Quién propuso la teoría de la relatividad?,"Newton","Einstein","Hawking","Bohr",B
+ciencia,¿Cuál es el elemento químico con símbolo "O"?,"Oro","Oxígeno","Osmio","Ozono",B
+ciencia,¿Cuál es la velocidad de la luz?,"300.000 km/s","150.000 km/s","1.000.000 km/s","100.000 km/s",A
+ciencia,¿Cuántos planetas tiene el Sistema Solar?,"7","8","9","10",B
+ciencia,¿Qué vitamina produce el cuerpo con la exposición al sol?,"Vitamina C","Vitamina D","Vitamina A","Vitamina B12",B
+ciencia,¿Cuál es el órgano más grande del cuerpo humano?,"Hígado","Cerebro","La piel","El intestino",C
+ciencia,¿Qué partícula atómica tiene carga negativa?,"Protón","Neutrón","Electrón","Fotón",C
+ciencia,¿Qué científico formuló las leyes del movimiento y la gravedad?,"Galileo","Newton","Copérnico","Kepler",B
+ciencia,¿Cuál es la unidad básica de la vida?,"Tejido","Órgano","Célula","Molécula",C
+ciencia,¿Qué país lidera la exploración del espacio con la NASA?,"China","Rusia","Estados Unidos","Europa",C
+ciencia,¿Cuál es el metal de símbolo "Au"?,"Plata","Oro","Aluminio","Cobre",B
+ciencia,¿Cuántos continentes existen en el planeta?,"5","6","7","8",C
+ciencia,¿Qué se mide con el termómetro?,"Presión","Temperatura","Volumen","Velocidad",B
+ciencia,¿Cuál es la molécula que transporta oxígeno en la sangre?,"Hemoglobina","Insulina","Adrenalina","Colágeno",A
+ciencia,¿Qué animal puede regenerar extremidades perdidas?,"Paloma","Salamandra","Perro","Águila",B
+ciencia,¿Cuál es el planeta más grande del Sistema Solar?,"Marte","Saturno","Júpiter","Neptuno",C
+ciencia,¿Qué proceso realizan las plantas para producir alimento?,"Respiración","Fotosíntesis","Transpiración","Fermentación",B
+ciencia,¿Cuántos dientes tiene un adulto humano en promedio?,"20","28","32","36",C
+ciencia,¿Qué rama de la ciencia estudia las estrellas?,"Geología","Astronomía","Oceanografía","Meteorología",B
+ciencia,¿Cuál es el átomo más simple?,"Oxígeno","Hidrógeno","Helio","Carbono",B
+ciencia,¿Qué capa de la Tierra protege de los rayos ultravioleta?,"Troposfera","Ozonosfera","Litosfera","Hidrosfera",B
+ciencia,¿Qué tipo de energía usa la eólica?,"Agua","Viento","Sol","Carbón",B
+ciencia,¿Qué instrumento sirve para ver el interior del cuerpo con imanes?,"Resonancia magnética","Rayos X","Ultrasonido","Electrocardiograma",A
+ciencia,¿Quién descubrió la penicilina?,"Fleming","Pasteur","Darwin","Curie",A
+ciencia,¿Cuál es el estado de la materia que no tiene forma ni volumen fijos?,"Sólido","Líquido","Gaseoso","Plasma",C
+ciencia,¿Qué sustancia es el agua?,"H2O","CO2","O2","NaCl",A
+ciencia,¿Cuántas patas tiene una araña?,"6","7","8","10",C
+ciencia,¿Qué planeta es conocido como el planeta rojo?,"Venus","Marte","Júpiter","Saturno",B
+ciencia,¿En qué escala se mide la intensidad de los terremotos?,"Richter","Celsius","Beaufort","Decibel",A
+ciencia,¿Qué parte del cerebro controla el equilibrio y la coordinación?,"Cerebro","Cerebelo","Hipocampo","Médula",B
+historia,¿En qué año llegó Cristóbal Colón a América?,"1492","1502","1512","1485",A
+historia,¿Quién fue el primer presidente de Argentina?,"San Martín","Bernardino Rivadavia","Cornelio Saavedra","Julio Argentino Roca",C
+historia,¿En qué guerra se enfrentaron los Aliados y las Potencias Centrales?,"Primera Guerra Mundial","Segunda Guerra Mundial","Guerra Fría","Guerra de Secesión",A
+historia,¿Cuál era el imperio con capital en Tenochtitlan?,"Inca","Azteca","Maya","Español",B
+historia,¿Quién era el faraón más joven conocido del Antiguo Egipto?,"Keops","Tutankamón","Ramsés II","Cleopatra",B
+historia,¿En qué año cayó el Muro de Berlín?,"1985","1989","1991","1993",B
+historia,¿Quién fue el líder de la Revolución Industrial en Inglaterra?,"No aplica","Adam Smith","James Watt","Winston Churchill",C
+historia,¿Quién fue el primer emperador romano?,"Julio César","Augusto","Nerón","Constantino",B
+historia,¿En qué año comenzó la Segunda Guerra Mundial?,"1935","1939","1941","1945",B
+historia,¿Qué civilización construyó Machu Picchu?,"Azteca","Maya","Inca","Olmeca",C
+historia,¿Quién pintó el romanticismo?,"No aplica","Franz Liszt","Napoleón Bonaparte","Beethoven",D
+historia,¿En qué país nació Napoleón?,"Italia","Francia","Córcega","España",C
+historia,¿Qué revolución ocurrió en 1789?,"Revolución Americana","Revolución Francesa","Revolución Industrial","Revolución Rusa",B
+historia,¿Quién fue el principal líder de la independencia de Estados Unidos?,"George Washington","Thomas Jefferson","Benjamin Franklin","John Adams",A
+historia,¿En qué año se lanzó el primer hombre a la Luna?,"1965","1969","1972","1976",B
+historia,¿Qué conflicto duró de 1914 a 1918?,"Segunda Guerra Mundial","Primera Guerra Mundial","Guerra Civil Española","Guerra de Corea",B
+historia,¿Quién gobernó la Unión Soviética durante la Segunda Guerra Mundial?,"Lenin","Stalin","Kruschev","Brezhnev",B
+historia,¿En qué año se firmó la Declaración de la Independencia de los Estados Unidos?,"1776","1783","1789","1800",A
+historia,¿Qué imperio gobernaba la península ibérica antes de la Reconquista?,"Romano","Visigodo","Musulmán","Franco",C
+historia,¿Quién fue el primer humano en viajar al espacio?,"Neil Armstrong","Yuri Gagarin","John Glenn","Buzz Aldrin",B
+historia,¿En qué siglo se descubrió el nuevo mundo?,"Siglo XIV","Siglo XV","Siglo XVI","Siglo XVII",B
+historia,¿Qué país era considerado el "imperio donde nunca se pone el sol"?,"Inglaterra","España","Portugal","Francia",B
+historia,¿Quién derrotó a Napoleón en Waterloo?,"Wellington","Blücher","Nelson","Marlborough",A
+historia,¿En qué año se fundó la Universidad de Bologna?,"1088","1215","1320","1450",A
+historia,¿Qué civilización utilizaba gladiadores en combates?,"Griega","Romana","Egipcia","Celta",B
+historia,¿Cuál fue el primer país en enviar una mujer al espacio?,"Estados Unidos","Unión Soviética","Francia","Japón",B
+historia,¿Qué emperador chino mandó construir la Gran Muralla?,"Qin Shi Huang","Mao Zedong","Sun Tzu","Confucio",A
+historia,¿En qué guerra se dividió Corea?,"Guerra de Vietnam","Guerra de Corea","Guerra Fría","Guerra Civil",B
+historia,¿Quién fue el primer presidente de los Estados Unidos?,"Abraham Lincoln","George Washington","Thomas Jefferson","Franklin Roosevelt",B
+historia,¿En qué año se proclamó la independencia de la Argentina?,"1810","1816","1820","1825",B
+historia,¿Qué imperio tenía como capital a Constantinopla?,"Bizantino","Romano","Otomano","Persa",C
+historia,¿Quién es el autor de "El capital"?,"Smith","Marx","Keynes","Ricardo",B
+historia,¿En qué año terminó la Segunda Guerra Mundial en Europa?,"1943","1944","1945","1946",C
+historia,¿Qué famoso rey de Francia construyó Versalles?,"Luis XIV","Luis XVI","Carlos IX","Napoleón III",A

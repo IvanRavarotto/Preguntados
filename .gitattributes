@@ -1,23 +1,41 @@
-# La cadena de verificacion de apply-neon-obsidian-theme (HASH-1) compara SHA-256
-# de archivos enteros, entre ellos frontend/index.html. Si git normalizara los
-# finales de linea a CRLF en el checkout, cada hash registrado quedaria invalido
-# y los controles de contencion no podrian volver a correr.
+# En .gitattributes GANA LA ULTIMA REGLA QUE COINCIDE. Por eso las reglas
+# genericas van primero y las especificas al final, al reves de lo intuitivo.
+
+# Por defecto: el repositorio guarda LF y el checkout tambien.
 * text=auto eol=lf
 
-# Archivos que deben ser byte-exactos, sin ninguna conversion.
+# Documentacion y config con formato de texto.
+*.md text eol=lf
+*.toml text eol=lf
+*.csv text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+
+# Binarios: nunca se tocan.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+# ---------------------------------------------------------------------
+# Archivos byte-exactos. -text significa "guarda y devuelve los bytes
+# tal cual, sin convertir finales de linea".
+#
+# La cadena de verificacion de apply-neon-obsidian-theme (HASH-1)
+# calcula SHA-256 sobre archivos enteros y los compara contra una tabla
+# registrada en test-plan.md. Si el checkout entregara CRLF donde el disco
+# tiene LF, cada hash registrado dejaria de coincidir y los controles de
+# contencion no podrian volver a correrse. Estas lineas van AL FINAL a
+# proposito: pisan los *.html, *.py y *.yml de arriba.
+# ---------------------------------------------------------------------
 frontend/index.html -text
 app/*.py -text
 docker-compose.yml -text
-
-# El navegador exige LF en el CSS y el JS embebidos.
-*.html -text
-*.css text eol=lf
-*.js text eol=lf
-*.md text eol=lf
-*.yaml text eol=lf
-*.yml text eol=lf
-*.toml text eol=lf
-
-# Los .png y .csv se tratan como binarios/texto crudo segun corresponda.
-*.png binary
-*.csv text eol=lf
+openspec/project.md -text
+openspec/config.yaml -text

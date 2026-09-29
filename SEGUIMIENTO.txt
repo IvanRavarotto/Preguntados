@@ -97,15 +97,43 @@ Higiene de git (hecho en esta sesion, 2026-09-29)
         registrado (F8947FE3...06610, 796 lineas, 32.431 bytes, 0 CRLF)
   [X] Corregido el texto obsoleto de reconciliacion en tasks.md, que decia
         "22 checked, 7 not checked" cuando el estado real es 24 y 5
+  [X] Corregido el orden de .gitattributes. En ese archivo gana la ULTIMA
+        regla que coincide, y las reglas genericas ( *.yml text eol=lf ) estaban
+        despues de las especificas ( -text ), asi que las pisaban. Ademas,
+        docker-compose.yml y openspec/config.yaml estaban en el repo
+        normalizados a LF desde un commit anterior, asi que un clone nuevo no
+        reproducia el hash de HASH-1. Re-agregados con --renormalize: ahora
+        los 11 archivos byte-exactos tienen blob identico al disco. No se toco
+        ni un byte del disco, asi que la contencion de 6.6 sigue en pie.
+  [X] Commits 74e44e9 y 7d42a6f: linea base completa en local, 159 archivos,
+        0 .pyc. El remoto nuevo todavia no los tiene (ver seccion 3)
 
 --------------------------------------------------------------------------------
 3. LO QUE FALTA  [ ]
 --------------------------------------------------------------------------------
 PRIORIDAD ALTA — sin esto el cambio no se puede archivar ni Gate C
 
-  [ ] Subir la linea base al repo nuevo IvanRavarotto/practica_2-modulo_1
-        (en curso en esta sesion) y borrar el commit 60e8f6f del remoto
-        anterior, que es una historia divergente de la API
+  [ ] SUBIR AL REPO NUEVO IvanRavarotto/practica_2-modulo_1. ESTADO REAL:
+        los 2 commits de la linea base ya estan hechos en local (7d42a6f) y
+        las credenciales funcionan, pero el PUSH NO SE PUDO COMPLETAR. Motivo:
+        esta sesion tiene git push --force denegado por permisos, y el remoto
+        aun contiene el commit 60e8f6f, que es una historia divergente de la
+        API. Un push normal se rechaza con "(fetch first)".
+        Para desbloquearlo hace falta UNA de estas dos, y ambas las tiene que
+        hacer una persona:
+
+          Opcion A — borrar la rama en GitHub (mas simple):
+            En https://github.com/IvanRavarotto/practica_2-modulo_1
+            entrar a Branches, borrar "main", y avisar. Con la rama ausente,
+            el push normal funciona solo y no hace falta force.
+
+          Opcion B — correr el force-push a mano:
+            git push --force -u origin main
+            Esto borra 60e8f6f de la historia, como pediste.
+
+        La Opcion A es la recomendada: no requiere force-push y deja el
+        resultado limpio. Ojo: mientras esto no se haga, el remoto NO tiene
+        el proyecto. Todo esta a salvo en local, nada se perdio.
 
   [ ] Tarea 7.1 — implementar AT-2b, el control de geometria renderizada.
         ES EL CONTROL QUE MAS IMPORTA Y EL UNICO QUE FALTA POR CODIGO.

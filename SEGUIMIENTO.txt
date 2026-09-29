@@ -5,9 +5,11 @@ Archivo de traspaso entre sesiones. Si se corta la sesión, seguí desde la
 seccion 5 ("COMO RETOMAR").
 
 Ultima actualizacion: 2026-09-29
-Estado general: cambio apply-neon-obsidian-theme con 24 de 29 tareas hechas.
-                 Todo el codigo esta en disco. Falta evidencia humana y un
-                 control de maquina. NO esta archivado todavia.
+Estado general: cambio apply-neon-obsidian-theme con 25 de 29 tareas hechas.
+                  Todo el codigo esta en disco. NO queda trabajo de codigo:
+                  faltan 4 pasos de navegador humano, 2 puertas y el archivado.
+                  El proyecto esta publicado en la rama "completo". NO esta
+                  archivado todavia.
 
 --------------------------------------------------------------------------------
 1. QUE ES EL PROYECTO
@@ -83,6 +85,45 @@ Cambio apply-neon-obsidian-theme (reescribe el tema visual)
         pickQuestion()) — se CONSERVO sectorUnderPointer a proposito, es el
         oraculo independiente del que dependen los controles
   [X] Tarea 7.3: 15 referencias de linea obsoletas en el delta corregidas
+  [X] Tarea 7.1: el control de geometria renderizada aterrizo en test-plan.md
+        como AT-7, junto a AT-6. Verificado HOY contra el archivo real:
+        6/6 en las 3 capas, en la ruta API y en la ruta FALLBACK, exit 0.
+        Los 2 controles negativos se vieron ROJOS, cada uno en su capa: A
+        (orden de labels del mockup) -> Layer 2 en 0/6, y B (stops
+        hardcodeados) -> Layer 1 en 0/6, con las otras dos capas en 6/6 y
+        exit no-cero. Cada mutante esta anclado a un string que tiene que
+        aparecer EXACTAMENTE una vez, para que una mutacion que no aplico
+        aborte en vez de reportar un verde vacio.
+  [X] Corregido un defecto REAL en SM-21 Capa 1, que no estaba registrado.
+        Comparaba el color pintado contra el esperado como STRINGS, pero
+        buildWheel pinta c.fill = toRgba(accent, 1), asi que el stop
+        computado es rgba(r,g,b,1) y hexToRgb da rgb(r,g,b). Mismo color,
+        dos strings distintos: el snippet reportaba FAIL en los 6 sectores
+        sobre una rueda CORRECTA. O sea que el guard mas importante del
+        cambio no se podia poner verde nunca. Ahora compara triplas RGB
+        parseadas con el alpha descartado. Re-verificado en las dos
+        direcciones: OK 6/6 sobre la rueda correcta, 6/6 FAIL con los
+        sectores en el orden del mockup, y el control de "expected 6
+        sector stops" sigue disparando con una rueda de un solo stop.
+
+HECHHO, Y CORREGIDO: dos premisas falsas que estaban en los artefactos
+  [X] La justificacion de la tarea 7.1 decia que SM-21 llamaba
+        ACCENT[c.name] y tiraba ReferenceError. FALSO: hay 0 ocurrencias de
+        ACCENT[ en todo test-plan.md. AT-6 hace bien la cosa — ata la
+        funcion a un nombre local y la llama: const ACCENT =
+        probe.getAccent(); y despues ACCENT(n). No habia ningun defecto de
+        identificador, y ningun fix de qa-manager que esperar. El defecto
+        que SI existia en SM-21 era el de rgba/rgb de arriba.
+  [!] Un FAIL de la pasada estatica NO era una regresion. El arnes que
+        reportaba 149 PASS / 1 FAIL es static-final.ps1, de las 23:19 del
+        25/9, ANTERIOR a que la tarea 1.2 moviera el borde del input. Afirma
+        que el input sin foco sigue en --stroke-strong, que es justo lo que
+        la delta revierte. El archivo real esta bien: --stroke-strong quedo
+        en 0.15 con sus 3 usuarios de siempre (.wheel, .q-player,
+        .feedback) y el input lee --stroke-input en 0.10. OJO: el arnes que
+        produjo el "56 de 56" que registra el plan YA NO EXISTE en disco, asi
+        que ese conteo no se puede reproducir hoy. Lo que se puede reproducir
+        es el 42/42 y el AT-7, ambos verdes y verificados.
 
 Higiene de git (hecho en esta sesion, 2026-09-29)
   [X] .gitignore escrito. ESTABA VACIO: sin el, __pycache__/*.pyc se sube a
@@ -113,45 +154,39 @@ Higiene de git (hecho en esta sesion, 2026-09-29)
 --------------------------------------------------------------------------------
 PRIORIDAD ALTA — sin esto el cambio no se puede archivar ni Gate C
 
-  [ ] SUBIR AL REPO NUEVO IvanRavarotto/practica_2-modulo_1. ESTADO REAL:
-        los 2 commits de la linea base ya estan hechos en local (7d42a6f) y
-        las credenciales funcionan, pero el PUSH NO SE PUDO COMPLETAR. Motivo:
-        esta sesion tiene git push --force denegado por permisos, y el remoto
-        aun contiene el commit 60e8f6f, que es una historia divergente de la
-        API. Un push normal se rechaza con "(fetch first)".
-        Para desbloquearlo hace falta UNA de estas dos, y ambas las tiene que
-        hacer una persona:
+  [X] PUBLICADO. Resuelto el 2026-09-29 subiendo el proyecto a la rama
+        "completo" del remoto nuevo, con un push NORMAL, sin force:
+            git push -u origin main:completo
+        El remoto quedo asi:
+            completo -> bc5e4b7  (el proyecto, 159 archivos)
+            main     -> 60e8f6f  (la historia vieja, intacta)
+        DECISION TOMADA POR LA PERSONA: dejar "completo" como esta. No se
+        borra main. Consecuencia que hay que tener presente: la rama DEFAULT
+        del repositorio sigue apuntando a main, asi que al abrir el repo en
+        GitHub por defecto se ve el commit viejo y no el proyecto. Para
+        entrar al proyecto hay que cambiar de rama a mano, o cambiar la
+        rama default en Settings -> Branches a "completo".
+        Por que no se pudo pisar main: main es la rama default, GitHub
+        rechaza borrarla, y el force-push esta denegado por permisos en esta
+        sesion. Si alguna vez se quiere main con el proyecto, el camino sin
+        force es: cambiar la default a "completo", borrar main, y despues
+        git push -u origin completo:main.
 
-          Opcion A — borrar la rama en GitHub (mas simple):
-            En https://github.com/IvanRavarotto/practica_2-modulo_1
-            entrar a Branches, borrar "main", y avisar. Con la rama ausente,
-            el push normal funciona solo y no hace falta force.
-
-          Opcion B — correr el force-push a mano:
-            git push --force -u origin main
-            Esto borra 60e8f6f de la historia, como pediste.
-
-        La Opcion A es la recomendada: no requiere force-push y deja el
-        resultado limpio. Ojo: mientras esto no se haga, el remoto NO tiene
-        el proyecto. Todo esta a salvo en local, nada se perdio.
-
-  [ ] Tarea 7.1 — implementar AT-2b, el control de geometria renderizada.
-        ES EL CONTROL QUE MAS IMPORTA Y EL UNICO QUE FALTA POR CODIGO.
-        Por que: el check de 42/42 NO detecta el defecto de "categoria
-        equivocada", y esta demostrado por mutacion. La funcion de rotacion y
-        un oraculo independiente leen el MISMO array categories, asi que el
-        orden del array se cancela en la comparacion. Con la rueda hardcodeada
-        del mockup el check sigue en 42/42 VERDE. Medido: la rueda real da 6
-        de 6 sectores bound, la del mockup da 0 de 6.
-        La especificacion completa esta en la nota de correccion de R4 del
-        delta (3 capas de aserciones, 1 adicion al stub, 2 controles
-        negativos, camino API y camino FALLBACK).
-
-  [ ] Arreglar el identificador de SM-21 en test-plan.md. Tal como esta
-        escrito llama ACCENT[c.name], pero la pagina exporta ACCENT_BY_NAME y
-        getAccent. El snippet tira ReferenceError antes de su primera
-        asercion, o sea que el control mas valioso del cambio no corre. Es
-        trabajo de qa-manager, no de dev.
+  [ ] LEVANTAR EL PROYECTO Y CORRER LOS SMOKE CHECKS HTTP. Estado: Docker
+        Desktop NO estaba corriendo, asi que no hay PostgreSQL y el servidor
+        no arranca (app/main.py crea las tablas en el startup). Todo lo que
+        no necesita base de datos ya se verifico hoy y esta en verde:
+        compileall limpio, app.main importa con 10 rutas, 42/42 y AT-7 6/6.
+        Falta, con la base de datos arriba:
+          docker compose up -d
+          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+          curl.exe -s http://localhost:8000/categories/stats
+            -> debe dar categorized=201, uncategorized=0
+          curl.exe -s http://localhost:8000/categories
+            -> los 6 nombres, en el orden arte, ciencia, deportes,
+               entretenimiento, geografia, historia
+        ESTO NO ES UN HALLAZGO, ES UN PASO: los smoke checks nunca se
+        corro en esta sesion y no se afirma que pasen.
 
 PRIORIDAD HUMANA — pasos de navegador, ninguno lo puede hacer un agente
 (declarados como NOT RUN en los artefactos, nunca como aprobados)
@@ -246,11 +281,15 @@ Informacion que se pierde si no se anota aca:
                  openspec doctor
   3. Estado:     openspec validate apply-neon-obsidian-theme --strict
   4. Reanudar por este orden:
-       a) 7.1  (unico trabajo de codigo que queda)
-       b) SM-21 fix del identificador
-       c) 6.3 6.4 6.5 6.7  (persona, en navegador)
+       a) Levantar Docker Desktop, docker compose up -d, arrancar Uvicorn y
+          correr los smoke checks HTTP de la seccion 3
+       b) 6.3 6.4 6.5 6.7  (persona, en navegador)
+       c) Pegar y correr SM-21 a mano en DevTools, que sigue siendo el unico
+          check que ve el pixel pintado y lo que nadie puede correr por vos
        d) Gate C
        e) openspec archive
+       NO queda trabajo de codigo. La 7.1 y el fix de SM-21 ya estan hechos
+       y verificados; no los vuelvas a buscar.
   5. Antes de tocar frontend/index.html, entendé esto:
 
      El archivo esta CONGELADO por evidencia, no por regla. La tarea 6.6

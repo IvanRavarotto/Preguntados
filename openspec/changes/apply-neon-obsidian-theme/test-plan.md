@@ -389,18 +389,25 @@ each `i`, the stop covering `[i*60, (i+1)*60)` must be the accent of `categories
 ```js
 // DevTools console, wheel screen, after /categories resolves.
 const bg = getComputedStyle(document.getElementById('wheel')).backgroundImage;
-// e.g. "conic-gradient(rgb(255, 208, 0) 0deg 60deg, rgb(0, 240, 255) 60deg 120deg, ...)"
+// e.g. "conic-gradient(rgba(255, 208, 0, 1) 0deg 60deg, rgba(0, 240, 255, 1) 60deg 120deg, ...)"
 const stops = [...bg.matchAll(/rgba?\([^)]+\)\s*(-?[\d.]+)deg\s*(-?[\d.]+)deg/g)]
   .map(m => ({ from: +m[1], to: +m[2], colour: m[0].match(/rgba?\([^)]+\)/)[0] }));
+// Compare the RGB TRIPLE, never the two strings. buildWheel paints `c.fill`, which is
+// toRgba(accent, 1), so a computed stop is rgba(r, g, b, 1) while hexToRgb yields rgb(r, g, b).
+// Same colour, two different strings: a string compare therefore reports 6 of 6 FAIL on a wheel
+// that is entirely correct, and the check can never be put green. Alpha is dropped on purpose,
+// because the sector fills are opaque by construction.
+const triple = css => css.match(/rgba?\(([^)]+)\)/)[1].split(',').map(Number).slice(0, 3);
 const hexToRgb = h => { const n = parseInt(h.slice(1), 16);
-  return `rgb(${(n>>16)&255}, ${(n>>8)&255}, ${n&255})`; };
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const bad = [];
 if (stops.length !== 6) { bad.push(`expected 6 sector stops, found ${stops.length}`); }
 else categories.forEach((c, i) => {
   const want = hexToRgb(getAccent(c.name));
   const hit  = stops.find(s => s.from <= i * 60 && s.to > i * 60);
-  if (!hit || hit.colour.replace(/\s/g, '') !== want.replace(/\s/g, '')) {
-    bad.push(`sector ${i} paints ${hit && hit.colour} but ${c.name} is ${want}`);
+  const got  = hit && triple(hit.colour);
+  if (!got || got[0] !== want[0] || got[1] !== want[1] || got[2] !== want[2]) {
+    bad.push(`sector ${i} paints ${hit && hit.colour} but ${c.name} is rgb(${want.join(', ')})`);
   }
 });
 console.log(bad.length ? { FAIL: bad } : { OK: '6/6 sectors bind geometry to name' });
@@ -408,6 +415,14 @@ console.log(bad.length ? { FAIL: bad } : { OK: '6/6 sectors bind geometry to nam
 
 The control is the first line: `stops.length !== 6` is a failure, not a skip. A wheel with no
 readable stops must not report success.
+
+This snippet was rewritten. The first version compared the stop and the expected colour as
+normalised strings, which is the bug described above; run against the wheel `buildWheel` really
+produces it printed `FAIL` for all six sectors, with every pair differing only by the `, 1` alpha
+and the `rgba`/`rgb` prefix. Corrected, it reports `OK 6/6` on the same wheel, still reports
+6 of 6 `FAIL` when the sectors are painted in the mockup's order, and still fires the
+`expected 6 sector stops` control on a wheel with one readable stop. A guard that cannot go green
+is indistinguishable from a guard that always goes red, and neither is a guard.
 
 **Layer 2, rendered label order.** This is the layer that fires on a pasted SVG, where there is no
 gradient to read and the geometry lives in hardcoded `<path>` elements.
@@ -463,6 +478,98 @@ Limitation to record: `GET /categories` returns a static Python list (`app/categ
 a seventh category cannot be served. It can only be simulated through the lookup, which is why this
 test calls the function rather than driving the browser.
 
+### AT-7: the rendered-geometry binding, as a machine check
+
+Covers **R4 / S7** `[IMPL] [PRESERVE]`. This is the machine form of SM-21, and it exists because SM-21
+needed a human with a DevTools console. It reads the same three layers through a `node:vm` sandbox
+carrying the tasks.md 1.4 element stub, plus one addition: a **recording** element, so the gradient
+the code actually assigns and the label nodes it actually creates can be read back. It drives the
+**API path and the FALLBACK path** separately, because a check that only ever sees one of them is
+half a check.
+
+Three layers, each binding one rendered thing to `categories[i]`:
+
+| Layer | Reads | Binds to |
+|---|---|---|
+| 1 | the `conic-gradient` stop painted over sector `i` | `getAccent(categories[i].name)` |
+| 2 | the centre angle and the text of label `i` | `categories[i].label` |
+| 3 | the `transform` of divider `i` | the index `i` |
+
+```
+node at2b-probe.js frontend\index.html categories.json
+```
+
+Exit **0** only when all three layers read 6/6 on **both** paths. Against the shipped file:
+
+```
+AT-2b rendered-geometry binding  file=frontend/index.html
+mode=both (API payload, then FALLBACK)  negativeControl=false
+--- API path (GET /categories payload) ---
+  CONTROL: cats=6 dividers=6 labels=6 stops=6
+  CONTROL: non-empty first — PASSED
+  Layer 1  gradient stop -> accent of categories[i]: 6/6
+  Layer 2  label centre and text -> categories[i]: 6/6
+  Layer 3  divider transform -> index i: 6/6
+  RESULT: 6/6 on all three layers — PASS
+--- FALLBACK path (fetch rejects) ---
+  CONTROL: cats=6 dividers=6 labels=6 stops=6
+  CONTROL: non-empty first — PASSED
+  Layer 1  gradient stop -> accent of categories[i]: 6/6
+  Layer 2  label centre and text -> categories[i]: 6/6
+  Layer 3  divider transform -> index i: 6/6
+  RESULT: 6/6 on all three layers — PASS
+process exitCode = 0
+```
+
+The probe deliberately exports neither the geometry helpers nor the selection maths, only
+`getCategories` and `getAccent`. The harness recomputes the intended geometry from the written rule
+instead of calling the function under test, so reusing the implementation cannot make the check
+circular. Not exporting them is stronger than promising not to call them.
+
+**Negative controls, both observed red.** Two mutants, each anchored to a string that must match
+**exactly once** so a mutation that never applied aborts instead of reporting a vacuous pass, and
+each expected to fail on **its own layer only** — a mutant that takes down all three layers would
+not localise the defect.
+
+| Mutant | Change | Layer expected red | Other two layers | Exit |
+|---|---|---|---|---|
+| A | labels rendered in the mockup's hardcoded order | 2 at **0/6** | 6/6, 6/6 | non-zero |
+| B | gradient stops hardcoded in the mockup's order | 1 at **0/6** | 6/6, 6/6 | non-zero |
+
+```
+=== negative control A: labels rendered in the mockup's hardcoded order ===
+  anchor 'buildWheel' occurrences = 1 (exactly 1 required)
+  anchor 'label loop'  occurrences = 1 (exactly 1 required)
+  [FAIL] L2 label 0: label reads "Historia", categories[0].label is "Arte y Cultura"
+  ... all six sectors ...
+  [FAIL] Layer 2 0/6
+  Layer 1 6/6   Layer 3 6/6
+  RESULT: ASSERTION FAILED
+  node exit=1 (non-zero required)
+  [PASS] A: Layer 2 at 0/6, other two layers still 6/6, exit non-zero
+
+=== negative control B: gradient stops hardcoded in the mockup's order ===
+  anchor 'buildWheel'  occurrences = 1 (exactly 1 required)
+  anchor 'gradient line' occurrences = 1 (exactly 1 required)
+  [FAIL] L1 sector 0: painted rgba(255,208,0) a=1, arte is #FF2A6D / rgb(255,42,109)
+  ... all six sectors ...
+  [FAIL] Layer 1 0/6
+  Layer 2 6/6   Layer 3 6/6
+  RESULT: ASSERTION FAILED
+  node exit=1 (non-zero required)
+  [PASS] B: Layer 1 at 0/6, other two layers still 6/6, exit non-zero
+
+AT-2b NEGATIVE CONTROLS: both mutants observed red, each on its own layer - PASS
+```
+
+Note that B's output reports the painted colour as `rgba(..., a=1)` against an expected
+`#FF2A6D / rgb(...)`: the probe compares parsed RGB triples, which is exactly the mistake the
+SM-21 Layer 1 snippet above used to make.
+
+Limitation to record: this reads the DOM the script **builds**, not the DOM a browser **paints**.
+It cannot see a real `conic-gradient` rasterise, nor font metrics, nor a scrollbar. That residue
+belongs to SM-21 and DP-7, not to this check.
+
 ## 5. The failure mode this plan exists to catch
 
 **A wrong-category bug that no screenshot can see.**
@@ -477,15 +584,20 @@ array (`:472-479`), and selects with its own formula at `:511`. Pasting that mar
 array-indexed selection makes the game name one category and load another's questions, on every spin,
 with nothing in a screenshot to reveal it.
 
-Three checks close it, of deliberately different kinds so one failure is not three:
+Four checks close it, of deliberately different kinds so no single failure stands in for the rest:
 
 | Check | Kind | What it sees |
 |---|---|---|
 | AT-2 | Machine, M2, pure, 42 pairs | The rotation maths, given a derived wheel |
-| SM-21 | Scripted-manual, rendered DOM, 6 sectors | Whether the wheel is derived at all |
+| AT-7 | Machine, built DOM in a vm, 6 sectors | Whether the wheel is derived at all |
+| SM-21 | Scripted-manual, painted DOM, 6 sectors | The same question, read by a human |
 | DP-7 | Human, end to end | Whether the chip on the question screen matches the sector under the pointer |
 
-SM-21 is the one that fires on the defect. Section 12 explains why AT-2 alone would not.
+AT-7 and SM-21 ask the same question of the same three layers; they differ in who answers it. AT-7
+answers without a human and therefore runs in CI-shaped conditions, and it is the one that can be
+given a mutation. SM-21 answers against a real browser paint, which is the only place the gradient
+actually rasterises, and it is the one that survives a human pasting the wrong markup at all. SM-21
+is the one that fires on the defect. Section 12 explains why AT-2 alone would not.
 
 ## 6. Requirement-to-test map
 
@@ -525,7 +637,7 @@ SM-18.
 
 | Scenario | Tag | Tests |
 |---|---|---|
-| S7 The named category, the sector under the pointer, and the requested category are the same | `[IMPL]` `[PRESERVE]` | AT-2, SM-21, DP-7 |
+| S7 The named category, the sector under the pointer, and the requested category are the same | `[IMPL]` `[PRESERVE]` | AT-2, AT-7, SM-21, DP-7 |
 | S8 An unavailable category request still yields a playable wheel | `[PRESERVE]` `[IMPL]` | AT-3, MT-8 |
 | S9 An unavailable question request does not crash the page | `[PRESERVE]` `[IMPL]` | MT-9 |
 | S10 The wheel settles with the pointer over the selected sector | `[DESIGN]` `[IMPL]` | SM-8, MT-2 |
@@ -1629,14 +1741,17 @@ screenshot review cannot do this, which is why it is written as an instruction t
 ### Exit, before Gate C
 
 1. Both automated families are green: M1 (`node --check`) exits 0, and every M2 case (AT-2, AT-3,
-   AT-4, AT-6) passes, with every positive control recorded as run.
-2. SM-21 has been pasted and run, and its verdict recorded. It is not optional, and it is not a
+   AT-4, AT-6, AT-7) passes, with every positive control recorded as run.
+2. AT-7's two negative controls have been run and each observed red on its own layer, with the other
+   two layers still 6/6 and the process exit non-zero. A negative control that was written but not
+   run is not evidence that the check can fail.
+3. SM-21 has been pasted and run, and its verdict recorded. It is not optional, and it is not a
    substitute for M2.
-3. Each of the 23 scenarios has at least one recorded pass.
-4. Every SM, MT, DP, and HASH case executed with a recorded result.
-5. Every negative assertion paired with its control, and the controls run rather than assumed.
-6. Anything not run is named as not run, with a reason.
-7. The three rewritten cases carry their bars: SM-5 reads `inkIsCategoryDerived: true` and
+4. Each of the 23 scenarios has at least one recorded pass.
+5. Every SM, MT, DP, and HASH case executed with a recorded result.
+6. Every negative assertion paired with its control, and the controls run rather than assumed.
+7. Anything not run is named as not run, with a reason.
+8. The three rewritten cases carry their bars: SM-5 reads `inkIsCategoryDerived: true` and
    `allFillIsDeclaredInk: true` - not `allMeet3to1` alone, which the palette cannot enforce on its
    own, per Finding 8 - with `minimumRatio` at or above `3`; SM-16 reads `oneFamily: true` and
    `differsFromBody: true` on each of the three panels at the 4 / 2 / 1 minima, and `countedDown:
@@ -1651,9 +1766,10 @@ The change passes when both automated families are green, SM-21 has been run, al
 a recorded pass, and nothing is left unrecorded. There is no partial pass and no numeric threshold,
 because no coverage bar exists in this project to measure against. The numeric bars the delta itself
 names are exact, and each is stated as a count rather than an impression: `node --check` exits 0; 42
-of 42 rotation pairs agree; SM-21 binds 6 of 6 sectors; SM-3 holds 0 of 10 `9999px` sites outside
-the closed set and 4 of 4 exact mappings; and SM-18 contains 6 of 6 label boxes inside the wheel's
-bounding rectangle at both `320px` and `639px`.
+of 42 rotation pairs agree; AT-7 reads 6 of 6 on each of its three layers on both the API and the
+FALLBACK path, and its two mutants read 0 of 6 on one layer apiece; SM-21 binds 6 of 6 sectors; SM-3
+holds 0 of 10 `9999px` sites outside the closed set and 4 of 4 exact mappings; and SM-18 contains 6 of
+6 label boxes inside the wheel's bounding rectangle at both `320px` and `639px`.
 
 ## 10. What is not run, and the weak spots
 

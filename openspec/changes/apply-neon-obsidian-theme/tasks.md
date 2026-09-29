@@ -816,24 +816,43 @@ reversible in memory, and reversing all of them reproduces the frozen bytes exac
 "this change touched nothing but the restyle" stays auditable rather than merely asserted. 7.3 edits
 only the delta's stale citations.
 
-- [ ] 7.1 **Land `AT-2b`, the rendered-geometry machine check, in `test-plan.md` beside `AT-2`.** Owner:
-      `dev`. This is the M1 amendment, and it exists because **the guard R4 relied on was proved by
-      mutation not to guard it**: hardcoding the sector-label order, and separately hardcoding the
-      gradient stops in that order, each leave the 42-pair check at **42/42 PASS** while the rendered
-      binding drops to **0 of 6**. The full specification — the one stub addition, the three
-      assertion layers, the independent-arithmetic rule, the two negative controls, and the explicit
-      statement of what a DOM stub cannot observe — is in the delta's R4 correction note and is not
-      restated here; this task points at it rather than forking it, so the two cannot drift.
-      **Verify**: `node -e` against the shipped file reports `cats=6 stops=6 dividers=6 labels=6` and
-      **6/6** on each of the three layers, on **both** the `/categories` path and the rejecting-`fetch`
-      `FALLBACK` path; the hardcoded-label-order control exits non-zero reporting `Layer 2: 0/6`; the
-      hardcoded-stop-order control exits non-zero reporting `Layer 1: 0/6`; and a control that empties
-      the wheel reports `CONTROL FAILED` and exits non-zero rather than passing on an empty set.
-      **Why this is not SM-21**: `SM-21` as written calls `ACCENT[c.name]`, and the page exports no
-      `ACCENT` — it exports `ACCENT_BY_NAME` and `getAccent` — so that snippet throws
-      `ReferenceError` before its first assertion. `qa-manager` owns that identifier fix. `AT-2b`
-      reads rendered geometry under a stub; `SM-21` reads it in a real browser and remains the only
-      long-lived check, which is why both stay rather than one absorbing the other.
+- [x] 7.1 **Land the rendered-geometry machine check, in `test-plan.md` beside `AT-2`.** Owner: `dev`.
+      Landed as **`AT-7`**, immediately after `AT-6`, and named for its siblings in the `AT-` family
+      rather than as the draft's `AT-2b`: the family runs AT-1 to AT-4 and AT-6, and an `AT-2b`
+      suffix would have implied an AT-5 that does not exist. It exists because **the guard R4 relied
+      on was proved by mutation not to guard it**: hardcoding the sector-label order, and separately
+      hardcoding the gradient stops in that order, each leave the 42-pair check at **42/42 PASS** while
+      the rendered binding drops to **0 of 6**. The full specification — the one stub addition, the
+      three assertion layers, the independent-arithmetic rule, the two negative controls, and the
+      explicit statement of what a DOM stub cannot observe — is in the delta's R4 correction note and
+      is not restated here; this task points at it rather than forking it, so the two cannot drift.
+      **Verified, re-run against the shipped file**: `cats=6 dividers=6 labels=6 stops=6` and **6/6** on
+      each of the three layers, on **both** the `/categories` path and the rejecting-`fetch` `FALLBACK`
+      path, process exit **0**. Negative control A, the hardcoded label order, exits **1** reporting
+      `Layer 2 0/6` with layers 1 and 3 still 6/6. Negative control B, the hardcoded stop order, exits
+      **1** reporting `Layer 1 0/6` with layers 2 and 3 still 6/6. Each mutant is anchored to a string
+      that must match exactly once, so a mutation that never applied aborts rather than reporting a
+      vacuous pass.
+      **Why this is not SM-21**: `AT-7` reads rendered geometry under a stub and needs no human;
+      `SM-21` reads it in a real browser and remains the only long-lived check, which is why both stay
+      rather than one absorbing the other. `AT-7` is mapped to S7 alongside AT-2, SM-21 and DP-7, and
+      its two negative controls are now an explicit exit criterion.
+      **Correction to the draft rationale, which was wrong.** It claimed `SM-21` as written calls
+      `ACCENT[c.name]` and throws `ReferenceError` before its first assertion. It does not: there are
+      **0** occurrences of `ACCENT[` anywhere in `test-plan.md`. AT-6 binds the function to a local
+      name and calls it — `const ACCENT = probe.getAccent();` then `ACCENT(n)` — which is correct.
+      There was no identifier defect and no `qa-manager` fix to own.
+      **The real `SM-21` defect, found and fixed in this task**, is different and was not previously
+      recorded. Layer 1 compared the painted stop against the expected colour as normalised **strings**,
+      but `buildWheel` paints `c.fill = toRgba(accent, 1)`, so a computed stop is `rgba(r, g, b, 1)`
+      while `hexToRgb` yields `rgb(r, g, b)`. Same colour, two different strings. Run against the wheel
+      the code really produces, the snippet printed `FAIL` for **all six** sectors, each differing only
+      by the `, 1` alpha and the `rgba`/`rgb` prefix: the check could never be put green, and a guard
+      that cannot go green is indistinguishable from one that always goes red. It now compares parsed
+      RGB triples with the alpha dropped, and was re-verified in both directions: `OK 6/6` on the
+      correct wheel, still 6 of 6 `FAIL` when the sectors are painted in the mockup's order, and the
+      `expected 6 sector stops` readability control still fires on a one-stop wheel. Both `SM-21`
+      snippets were re-extracted from this file and re-checked with `node --check`, exit 0.
 
 - [x] 7.2 **Dead code: `soft:`, `currentQuestion`, and the `pickQuestion()` pass-through.** Owner:
       `dev`, in a **new** change — deliberately not this one, because the byte-freeze recorded at 6.6

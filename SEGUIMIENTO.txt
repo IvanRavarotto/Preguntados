@@ -298,6 +298,21 @@ Informacion que se pierde si no se anota aca:
   3. Estado:     openspec validate apply-neon-obsidian-theme --strict
   4. Reanudar por este orden:
        a) 6.3 6.4 6.5 6.7  (persona, en navegador). Es lo UNICO que queda.
+          - 6.3: Ctrl+F5 en http://localhost:8000/ (con el servidor arriba).
+                GET / no trae cache-control, por eso es necesario.
+          - 6.4: partida completa hasta que alguien llegue a 10 puntos. Leer en
+                voz alta: el sector bajo el puntero y el chip de categoria, y
+                confirmar que coinciden con el tema cargado.
+          - 6.5: panel de red abierto desde la pantalla de nombres a la de
+                ganador. Deben verse solo /, /categories y
+                /questions/category/{nombre}?limit=200. Con la API apagada, la
+                rueda debe seguir renderizando los 6 sectores de respaldo sin
+                romperse.
+          - 6.7: revision visual frente a stitch/screen.png (unica
+                representacion del diseno; ningun agente lee imagenes). El
+                hash del frontend sigue congelado hoy (F8947FE3...06610); si
+                hay que ajustar algo visual, hay que registrar el nuevo hash y
+                actualizar la contencion.
        b) Pegar y correr SM-21 a mano en DevTools, que sigue siendo el unico
           check que ve el pixel pintado y lo que nadie puede correr por vos
        c) Gate C

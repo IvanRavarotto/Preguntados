@@ -172,21 +172,37 @@ PRIORIDAD ALTA — sin esto el cambio no se puede archivar ni Gate C
         force es: cambiar la default a "completo", borrar main, y despues
         git push -u origin completo:main.
 
-  [ ] LEVANTAR EL PROYECTO Y CORRER LOS SMOKE CHECKS HTTP. Estado: Docker
-        Desktop NO estaba corriendo, asi que no hay PostgreSQL y el servidor
-        no arranca (app/main.py crea las tablas en el startup). Todo lo que
-        no necesita base de datos ya se verifico hoy y esta en verde:
-        compileall limpio, app.main importa con 10 rutas, 42/42 y AT-7 6/6.
-        Falta, con la base de datos arriba:
-          docker compose up -d
-          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
-          curl.exe -s http://localhost:8000/categories/stats
-            -> debe dar categorized=201, uncategorized=0
-          curl.exe -s http://localhost:8000/categories
-            -> los 6 nombres, en el orden arte, ciencia, deportes,
-               entretenimiento, geografia, historia
-        ESTO NO ES UN HALLAZGO, ES UN PASO: los smoke checks nunca se
-        corro en esta sesion y no se afirma que pasen.
+  [X] LEVANTADO Y VERIFICADO CON BASE DE DATOS. Hecho el 2026-09-29.
+        docker compose up -d  -> contenedor arriba, pg_isready acepta
+        conexiones. Datos presentes: 201 questions, 201 categorizations.
+        Uvicorn arranca y el startup completa, o sea que create_all conecto
+        bien. Smoke checks HTTP, todos PASS:
+          GET /categories/stats      200, categorized=201, uncategorized=0,
+                                     automatic=27, manual=174, y el reparto
+                                     historia 89, entretenimiento 57,
+                                     geografia 24, deportes 17, arte 8,
+                                     ciencia 6
+          GET /categories            200, las 6 en el orden arte, ciencia,
+                                     deportes, entretenimiento, geografia,
+                                     historia — el mismo orden que consume la
+                                     rueda
+          GET /questions/category/arte?limit=200   200, 8 preguntas
+          GET /questions/1            200, trae question, option_a..d,
+                                     answer, id
+          GET /docs                   200, text/html
+          GET /                        200, text/html
+        EVIDENCIA MAS FUERTE DE ESTA RONDA: el SHA-256 de los bytes que
+        sirve GET / es F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27
+        D4296806610, o sea IDENTICO al de disco y al hash CONGELADO de la
+        tarea 6.6. El servidor esta entregando exactamente el archivo sobre
+        el que se.compute la prueba de contencion, no una version vieja.
+        Tambien se confirmo que la respuesta NO trae cache-control, que es
+        la razon concreta de que la 6.3 pida Ctrl+F5.
+        Y un dato que faltaba: AT-7 se corroTAMBIEN contra la respuesta
+        real de GET /categories, no solo contra el fixture. 6/6 en las 3
+        capas, ruta API y ruta FALLBACK, exit 0. La forma real de la
+        respuesta es una lista de 6 objetos con name, label y description
+        (no trae fill ni on; la pagina los deriva con getAccent).
 
 PRIORIDAD HUMANA — pasos de navegador, ninguno lo puede hacer un agente
 (declarados como NOT RUN en los artefactos, nunca como aprobados)
@@ -281,15 +297,14 @@ Informacion que se pierde si no se anota aca:
                  openspec doctor
   3. Estado:     openspec validate apply-neon-obsidian-theme --strict
   4. Reanudar por este orden:
-       a) Levantar Docker Desktop, docker compose up -d, arrancar Uvicorn y
-          correr los smoke checks HTTP de la seccion 3
-       b) 6.3 6.4 6.5 6.7  (persona, en navegador)
-       c) Pegar y correr SM-21 a mano en DevTools, que sigue siendo el unico
+       a) 6.3 6.4 6.5 6.7  (persona, en navegador). Es lo UNICO que queda.
+       b) Pegar y correr SM-21 a mano en DevTools, que sigue siendo el unico
           check que ve el pixel pintado y lo que nadie puede correr por vos
-       d) Gate C
-       e) openspec archive
-       NO queda trabajo de codigo. La 7.1 y el fix de SM-21 ya estan hechos
-       y verificados; no los vuelvas a buscar.
+       c) Gate C
+       d) openspec archive
+       NO queda trabajo de codigo, y NO queda trabajo de maquina: la 7.1, el
+       fix de SM-21, el 42/42, el AT-7 y los smoke checks HTTP ya estan
+       hechos y verdes. No los vuelvas a buscar.
   5. Antes de tocar frontend/index.html, entendé esto:
 
      El archivo esta CONGELADO por evidencia, no por regla. La tarea 6.6
@@ -313,10 +328,28 @@ Informacion que se pierde si no se anota aca:
        Comprobacion     curl.exe -s http://localhost:8000/categories/stats
                         (debe dar categorized=201, uncategorized=0)
 
-  7. Recordatorio de PowerShell en esta maquina: la ruta del proyecto tiene
-     acentos y corchetes, y Get-FileHash / Get-Content con ruta relativa
-     FALLAN porque PowerShell la resuelve mal. Usa python para leer bytes y
-     calcular hashes, o git, que heredan el CWD real del proceso.
+   7. Recordatorio de PowerShell en esta maquina: la ruta del proyecto tiene
+      acentos y corchetes, y Get-FileHash / Get-Content con ruta relativa
+      FALLAN porque PowerShell la resuelve mal. Usa python para leer bytes y
+      calcular hashes, o git, que heredan el CWD real del proceso.
+
+   8. TRAMPA AL ARRANCAR EL SERVIDOR, ya la perdi varias veces:
+      Start-Process falla con "la ruta de acceso comodin [...] no se
+      resolvio en un archivo". No es la ruta: son los CORCHETES de
+      "[01] - Practica..." que PowerShell interpreta como comodin al
+      resolver el CWD, y Start-Process no tiene -LiteralPath. Tambien
+      falla con -WorkingDirectory, que es lo primero que uno prueba.
+      Y Set-Location con ruta relativa tampoco, ni $env:TEMP en su forma
+      corta C:\Users\IVN~1\ (esa forma corta no resuelve con -LiteralPath).
+      La salida limpia: lanzar desde Python, que maneja unicode nativo.
+      El script esta en %TEMP%\opencode\launch-uvicorn.py y hace glob del
+      python.exe del venv bajo LOCALAPPDATA, con lo que ni siquiera hay que
+      hardcodear el acento. Ademas, poetry escribe la ruta del venv con su
+      propia codificacion y PowerShell la vuelve a corromper al capturarla,
+      asi que la ruta del venv tambien hay que obtenerla por glob y no por
+      "poetry env info --path".
+      Para leer una ruta con acentos desde PowerShell, anteponer
+      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8.
 
 ================================================================================
 Leyenda:  [X] hecho   [ ] pendiente   [!] riesgo abierto

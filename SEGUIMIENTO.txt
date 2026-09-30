@@ -8,8 +8,15 @@ Ultima actualizacion: 2026-09-29
 Estado general: cambio apply-neon-obsidian-theme con 25 de 29 tareas hechas.
                   Todo el codigo esta en disco. NO queda trabajo de codigo:
                   faltan 4 pasos de navegador humano, 2 puertas y el archivado.
-                  El proyecto esta publicado en la rama "completo". NO esta
-                  archivado todavia.
+                  Publicado en https://github.com/IvanRavarotto/Preguntados
+                  rama main. NO esta archivado todavia.
+
+  OJO - PENDIENTE QUE NO SE RESUELVIO EN ESTA SESION (ver seccion 3):
+  el usuario reporto que (a) las letras A B C D cambian de posicion en cada
+  pregunta y (b) los nombres de las categorias se dan vuelta cuando gira la
+  ruleta. NO SE TOCO frontend/index.html. El hash sigue congelado en
+  F8947FE3...06610. Queda pendiente que se decida si se arregla y con que
+  criterio.
 
 --------------------------------------------------------------------------------
 1. QUE ES EL PROYECTO
@@ -114,6 +121,38 @@ HECHHO, Y CORREGIDO: dos premisas falsas que estaban en los artefactos
         probe.getAccent(); y despues ACCENT(n). No habia ningun defecto de
         identificador, y ningun fix de qa-manager que esperar. El defecto
         que SI existia en SM-21 era el de rgba/rgb de arriba.
+  [!] PENDIENTE SIN RESOLVER - pedido del usuario al final de la sesion, NO
+      implementado. El usuario vio en el juego dos cosas:
+        (a) "las ubicaciones de A B C D cambian de posicion cada vez que se
+            cambia de tematica"
+        (b) "los nombres de las categorias quedan dados vuelta a medida que
+            gira la ruleta"
+      Diagnostico de lo que se pudo leer del codigo, SIN tocar el archivo:
+        (b) Los labels se colocan con
+              transform: translate(-50%,-50%) rotate(--a) translate(0,--seg-r)
+                         rotate(calc(-1 * --a))
+            Es decir, cada label se auto-cancela su propia rotacion para
+            quedar vertical respecto de la pagina. El problema es que el
+            padre #wheel SI rota (wheelRotation) en cada spin, asi que los
+            labels giran con el. La contrarrotacion anula el angulo del
+            sector, no el de la rueda. Para que queden siempre legibles hay
+            que restar tambien la rotacion vigente de la rueda al angulo de
+            cada label (o aplicar la contrarrotacion en el contenedor del
+            texto y no en el positioning).
+        (a) En renderQuestion (linea ~699) las opciones se barajan con
+            shuffle([{t:option_a,k:"A"},...]) en CADA pregunta, por eso las
+            letras cambian de lugar en cada turno. Si se quiere fijarlas, hay
+            que quitar el shuffle o hacerlo deterministico por categoria.
+      LO QUE HAY QUE DECIDIR ANTES DE TOCAR NADA:
+        - Los cambios rompen la prueba de contencion de 6.6 (SHA-256 de
+          frontend/index.html). Hay que recalcular el hash y anotarlo.
+        - El cambio (a) es un cambio de comportamiento de juego, no un bug de
+          estilo. Si las letras se fijan, se pierde la aleatoriedad de la que
+          habla openspec/project.md ("4 opciones barajadas").
+        - El cambio (b) es puramente visual y no toca logica de juego.
+      NO SE HIZO NINGUN CAMBIO. frontend/index.html sigue en
+      F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610.
+
   [!] Un FAIL de la pasada estatica NO era una regresion. El arnes que
         reportaba 149 PASS / 1 FAIL es static-final.ps1, de las 23:19 del
         25/9, ANTERIOR a que la tarea 1.2 moviera el borde del input. Afirma

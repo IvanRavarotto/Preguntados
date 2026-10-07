@@ -1,410 +1,102 @@
+﻿================================================================================
+SEGUIMIENTO DEL PROYECTO - Preguntados 1v1
 ================================================================================
-SEGUIMIENTO DEL PROYECTO — Preguntados 1v1
-================================================================================
-Archivo de traspaso entre sesiones. Si se corta la sesión, seguí desde la
-seccion 5 ("COMO RETOMAR").
+Ultima actualizacion: 2026-10-02
+Estado: IMPLEMENTACION PARCIAL; pendiente verificar con PostgreSQL.
 
-Ultima actualizacion: 2026-09-29
-Estado general: cambio apply-neon-obsidian-theme con 25 de 29 tareas hechas.
-                  Todo el codigo esta en disco. NO queda trabajo de codigo:
-                  faltan 4 pasos de navegador humano, 2 puertas y el archivado.
-                  Publicado en https://github.com/IvanRavarotto/Preguntados
-                  rama main. NO esta archivado todavia.
-
-  OJO - PENDIENTE QUE NO SE RESUELVIO EN ESTA SESION (ver seccion 3):
-  el usuario reporto que (a) las letras A B C D cambian de posicion en cada
-  pregunta y (b) los nombres de las categorias se dan vuelta cuando gira la
-  ruleta. NO SE TOCO frontend/index.html. El hash sigue congelado en
-  F8947FE3...06610. Queda pendiente que se decida si se arregla y con que
-  criterio.
+Este archivo reemplaza el seguimiento anterior y registra solo el estado
+verificado en esta sesion.
 
 --------------------------------------------------------------------------------
-1. QUE ES EL PROYECTO
+1. STACK Y REGLA DE ENTORNO
 --------------------------------------------------------------------------------
-Trivia local para 2 personas en un mismo navegador. Rueda de 6 categorias,
-turnos alternados, 4 opciones, timer de 20 segundos, gana el primero en llegar
-a 10 puntos. Sin autenticacion, sin persistencia, sin multijugador remoto. El
-estado de la partida vive entero en el navegador y se pierde al recargar.
-
-Stack (declarado en openspec/project.md, NO se re-debate):
-  - Python 3.14.7, FastAPI, Uvicorn en el puerto 8000
-  - SQLAlchemy 2.1 + psycopg2 contra PostgreSQL 15 en Docker Compose (5432)
-  - frontend/index.html estatico: HTML + CSS + JS embebidos, sin bundler
-  - Categorizacion IA OFFLINE (fuera del request path):
-        load_data -> categorize (BART-large-mnli zero-shot) -> human_review (HITL)
-
-Rutas de la API (6, todas GET):
-  GET /                                        sirve el frontend
-  GET /questions                               listado paginado
-  GET /questions/{question_id}                 pregunta por id
-  GET /questions/category/{category_name}      preguntas por categoria
-  GET /categories                              lista de categorias
-  GET /categories/stats                        conteos de categorizacion
-
-Datos cargados: 201 preguntas, 201 categorizadas (27 automaticas IA, 174
-manuales). Reparto: historia 89, entretenimiento 57, geografia 24, deportes 17,
-arte 8, ciencia 6.
+- Python 3.14.7, FastAPI, Uvicorn, SQLAlchemy y psycopg2-binary.
+- PostgreSQL 15 mediante Docker Compose.
+- Frontend estatico en frontend/index.html.
+- El entorno Python se administra exclusivamente con Poetry.
+- No crear ni usar .venv dentro del repositorio.
+- El entorno valido de Poetry esta fuera del proyecto, en:
+  C:\Users\Iván\AppData\Local\pypoetry\Cache\virtualenvs\fastapi-questions-M5XxuBxn-py3.14
 
 --------------------------------------------------------------------------------
-2. LO QUE YA ESTA HECHO  [X]
+2. HECHO
 --------------------------------------------------------------------------------
-Infraestructura del proyecto
-  [X] Analisis completo del repositorio y declaracion de stack en project.md
-  [X] Harness de spec-driven development montado:
-        openspec/       tablero de cambios
-        harness/agents/ 7 subagentes con su charter
-        harness/skills/ 17 skills
-        .claude/ y .opencode/  copias generadas para clonar sin build
-  [X] scripts/sync-harness.mjs verificado como mecanismo de sincronizacion
-
-API y datos
-  [X] API FastAPI con las 6 rutas funcionando
-  [X] 201 preguntas cargadas en PostgreSQL desde el CSV
-  [X] Pipeline de categorizacion IA completo (zero-shot + revision humana)
-  [X] GET /categories/stats reporta categorized=201, uncategorized=0
-
-Frontend
-  [X] Juego completo: 4 paneles, rueda de 6 sectores, turnos, timer 20s,
-      4 opciones barajadas, marcador, pantalla de ganador, revancha
-  [X] Sin reutilizar preguntas dentro de una categoria durante la partida
-  [X] Resiliencia: si falla GET /categories usa la lista FALLBACK y la rueda
-      sigue renderizando 6 sectores (verificado por sonda, no por navegador)
-
-Cambio apply-neon-obsidian-theme (reescribe el tema visual)
-  [X] Delta de spec de 1007 lines, la primera capability del proyecto
-        (game-presentation) — openspec/specs/ sigue VACIO hasta archivar
-  [X] tasks.md con 1395 lines y test-plan.md con 2059 lines
-  [X] openspec validate --strict en verde (14 requirements, 23 scenarios)
-  [X] ADR-001 paleta neon registrada + project.md linea 46 enmendada
-  [X] Tareas 1.1 a 1.4: matematica de la rueda extraida a funciones puras sin
-        DOM, TIMER_SECONDS como fuente unica, gate node --check, sonda de
-        42 pares (42/42 en ruta API y en ruta FALLBACK)
-  [X] Tareas 2.1 a 2.4: capa de tokens, vidrio, radios, cero drop-shadows,
-        tipografia por roles
-  [X] Tareas 3.1 a 3.4: paleta por NOMBRE (no por indice), 6 glifos SVG inline,
-        rueda derivada en tiempo de ejecucion, boton girar al centro
-  [X] Tareas 4.1 a 4.6: los 4 paneles, breakpoints 768/1024, markup muerto
-        eliminado
-  [X] Tarea 5.1: estado de timeout (#FFD000) que el diseno nunca specifics
-  [X] Tareas 6.1, 6.2, 6.6: controles de maquina, precondicion de datos,
-        verificacion de contencion por SHA-256
-  [X] Tarea 7.2: codigo muerto eliminado (soft:, currentQuestion, wrapper
-        pickQuestion()) — se CONSERVO sectorUnderPointer a proposito, es el
-        oraculo independiente del que dependen los controles
-  [X] Tarea 7.3: 15 referencias de linea obsoletas en el delta corregidas
-  [X] Tarea 7.1: el control de geometria renderizada aterrizo en test-plan.md
-        como AT-7, junto a AT-6. Verificado HOY contra el archivo real:
-        6/6 en las 3 capas, en la ruta API y en la ruta FALLBACK, exit 0.
-        Los 2 controles negativos se vieron ROJOS, cada uno en su capa: A
-        (orden de labels del mockup) -> Layer 2 en 0/6, y B (stops
-        hardcodeados) -> Layer 1 en 0/6, con las otras dos capas en 6/6 y
-        exit no-cero. Cada mutante esta anclado a un string que tiene que
-        aparecer EXACTAMENTE una vez, para que una mutacion que no aplico
-        aborte en vez de reportar un verde vacio.
-  [X] Corregido un defecto REAL en SM-21 Capa 1, que no estaba registrado.
-        Comparaba el color pintado contra el esperado como STRINGS, pero
-        buildWheel pinta c.fill = toRgba(accent, 1), asi que el stop
-        computado es rgba(r,g,b,1) y hexToRgb da rgb(r,g,b). Mismo color,
-        dos strings distintos: el snippet reportaba FAIL en los 6 sectores
-        sobre una rueda CORRECTA. O sea que el guard mas importante del
-        cambio no se podia poner verde nunca. Ahora compara triplas RGB
-        parseadas con el alpha descartado. Re-verificado en las dos
-        direcciones: OK 6/6 sobre la rueda correcta, 6/6 FAIL con los
-        sectores en el orden del mockup, y el control de "expected 6
-        sector stops" sigue disparando con una rueda de un solo stop.
-
-HECHHO, Y CORREGIDO: dos premisas falsas que estaban en los artefactos
-  [X] La justificacion de la tarea 7.1 decia que SM-21 llamaba
-        ACCENT[c.name] y tiraba ReferenceError. FALSO: hay 0 ocurrencias de
-        ACCENT[ en todo test-plan.md. AT-6 hace bien la cosa — ata la
-        funcion a un nombre local y la llama: const ACCENT =
-        probe.getAccent(); y despues ACCENT(n). No habia ningun defecto de
-        identificador, y ningun fix de qa-manager que esperar. El defecto
-        que SI existia en SM-21 era el de rgba/rgb de arriba.
-  [!] PENDIENTE SIN RESOLVER - pedido del usuario al final de la sesion, NO
-      implementado. El usuario vio en el juego dos cosas:
-        (a) "las ubicaciones de A B C D cambian de posicion cada vez que se
-            cambia de tematica"
-        (b) "los nombres de las categorias quedan dados vuelta a medida que
-            gira la ruleta"
-      Diagnostico de lo que se pudo leer del codigo, SIN tocar el archivo:
-        (b) Los labels se colocan con
-              transform: translate(-50%,-50%) rotate(--a) translate(0,--seg-r)
-                         rotate(calc(-1 * --a))
-            Es decir, cada label se auto-cancela su propia rotacion para
-            quedar vertical respecto de la pagina. El problema es que el
-            padre #wheel SI rota (wheelRotation) en cada spin, asi que los
-            labels giran con el. La contrarrotacion anula el angulo del
-            sector, no el de la rueda. Para que queden siempre legibles hay
-            que restar tambien la rotacion vigente de la rueda al angulo de
-            cada label (o aplicar la contrarrotacion en el contenedor del
-            texto y no en el positioning).
-        (a) En renderQuestion (linea ~699) las opciones se barajan con
-            shuffle([{t:option_a,k:"A"},...]) en CADA pregunta, por eso las
-            letras cambian de lugar en cada turno. Si se quiere fijarlas, hay
-            que quitar el shuffle o hacerlo deterministico por categoria.
-      LO QUE HAY QUE DECIDIR ANTES DE TOCAR NADA:
-        - Los cambios rompen la prueba de contencion de 6.6 (SHA-256 de
-          frontend/index.html). Hay que recalcular el hash y anotarlo.
-        - El cambio (a) es un cambio de comportamiento de juego, no un bug de
-          estilo. Si las letras se fijan, se pierde la aleatoriedad de la que
-          habla openspec/project.md ("4 opciones barajadas").
-        - El cambio (b) es puramente visual y no toca logica de juego.
-      NO SE HIZO NINGUN CAMBIO. frontend/index.html sigue en
-      F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610.
-
-  [!] Un FAIL de la pasada estatica NO era una regresion. El arnes que
-        reportaba 149 PASS / 1 FAIL es static-final.ps1, de las 23:19 del
-        25/9, ANTERIOR a que la tarea 1.2 moviera el borde del input. Afirma
-        que el input sin foco sigue en --stroke-strong, que es justo lo que
-        la delta revierte. El archivo real esta bien: --stroke-strong quedo
-        en 0.15 con sus 3 usuarios de siempre (.wheel, .q-player,
-        .feedback) y el input lee --stroke-input en 0.10. OJO: el arnes que
-        produjo el "56 de 56" que registra el plan YA NO EXISTE en disco, asi
-        que ese conteo no se puede reproducir hoy. Lo que se puede reproducir
-        es el 42/42 y el AT-7, ambos verdes y verificados.
-
-Higiene de git (hecho en esta sesion, 2026-09-29)
-  [X] .gitignore escrito. ESTABA VACIO: sin el, __pycache__/*.pyc se sube a
-        git, que es exactamente el error que cometio el commit 60e8f6f del
-        remoto anterior
-  [X] .gitattributes escrito con LF forzado y -text en los archivos
-        byte-exactos. Sin esto git normaliza a CRLF en Windows y todos los
-        SHA-256 registrados quedan invalidos
-  [X] Verificado que la linea base HASH-1 sigue intacta: 10 de 10 archivos
-        protegidos byte-identicos
-  [X] Verificado que el hash del frontend en disco coincide con el ultimo
-        registrado (F8947FE3...06610, 796 lineas, 32.431 bytes, 0 CRLF)
-  [X] Corregido el texto obsoleto de reconciliacion en tasks.md, que decia
-        "22 checked, 7 not checked" cuando el estado real es 24 y 5
-  [X] Corregido el orden de .gitattributes. En ese archivo gana la ULTIMA
-        regla que coincide, y las reglas genericas ( *.yml text eol=lf ) estaban
-        despues de las especificas ( -text ), asi que las pisaban. Ademas,
-        docker-compose.yml y openspec/config.yaml estaban en el repo
-        normalizados a LF desde un commit anterior, asi que un clone nuevo no
-        reproducia el hash de HASH-1. Re-agregados con --renormalize: ahora
-        los 11 archivos byte-exactos tienen blob identico al disco. No se toco
-        ni un byte del disco, asi que la contencion de 6.6 sigue en pie.
-  [X] Commits 74e44e9 y 7d42a6f: linea base completa en local, 159 archivos,
-        0 .pyc. El remoto nuevo todavia no los tiene (ver seccion 3)
+[X] Se revisaron README.md, pyproject.toml, docker-compose.yml,
+    openspec/project.md y los puntos de entrada de la aplicacion.
+[X] Dependencias instaladas desde poetry.lock con poetry install --no-root.
+[X] Sintaxis Python validada con:
+    poetry run python -m compileall -q app
+[X] Los cambios OpenSpec activos fueron validados correctamente:
+    add-crowns-jokers-gameplay y apply-neon-obsidian-theme.
+[X] Se aprobaron Gate A y Gate B para add-crowns-jokers-gameplay.
+[X] Se actualizaron sus proposal, design, spec, tasks y test-plan con las
+    reglas de coronas, turnos, coronacion y comodines.
+[X] Se implemento gameplay en frontend/index.html: seis coronas, racha de
+    tres, coronacion obligatoria, sector corona, cambio de turno al fallar,
+    conservacion de coronas, no reutilizacion y rematch.
+[X] Cada jugador tiene dos usos de cada comodin: eliminar dos incorrectas,
+    segundo intento y revelar/seleccionar la correcta.
+[X] Se establecio el limite de un comodin por pregunta.
+[X] Checks informados como correctos: frontend, gameplay, compileall,
+    git diff --check y openspec validate.
+[X] La revision independiente detecto tres fallos y se aplico una correccion:
+    forzar coronacion tras tres aciertos, resetear ambas rachas y no cambiar
+    turno ante selecciones invalidas o categorias sin preguntas.
+[X] Se elimino la carpeta .venv del proyecto y se configuro Poetry con
+    virtualenvs.in-project=false.
+[X] La pantalla inicial de frontend/index.html se reviso visualmente.
 
 --------------------------------------------------------------------------------
-3. LO QUE FALTA  [ ]
+3. PENDIENTE Y BLOQUEOS
 --------------------------------------------------------------------------------
-PRIORIDAD ALTA — sin esto el cambio no se puede archivar ni Gate C
-
-  [X] PUBLICADO. Resuelto el 2026-09-29 subiendo el proyecto a la rama
-        "completo" del remoto nuevo, con un push NORMAL, sin force:
-            git push -u origin main:completo
-        El remoto quedo asi:
-            completo -> bc5e4b7  (el proyecto, 159 archivos)
-            main     -> 60e8f6f  (la historia vieja, intacta)
-        DECISION TOMADA POR LA PERSONA: dejar "completo" como esta. No se
-        borra main. Consecuencia que hay que tener presente: la rama DEFAULT
-        del repositorio sigue apuntando a main, asi que al abrir el repo en
-        GitHub por defecto se ve el commit viejo y no el proyecto. Para
-        entrar al proyecto hay que cambiar de rama a mano, o cambiar la
-        rama default en Settings -> Branches a "completo".
-        Por que no se pudo pisar main: main es la rama default, GitHub
-        rechaza borrarla, y el force-push esta denegado por permisos en esta
-        sesion. Si alguna vez se quiere main con el proyecto, el camino sin
-        force es: cambiar la default a "completo", borrar main, y despues
-        git push -u origin completo:main.
-
-  [X] LEVANTADO Y VERIFICADO CON BASE DE DATOS. Hecho el 2026-09-29.
-        docker compose up -d  -> contenedor arriba, pg_isready acepta
-        conexiones. Datos presentes: 201 questions, 201 categorizations.
-        Uvicorn arranca y el startup completa, o sea que create_all conecto
-        bien. Smoke checks HTTP, todos PASS:
-          GET /categories/stats      200, categorized=201, uncategorized=0,
-                                     automatic=27, manual=174, y el reparto
-                                     historia 89, entretenimiento 57,
-                                     geografia 24, deportes 17, arte 8,
-                                     ciencia 6
-          GET /categories            200, las 6 en el orden arte, ciencia,
-                                     deportes, entretenimiento, geografia,
-                                     historia — el mismo orden que consume la
-                                     rueda
-          GET /questions/category/arte?limit=200   200, 8 preguntas
-          GET /questions/1            200, trae question, option_a..d,
-                                     answer, id
-          GET /docs                   200, text/html
-          GET /                        200, text/html
-        EVIDENCIA MAS FUERTE DE ESTA RONDA: el SHA-256 de los bytes que
-        sirve GET / es F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27
-        D4296806610, o sea IDENTICO al de disco y al hash CONGELADO de la
-        tarea 6.6. El servidor esta entregando exactamente el archivo sobre
-        el que se.compute la prueba de contencion, no una version vieja.
-        Tambien se confirmo que la respuesta NO trae cache-control, que es
-        la razon concreta de que la 6.3 pida Ctrl+F5.
-        Y un dato que faltaba: AT-7 se corroTAMBIEN contra la respuesta
-        real de GET /categories, no solo contra el fixture. 6/6 en las 3
-        capas, ruta API y ruta FALLBACK, exit 0. La forma real de la
-        respuesta es una lista de 6 objetos con name, label y description
-        (no trae fill ni on; la pagina los deriva con getAccent).
-
-PRIORIDAD HUMANA — pasos de navegador, ninguno lo puede hacer un agente
-(declarados como NOT RUN en los artefactos, nunca como aprobados)
-
-  [ ] 6.3 — Ctrl+F5 en http://localhost:800/ antes de observar. GET / se sirve
-        por FileResponse en cada request (no hace falta reiniciar Uvicorn),
-        pero la respuesta NO trae cache-control, asi que el navegador puede
-        servir el documento viejo y parece que el restyle fallo por completo
-  [ ] 6.4 — partida completa hasta que alguien llegue a 10 puntos, con
-        pass/fail por criterio nombrado. Incluye los pasos de categoria
-        equivocada que el 42/42 no cubre: leer el sector bajo el puntero y el
-        chip de categoria y DECIRLOS EN VOZ ALTA, y confirmar que {name} en la
-        red coincide con el chip
-  [ ] 6.5 — panel de red abierto de la pantalla de nombres a la de ganador:
-        solo host local y solo /, /categories y
-        /questions/category/{name}?limit=200. Luego con la API apagada, la
-        rueda debe renderizar 6 sectores de respaldo sin romperse
-  [ ] 6.7 — revision visual humana. stitch/screen.png es la unica
-        representacion del diseno y NINGUN agente de la flota puede leer
-        imagenes, asi que la fidelidad visual no esta revisada por maquina.
-        No se afirma que el resultado se parezca al screenshot.
-        Se espera iteracion en screen-question: es el panel mas cargado de los
-        cuatro y el unico sin mockup, solo prosa
-
-PUERTA HUMANA
-
-  [ ] Gate C — aprobar el merge de apply-neon-obsidian-theme (tras 7.1 y 6.7)
-  [ ] Gate D — aprobar el deploy (hoy es un proceso local, no hay pipeline)
-
-CIERRE
-
-  [ ] openspec archive apply-neon-obsidian-theme. Sin esto openspec/specs/
-        sigue vacio y el tablero miente sobre el sistema. Recien ahi se crea
-        la spec viva game-presentation.
+[ ] Docker Desktop/daemon no esta activo. docker compose up -d falla con:
+    failed to connect to the docker API.
+[ ] PostgreSQL no esta levantado en localhost:5432.
+[ ] FastAPI no esta levantado en localhost:8000; su startup falla si no puede
+    conectarse a PostgreSQL.
+[ ] Ejecutar, cuando Docker este disponible:
+    poetry run python -m app.load_data
+[ ] Verificar HTTP en /, /docs, /categories, /categories/stats,
+    /questions y /questions/category/{category_name}.
+[ ] Repetir la code review despues de la correccion de frontend.
+[ ] Gate C queda pendiente hasta obtener aprobacion del revisor.
+[ ] Ejecutar QA end-to-end contra todos los criterios del test-plan.
+[ ] Los cambios OpenSpec siguen sin archivarse en openspec/specs/.
+[ ] Confirmar la integracion con apply-neon-obsidian-theme porque ambos cambios
+    tienen trabajo relacionado con frontend/index.html.
+[ ] No se hizo commit durante estas tareas.
 
 --------------------------------------------------------------------------------
-4. DEUDA Y AGUJEROS CONOCIDOS
+4. CAMBIOS OPEN SPEC
 --------------------------------------------------------------------------------
-Huecos de tooling, declarados en project.md como brecha pre-release:
-  [ ] No hay linter (ni Ruff ni Black)
-  [ ] No hay type-checker (ni mypy ni pyright)
-  [ ] No hay suite de tests de comportamiento automatizada
-  [ ] No hay umbral de cobertura ni pipeline de CI/CD
-  Nada de esto tiene red de seguridad. Todo el andamiaje de verificacion de
-  este cambio es un harness ad-hoc de linea de comando.
+add-crowns-jokers-gameplay
+  Track 2 (Full), branch prevista feature/add-crowns-jokers-gameplay.
+  Implementacion parcial; revision, Gate C y QA pendientes.
 
-Riesgos abiertos:
-  [!] El repo remoto IvanRavarotto/practica_2-modulo_1 es PUBLICO, y
-      app/database.py tiene la credencial de desarrollo hardcodeada
-      (postgresql+psycopg2://admin:admin123@localhost:5432/questions_db).
-      Es una credencial local de aula, no un secreto de servicio real, y
-      project.md la registra como excepcion local. Aun asi, publicarla es
-      exactamente lo que la regla de secretos prohibe. Queda pendiente
-      pasarla a variables de entorno.
-  [ ] Dos divergencias registradas y NO pineadas, escaladas al humano, sin
-      requisito que las gobierne: el tag de indice .opt .letra es opaco
-      donde el diseno pide una pastilla translucida con inset; y el chip
-      .q-cat no declara fondo y va a alpha 1 donde el diseno pide 40%.
-      La regla que saldo de ahi: una excepcion sin guardia necesita una frase,
-      un valor sin gobernar necesita un registro.
-  [ ] prefers-reduced-motion: diferido a su propio cambio. El tratamiento
-      neon agrega un giro de 4s, un nodo pulsante y transiciones de glow, y
-      nada en el diseno cubre sensibilidad al movimiento.
-  [ ] Ambiguedad de foco en la pantalla de nombres: el diseno dice que el
-      input hace snap al glow de CATEGORIA, pero esa pantalla no tiene
-      categoria. Queda abierta y registrada, sin resolver.
-
-Informacion que se pierde si no se anota aca:
-  - El diseno se llama "Obsidian Lumina" y vive en stitch/ (DESIGN.md,
-    code.html, screen.png). code.html es un export generado: lleva
-    cdn.tailwindcss.com, 3 Google Fonts, avatares remotos y hardcodea 6
-    sectores en SVG. Es REFERENCIA de tokens y geometria, su markup no se
-    copia. Copiarlo introduce el bug de categoria equivocada.
-  - stitch/DESIGN.md se contradice a si mismo en 4 puntos. Resueltos y
-    registrados en proposal.md: gana el frontmatter sobre la prosa; el radio
-    9999px del frontmatter gana sobre la escala del export; blur(16px) de la
-    prosa gana sobre backdrop-blur-md; y CERO drop-shadows, porque el prose lo
-    dice y el export arrastra 7 sombras de Tailwind por forgot de definirlas.
-  - Costes aceptados que ya no son secreto: los glifos SVG son aproximaciones
-    escritas a mano, no los Material Symbols; y el acento de una categoria ya
-    no se puede afinar para contraste contra fondo claro, asi que una
-    respuesta correcta en arte y una incorrecta en ciencia son el mismo coral.
-    Por eso el feedback lo lleva el tratamiento de superficie y el texto
-    revelado, no solo el tono.
+apply-neon-obsidian-theme
+  Track 1 (Light), cambio activo con tareas pendientes.
+  Revisar antes de integrar cambios adicionales en el frontend.
 
 --------------------------------------------------------------------------------
 5. COMO RETOMAR
 --------------------------------------------------------------------------------
-  1. Leé este archivo de arriba abajo.
-  2. Board:      openspec list
-                 openspec list --specs
-                 openspec doctor
-  3. Estado:     openspec validate apply-neon-obsidian-theme --strict
-  4. Reanudar por este orden:
-       a) 6.3 6.4 6.5 6.7  (persona, en navegador). Es lo UNICO que queda.
-          - 6.3: Ctrl+F5 en http://localhost:8000/ (con el servidor arriba).
-                GET / no trae cache-control, por eso es necesario.
-          - 6.4: partida completa hasta que alguien llegue a 10 puntos. Leer en
-                voz alta: el sector bajo el puntero y el chip de categoria, y
-                confirmar que coinciden con el tema cargado.
-          - 6.5: panel de red abierto desde la pantalla de nombres a la de
-                ganador. Deben verse solo /, /categories y
-                /questions/category/{nombre}?limit=200. Con la API apagada, la
-                rueda debe seguir renderizando los 6 sectores de respaldo sin
-                romperse.
-          - 6.7: revision visual frente a stitch/screen.png (unica
-                representacion del diseno; ningun agente lee imagenes). El
-                hash del frontend sigue congelado hoy (F8947FE3...06610); si
-                hay que ajustar algo visual, hay que registrar el nuevo hash y
-                actualizar la contencion.
-       b) Pegar y correr SM-21 a mano en DevTools, que sigue siendo el unico
-          check que ve el pixel pintado y lo que nadie puede correr por vos
-       c) Gate C
-       d) openspec archive
-       NO queda trabajo de codigo, y NO queda trabajo de maquina: la 7.1, el
-       fix de SM-21, el 42/42, el AT-7 y los smoke checks HTTP ya estan
-       hechos y verdes. No los vuelvas a buscar.
-  5. Antes de tocar frontend/index.html, entendé esto:
+Prerequisito: iniciar Docker Desktop y esperar que el daemon responda.
+Desde la raiz del repositorio ejecutar:
 
-     El archivo esta CONGELADO por evidencia, no por regla. La tarea 6.6
-     demuestra por SHA-256 que el cambio no toco nada mas alla del restyle, y
-     7.2 demuestra que sus 8 lineas borradas se revierten byte a byte. Si
-     editas el frontend, ROMPES esa prueba de contencion y hay que
-     recalcularla. Si tenes que editarlo, anota el nuevo hash.
+  docker compose up -d
+  docker compose ps
+  poetry run python -m app.load_data
+  poetry run uvicorn app.main:app --host 127.0.0.1 --port 8000
 
-     Hash actual de frontend/index.html (796 lineas, 32.431 bytes, LF puro):
-     F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610
+Abrir:
+  http://127.0.0.1:8000/
+  http://127.0.0.1:8000/docs
 
-     4F598508...BE60C0CF5E1E es el estado PRE-7.2 (804 lineas, 32.601 bytes).
-     Sirve como destino del inverso de la prueba de contencion, no como
-     estado actual.
+Checks:
+  poetry run python -m compileall -q app
+  openspec validate add-crowns-jokers-gameplay
+  openspec validate apply-neon-obsidian-theme
 
-  6. Comandos utiles:
-       Base de datos    docker compose up -d
-       Servidor         poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
-       Sintaxis Python  poetry run python -m compileall -q app
-       Sintaxis JS      node --check sobre el <script> extraido
-       Comprobacion     curl.exe -s http://localhost:8000/categories/stats
-                        (debe dar categorized=201, uncategorized=0)
-
-   7. Recordatorio de PowerShell en esta maquina: la ruta del proyecto tiene
-      acentos y corchetes, y Get-FileHash / Get-Content con ruta relativa
-      FALLAN porque PowerShell la resuelve mal. Usa python para leer bytes y
-      calcular hashes, o git, que heredan el CWD real del proceso.
-
-   8. TRAMPA AL ARRANCAR EL SERVIDOR, ya la perdi varias veces:
-      Start-Process falla con "la ruta de acceso comodin [...] no se
-      resolvio en un archivo". No es la ruta: son los CORCHETES de
-      "[01] - Practica..." que PowerShell interpreta como comodin al
-      resolver el CWD, y Start-Process no tiene -LiteralPath. Tambien
-      falla con -WorkingDirectory, que es lo primero que uno prueba.
-      Y Set-Location con ruta relativa tampoco, ni $env:TEMP en su forma
-      corta C:\Users\IVN~1\ (esa forma corta no resuelve con -LiteralPath).
-      La salida limpia: lanzar desde Python, que maneja unicode nativo.
-      El script esta en %TEMP%\opencode\launch-uvicorn.py y hace glob del
-      python.exe del venv bajo LOCALAPPDATA, con lo que ni siquiera hay que
-      hardcodear el acento. Ademas, poetry escribe la ruta del venv con su
-      propia codificacion y PowerShell la vuelve a corromper al capturarla,
-      asi que la ruta del venv tambien hay que obtenerla por glob y no por
-      "poetry env info --path".
-      Para leer una ruta con acentos desde PowerShell, anteponer
-      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8.
-
-================================================================================
-Leyenda:  [X] hecho   [ ] pendiente   [!] riesgo abierto
+Despues: repetir code review, presentar Gate C, ejecutar QA y archivar solo
+cuando la implementacion este aprobada y verificada.
 ================================================================================

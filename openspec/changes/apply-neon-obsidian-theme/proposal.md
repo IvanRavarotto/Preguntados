@@ -141,6 +141,31 @@ violation with no way to tell it is intended — so a sentence is owed. `.q-cat`
 values no requirement touches, where an unstated observation creates no confusion to correct. The rule
 this yields: **an unguarded exception needs a sentence; an ungoverned value needs a record.**
 
+## A human played the built game, and two findings came back
+
+1. **The option index letters are wanted in fixed slots — a product decision, not a defect.** The
+   shipped `renderQuestion` (`frontend/index.html:699`) shuffles `{text, letter}` pairs *together*,
+   so a letter never detaches from its own text and there is no mismatch bug. What the human objected
+   to is that the **letters** land in a different slot each question. Decision: `A`, `B`, `C`, `D`
+   always read top-to-bottom in that fixed order, while the four option **texts** are still shuffled
+   across those four fixed slots. A letter therefore no longer identifies its stored
+   `option_a`…`option_d` source, and correctness is decided by the option's text, not its letter. The
+   answers remain shuffle-random, so `openspec/project.md`'s "4 opciones barajadas" still holds and
+   `project.md` needs no amendment. Written into the delta as the rewritten R10/S19 clause, and into
+   `tasks.md` § 8.
+2. **The wheel sector labels come out upside-down after a spin — a real defect.** `.seg-label` is a
+   child of `#wheel`, which carries `transform: rotate(<accumulated wheelRotation>)`
+   (`frontend/index.html:616`–`623`), and the label's own transform (`:202`) cancels only the sector's
+   own centre angle `--a`, not the ancestor rotation. After the first spin every label reads at the
+   wheel's accumulated angle and the lower ones are upside down. Decision: labels read **upright
+   relative to the page** at any rotation, while still sitting inside their own sector. Written into
+   the delta as the appended R15. The mockup is not a literal reference here — `stitch/code.html`
+   rotates each label group by its sector centre angle (`:241`, `:252`, `:263`, `:274`, `:285`,
+   `:296`) — so upright-relative-to-page is the human's decision, stated as such in R15's provenance.
+
+Neither finding changes an API, a schema, a route, or a gameplay rule. Both change
+`frontend/index.html` only, and both are additive to this change rather than a new one.
+
 ## Alternatives considered
 
 - **Adopt `stitch/code.html` as the frontend.** Rejected. It is a generated export carrying

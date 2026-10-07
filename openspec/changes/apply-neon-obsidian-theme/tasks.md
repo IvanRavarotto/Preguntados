@@ -389,7 +389,9 @@ and the acceptance criteria, not against `stitch/screen.png`.
       follow the shuffled order: the four options are built as `{k:"A"}`…`{k:"D"}`, shuffled, and
       tagged from the shuffled array, not from the stored `option_a`…`option_d` order. The question
       text floor is `clamp(1.125rem, …)` = **18px**. The bar and the timeout share `TIMER_SECONDS`,
-      so the bar reaches empty with the timeout.
+      so the bar reaches empty with the timeout. **Superseded by 8.1**: the tags are now the fixed
+      slots `A`–`D` in document order and only the texts shuffle, per the amended R10/S19; this
+      paragraph records the state as it was measured, not the state 8.1 ships.
       **The amended R10 relocates the accent treatment from a selected state to hover and keyboard
       focus, and this pass implemented that.** The rules as shipped:
       `.opt:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 0 1.25rem var(--accent-glow), inset 0 0 12px var(--accent-glow-inset); }`
@@ -646,8 +648,11 @@ and the acceptance criteria, not against `stitch/screen.png`.
       `B352222A…5924501B`, `app/categories.py` `E046EA4D…2BF555FC`, `app/load_data.py` `A632C8EE…A4543F`,
       `app/categorize.py` `55FE5F14…AC2F614D`, `app/human_review.py` `98630250…B09B87469`,
       `docker-compose.yml` `BEB42DE0…42616DEE`, `pyproject.toml` `F270BE7E…BE530A8DE`, `poetry.lock`
-      `E18C050A…231D078`. `frontend/index.html` is the only changed production file, now
-      `4F598508…BE60C0CF5E1E` (804 lines, 32,601 bytes).
+      `E18C050A…231D078`. `frontend/index.html` is the only changed production file, and at the time
+      of **this** pass it read `4F598508…BE60C0CF5E1E` (804 lines, 32,601 bytes) — the **pre-7.2** state.
+      7.2 and § 8 both supersede it; the current figure is `BAA7F37C…94D59A6C` (815 lines, 33,195
+      bytes), after 8.5 measured `4B7AE7F6…B1FD728FFE` (810 lines, 32,818 bytes) and one later pass added
+      a four-line comment and nothing else.
       Containment of **this** pass's three changes is proved by **hash reconstruction**, which is
       stronger than a hunk count and needs no git baseline. **Seven** targeted replacements were
       reversed in memory - each with an expected occurrence count of 1, except the `inset` layers at 2,
@@ -705,18 +710,21 @@ here is blocked on a human.
 
 ## Task reconciliation
 
-Every one of the 29 items was reassessed against `frontend/index.html` as it stands on disk, and
-against the **amended** spec delta rather than the wording the previous pass read. **24 checked,
-5 not checked.** The rule applied, unchanged and stated so a reviewer can disagree with it
-explicitly: *a task is checked when the code on disk implements it.* An unrun measurement is a
-`qa` step and is reported as not run; a **missing declaration** is an unsatisfied task and is left
+Every one of the 29 original items was reassessed against `frontend/index.html` as it stands on disk,
+and against the **amended** spec delta rather than the wording the previous pass read. **25 checked,
+4 not checked.** The previous revision of this paragraph said 24 and 5; that was stale, because
+**7.1**'s box was ticked when it landed as `AT-7` and this table still listed it as open. Corrected
+here. The § 8 amendment adds five more items, all unchecked, so the change now carries **34 items:
+25 checked, 9 not checked**. The rule applied, unchanged and stated so a reviewer can disagree with it
+explicitly: *a task is checked when the code on disk implements it.* An unrun measurement is a `qa`
+step and is reported as not run; a **missing declaration** is an unsatisfied task and is left
 unchecked. Nothing was implemented to make a box tick that the amended delta did not ask for.
 
 | | Tasks | Why |
 |---|---|---|
-| Checked | 1.1 1.2 1.3 1.4 2.1 2.2 2.3 **2.4** 3.1 **3.2** 3.3 3.4 **4.1** 4.2 **4.3** 4.4 4.5 4.6 **5.1** 6.1 6.2 6.6 **7.2** **7.3** | Implemented on disk and verified, each with a measured result recorded in its own **Verify** clause. The five in bold were unchecked in the previous pass and are now closed — see below. **7.2** and **7.3** were opened by this pass and closed inside it. |
+| Checked | 1.1 1.2 1.3 1.4 2.1 2.2 2.3 **2.4** 3.1 **3.2** 3.3 3.4 **4.1** 4.2 **4.3** 4.4 4.5 4.6 **5.1** 6.1 6.2 6.6 **7.1** **7.2** **7.3** | Implemented on disk and verified, each with a measured result recorded in its own **Verify** clause. The five in bold groups were unchecked in the previous pass and are now closed — see below. **7.1** landed as `AT-7` and carries a re-run result; it was wrongly still listed as open in the previous revision of this table. **7.2** and **7.3** were opened by this pass and closed inside it. |
 | Not checked — human step | **6.3** **6.4** **6.5** **6.7** | Browser observation. Recorded as **not run**, never as passing. |
-| Not checked — raised by this pass | **7.1** | The `AT-2b` machine check the delta specifies. Additive, and does not touch `frontend/index.html`. Still owed. |
+| Not checked — opened by the § 8 amendment | **8.1** **8.2** **8.3** **8.4** **8.5** | Two `frontend/index.html` edits the human asked for after playing the built game, plus their verification and the hash recompute. None is started; all are `dev`-owned. |
 
 ### The five code gaps from the previous pass are closed
 
@@ -897,7 +905,13 @@ only the delta's stale citations.
       inverses were applied to an in-memory copy: each replacement's expected occurrence count is
       **1**, the result is **804** lines with LF newlines, and the SHA-256 returns to
       `4F598508…BE60C0CF5E1E` byte-for-byte. The edited file is 796 lines / 32,431 bytes / SHA-256
-      `F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610`.
+      `F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610`. **Superseded twice: first
+      by the § 8 amendment**, which makes `F8947FE3…` the *pre-amendment* hash rather than the
+      current one, and then by 8.5, which recomputed the current file to **810** lines / 32,818
+      bytes / `4B7AE7F6…B1FD728FFE`, and again by the one comment added after 8.5, which put it at
+      **815** lines / 33,195 bytes / `BAA7F37C…94D59A6C`. The reversal proof was extended rather
+      than replaced: reversing 7.2's six replacements and the 8.1/8.2 inverses reproduces `F8947FE3…`
+      exactly.
 
       **Guards re-passed after the edit** (full output in the verification record below): `soft:`
       property **0**, `.soft` access **0**, `currentQuestion` **0**, `pickQuestion` **0**,
@@ -998,17 +1012,507 @@ only the delta's stale citations.
       `openspec validate apply-neon-obsidian-theme --strict` exits **0** with **14** requirements and
       **23** scenarios intact. The delta is 1,007 lines — the same count as before this change, because
       two paragraphs were re-wrapped rather than added to. Its SHA-256 is
-      `64E31ABD876B5234CA62A14C8C1121F9A1C3A4C97F27050C3E2A103AEE39AD3B`.
+      `64E31ABD876B5234CA62A14C8C1121F9A1C3A4C97F27050C3E2A103AEE39AD3B`. **All four figures here
+      are superseded by the § 8 amendment**, which rewrote the R10/S19 clauses and appended R15: the
+      delta is now **15** requirements and **24** scenarios, and 8.5 recomputed it to **1,065** lines
+      / 79,796 bytes / `2E89759FB31E7E2E8189BD1F8AD24D198D2341A22EAF4E647056C1F8623978E8`; appending
+      R15's `@property` mechanism note later put it at **1,087** lines / **81,524** bytes /
+      `24D9AE2411A99E19AD80BEDFC4C9A13E299950673735FC311C04BE536A35FF26`. This record
+      is kept as the state 7.3 verified, not as the current state.
+
+## 8. Amendment: fixed index slots and upright sector labels
+
+Two behaviours the human asked for after playing the built game, recorded in `proposal.md` § "A human
+played the built game, and two findings came back". 8.1 and 8.2 change `frontend/index.html`; 8.3, 8.4,
+and 8.5 do not. Both edits move that file's SHA-256, so 8.5 recomputes the containment hash rather than
+guessing it.
+
+- [x] 8.1 **Fixed index slots.** In `frontend/index.html`, change `renderQuestion` (`:699`) so the four
+      option index markers are always `A`, `B`, `C`, `D` in that fixed order and only the option
+      **texts** are shuffled across them. Today it shuffles `[{ t: q.option_a, k: "A" }, …]` as
+      `{text, letter}` pairs, which moves each letter with its text. Shuffle the four text values first
+      and zip them onto a fixed `["A","B","C","D"]`, so the letter is the slot and the shuffled text is
+      what sits under it. **Do not touch correctness**: `finishQuestion` marks the card whose
+      `span:last-child` text equals `q.answer` (`:728`) and `pickAnswer` scores on `text === q.answer`
+      (`:736`), so neither may be changed to compare a letter. **Verify**: the four tags read `A`–`D` in
+      document order on two different questions while the four option texts differ between them, and
+      the 42-pair probe still exits 0. This is R10/S19 as amended.
+
+- [x] 8.2 **Upright sector labels.** In `frontend/index.html`, make each `.seg-label` read upright in the
+      page frame at any wheel rotation, including after a spin settles, while keeping it inside its own
+      sector. The wheel's accumulated angle is the `wheelRotation` variable, written to `#wheel`'s
+      inline transform (`:616`–`:623`); the label's own transform (`:202`) cancels only its sector's
+      centre angle `--a`, so the ancestor rotation reaches the label and the lower labels invert.
+      Counter-rotate each label by the wheel's current rotation — how it is carried is the dev's
+      choice; what R15 fixes is the observable: the composed transform rotation of every `.seg-label`
+      is `0°` modulo `360°` at any wheel rotation, and the label's centre still lies inside its own
+      sector. **Verify**: R15's scenario, read at rest and after a deliberately non-integral rotation,
+      with `#wheel`'s own composed rotation differing between the two readings.
+
+- [x] 8.3 **Verify 8.1, with a negative control.** Land a check for the fixed-slot contract in the house
+      style of 7.1: read the four `.letra` tags in document order on **two** questions rendered through
+      the existing `node:vm` sandbox where possible, else as a scripted DevTools read, and require
+      `A`, `B`, `C`, `D` both times while the four option texts are not identical between the two
+      questions. **Negative control**: a mutated copy that restores the old `{text, letter}` pair
+      shuffle must fail the assertion for a **deterministic** non-identity permutation (seed the
+      shuffle, or use a permutation known not to be identity, so the control cannot pass by luck). The
+      mutation is anchored to a string that must occur **exactly once**; a count mismatch aborts with a
+      non-zero exit rather than reporting an empty green. **Verify**: positive run exits 0, mutant exits
+      non-zero, both recorded.
+
+- [x] 8.4 **Verify 8.2, with a negative control and a human-only remainder.** Read, for each of the six
+      `.seg-label` elements, the rotation composed from the element's own `transform` and every
+      ancestor `transform` up to the document root, at rest and after a deliberate rotation that is not
+      a whole number of turns: both readings must be `0°` modulo `360°` while `#wheel`'s own composed
+      rotation differs between them. Separately require each label's centre polar angle, from the wheel
+      centre, to fall inside its own sector's arc, so a label simply left static while the wheel turns
+      also fails. **Negative control**: a mutated copy that drops the wheel counter-rotation (leaving
+      only the original `rotate(calc(-1 * var(--a)))` cancellation) must fail the post-rotation `0°`
+      reading; the mutation is anchored to a string that must occur **exactly once**, and a count
+      mismatch aborts non-zero. **Human-only, not machine**: that the glyph and text read normally and
+      are not clipped or collided stays with `test-plan.md` MT-12 and task 6.7, because no agent in the
+      fleet reads a pixel. **Verify**: positive run exits 0, mutant exits non-zero, both recorded.
+
+- [x] 8.5 **Recompute the containment SHA-256 and update every record of it, without inventing a value.**
+      The current-file hash is superseded: `F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610`
+      (796 lines, 32,431 bytes, LF only) is the frozen **pre-amendment** state of `frontend/index.html`,
+      and 8.1 and 8.2 change that file. Compute the new hash from the edited file and record it, with
+      its line and byte counts, at **every** place that presents it as the current file — reach them by
+      searching this file for the `F8947FE3…` string, not by a line number, because the lines move.
+      Do **not** invent the value, and do **not** touch the ten protected-file hashes in
+      `test-plan.md` § 3 (lines 158–167): those are the must-not-change baseline and stay
+      byte-identical. `test-plan.md` records only the pre-change baseline `BF5FCFC2…` at lines 22 and
+      168; that is historical and correct as written, so it needs no edit. Extend the
+      reversal-containment proof: reversing 8.1's and 8.2's edits must reproduce `F8947FE3…` exactly.
+      Two further records are stale for the same reason and are **not** current-file hashes: the
+      `4F598508…` figures describe the pre-7.2 file (804 lines) and the lines that call it "now"
+      should be marked pre-7.2; and the delta's own SHA-256 and line count, recorded at the end of 7.3,
+      changed when this amendment edited the delta, so recompute those too.
+      **Verify**: the computed SHA-256 matches the recorded value; the first ten HASH-1 rows are
+      unchanged; `openspec validate apply-neon-obsidian-theme --strict` exits 0.
+
+### What 8.1 and 8.2 changed, and how they were verified
+
+**8.1, fixed index slots.** `renderQuestion` now shuffles the four option **texts** and zips them
+onto a fixed slot list, so the letter is the slot and the shuffled text is what sits under it. A
+module-scope `OPTION_SLOTS = ["A", "B", "C", "D"]` sits next to `WIN_POINTS`, and the card's key
+span reads `OPTION_SLOTS[i]`. `finishQuestion` and `pickAnswer` are **untouched**: correctness is
+still `span:last-child`'s text against `q.answer`, and still scores on `text === q.answer`. No
+letter is compared anywhere.
+
+**8.2, upright sector labels.** The wheel's angle is now published as an **inherited** custom
+property, and each label cancels it. Three coordinated pieces:
+
+- `@property --wheel-rot` is registered as `<angle>` with `inherits: true` and `initial-value:
+  0deg`. Registration is what makes the property *transitionable* and inheritable; unregistered, the
+  counter-rotation would resolve against an untransitioned value and the labels would trail the
+  wheel by a frame.
+- `.wheel` carries `--wheel-rot: 0deg` and `transform: rotate(var(--wheel-rot))`, and `.seg-label`
+  gains a final `rotate(calc(-1 * var(--wheel-rot)))` after its existing `rotate(calc(-1 * var(--a)))`.
+  A label's own orientation is then `--a - --a - W`, and the wheel contributes `+W`, so the composed
+  rotation in the page frame is exactly `0°` at **any** `W` — not `0°` modulo `360°`, and not at the
+  cost of the label's placement, which is unchanged because `rotate()` terms contribute no
+  translation.
+- A new `applyWheelRotation(wheel, degrees)` writes the property and the inline transform together,
+  and **both** spin branches call it: the pre-animation snap and the animated target. The animation
+  is declared once as `SPIN_TRANSITION`, covering `transform` **and** `--wheel-rot`, so the two stay
+  in step. Writing the inline transform alone would have left the counter-rotation reading a stale
+  value for the whole 3.5 s.
+
+A `--wheel-rot` write and an inline `transform` write are both kept deliberately. The transform is
+what the existing `transitionend` and the `SM-18` live snippet already read; the property is what
+the label rule reads. The AT-9 check asserts the two agree after a real spin, so a future edit that
+drops one of them is caught rather than silently desynchronised.
+
+**AT-8** landed at `openspec/changes/apply-neon-obsidian-theme/checks/at8-fixed-index-slots.js` and
+**AT-9** at `.../checks/at9-upright-sector-labels.js`, both durable and both runnable with no server
+and no database. Full output is in the verification record below.
+
+**8.5's recomputed figures.** The current `frontend/index.html` is **815** lines / **33,195** bytes /
+LF only / SHA-256 `BAA7F37C3C403807A3BC3CF8CED4CD6BFB6B717704463E795059103194D59A6C`. That value is
+now recorded at every place that presented `F8947FE3…` as the current file, in this file and in
+`SEGUIMIENTO.txt`. `F8947FE3…` (796 lines / 32,431 bytes) is kept everywhere it is described as the
+**pre-amendment** anchor, because that is the state the extended containment proof reverses to. The
+ten protected-file hashes in `test-plan.md` § 3 are untouched, and the pre-change `BF5FCFC2…`
+baseline at lines 22 and 168 is historical and needed no edit.
+
+**8.5's figures, and the one recomputation since.** 8.5 recorded the file as 810 lines / 32,818 bytes
+/ `4B7AE7F6…D728FFE`. Those were correct when written and are kept above as what that pass measured.
+A later pass added one four-line comment above `applyWheelRotation` and nothing else, which moved the
+file to the 815-line / 33,195-byte / `BAA7F37C…4D59A6C` figures quoted here. The added bytes are the
+comment and nothing else: the reversal proof below now needs **14** inverses instead of 8, and the
+extra one removes exactly that comment.
+
+**Reversal containment, extended.** The two edits and the rationale comment were reversed on a
+scratch copy in `%TEMP%\opencode`, never in the working tree: **14** targeted inverses, each required
+to match **exactly once**, applied to a copy of the finished file; a count mismatch aborts non-zero
+rather than reporting a green that proves nothing. The result is **796** lines / 32,431 bytes /
+SHA-256 `F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610`, **byte-identical** to
+the pre-amendment anchor. The 8 original inverses are the ones § 8 added; the 6 further ones split
+them at the boundaries 8.5's summary counted as single edits, and the fourteenth removes the comment.
+
+**8.5's other two stale records.** The `4F598508…BE60C0CF5E1E` figures are the **pre-7.2** file
+(804 lines / 32,601 bytes); the lines that called them "now" are marked as such and otherwise left
+alone, because that is the state the older containment proof reverses to. The delta's own figures,
+recorded at the end of 7.3 as 1,007 lines and `64E31ABD…EE39AD3B`, were stale because the § 8
+amendment rewrote R10/S19 and appended R15. The delta was then **1,065** lines / 79,796 bytes /
+SHA-256 `2E89759FB31E7E2E8189BD1F8AD24D198D2341A22EAF4E647056C1F8623978E8`; a later pass appended the
+R15 `@property` mechanism note, making it **1,087** lines / **81,524** bytes / SHA-256
+`24D9AE2411A99E19AD80BEDFC4C9A13E299950673735FC311C04BE536A35FF26`, with **15** requirements and
+**24** scenarios.
 
 ## Verification record
 
 Re-run against the finished `frontend/index.html` on the finished file, not an intermediate state.
 Node.js v24.19.0; the Uvicorn service on `localhost:8000` was already running and was not restarted.
-**All seven groups below were re-run after 7.2 and 7.3, against the post-edit file: 796 lines and
-32,431 bytes, SHA-256 `F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610`.** The
-pre-edit figures (804 lines / 32,601 bytes / `4F598508…BE60C0CF5E1E`) are retained above in 7.2
-because that is the state the containment proof reverses to. Every group exited **0** except the
-negative controls, which are required to exit non-zero.
+**The eight groups below are the current record: they were re-run after § 8, against the finished
+815-line / 33,195-byte file, SHA-256 `BAA7F37C3C403807A3BC3CF8CED4CD6BFB6B717704463E795059103194D59A6C`.**
+Seven of them were previously recorded against the 796-line / 32,431-byte pre-amendment file
+(`F8947FE3…`); that figure is kept in their own output blocks as the state those groups verified, and
+the § 8 group is new. The pre-7.2 figures (804 lines / 32,601 bytes /
+`4F598508…BE60C0CF5E1E`) are retained above in 7.2 because that is the state the older containment
+proof reverses to. Every group exited **0** except the negative controls, which are required to exit
+non-zero.
+
+**What § 8 added.** Groups 8 and 9 are new: AT-8 (fixed index slots) and AT-9 (upright sector
+labels), each with its prescribed mutant. Both are durable files under
+`openspec/changes/apply-neon-obsidian-theme/checks/`, so unlike the earlier `node:vm` one-liners they
+survive the archive. Their output is in `### 8.3 / 8.4 — AT-8 and AT-9, with their mutants` below.
+
+**Superseded by the § 8 amendment.** `F8947FE3…` is the *pre-amendment* hash of
+`frontend/index.html`, because 8.1 and 8.2 edit that file. § 8 adds two groups, and 8.5 recomputed
+the current-file hash here and at 6.6 rather than leaving these figures reading as the live state.
+
+### 8.3 / 8.4 — AT-8 and AT-9, with their mutants
+
+Both are durable files that need no server, no database, and no network. Both write their output
+synchronously, because `process.exit()` truncates buffered stdout on a pipe and a check that prints
+nothing reads as a silent pass.
+
+#### AT-8, fixed index slots — `checks/at8-fixed-index-slots.js`
+
+The harness drives the **real** `renderQuestion` and then **clicks the rendered card** through a
+`node:vm` stub DOM, with a seeded `Math.random` so the permutation is the same on every run. It does
+not reimplement the shuffle, and it does not compare letters directly: it reads the rendered `.opt`
+cards' tag and text spans, locates the card that displays the stored answer, and **clicks it** through
+the card's own `onclick`.
+
+The click is dispatched by `__at8.click(i)`, which resolves card `i` to a card object, requires
+`typeof card.onclick === "function"`, and returns the handler's own `{ ok, why, run }` so the caller
+inspects the result. That guard is the reason the check is a statement about the click path at all:
+if `renderQuestion` ever stopped wiring `onclick`, the harness aborts with the reason instead of
+scoring zero and reporting a green.
+
+```
+> node openspec\changes\apply-neon-obsidian-theme\checks\at8-fixed-index-slots.js .\frontend\index.html
+AT-8 fixed index slots  file=.\frontend\index.html  mode=positive
+  CONTROL: cards q1=4 q2=4 (exactly 4 required)
+  CONTROL: seeded shuffle permuted the texts = true
+  CONTROL: q1 and q2 option texts differ = true
+  Layer 3 render 1  clicked the answer's card in slot 1 -> +1 point, that card revealed right
+  Layer 3 render 2  clicked the answer's card in slot 3 -> +1 point, that card revealed right
+  Layer 3 render 3  clicked the answer's card in slot 3 -> +1 point, that card revealed right
+  CONTROL: the stored answer "Leonardo da Vinci" occupied slots [1, 3, 3] over three renders of the same question
+  Layer 4  clicked the wrong card in slot 0 -> 0 points, that card wrong and the answer revealed right
+  RESULT: fixed slots, texts intact, correctness decided by the clicked card's text - PASS
+  process exitCode = 0
+```
+
+Four controls, and each one closes a way this check could pass while proving nothing:
+
+1. **Four cards were found**, asserted before any letter. A check that enumerates nothing passes by
+   enumerating nothing.
+2. **The seeded permutation is not the identity.** Without it, an implementation that stopped
+   shuffling entirely would also read `A`,`B`,`C`,`D` twice. This control is not decoration: it
+   fired during development. The first generator was a plain LCG whose low bits repeat within a few
+   draws, so three consecutive renders produced the *same* permutation and the control refused the
+   run. The generator is now mulberry32 with a warm-up, and the control still asserts rather than
+   trusts it.
+3. **The two questions' option texts differ**, so `A`–`D` twice is a fact about the slots and not
+   about two equal questions.
+4. **The stored answer visited more than one slot** across three renders of the same question. A
+   slot-based implementation and a text-based one coincide when the answer always lands in the same
+   place; here it landed in 1, 3, 3, and each click still awarded exactly one point. This is what
+   makes Layer 3 a statement about *text* rather than about *position*.
+
+Layer 4 is the other side of the same requirement: a wrong text awards **0** points, so a build that
+awarded a point for any click could not satisfy Layer 3 alone. Both layers now assert the revealed
+classes as well as the score, so a build that scored correctly but revealed the wrong card is caught
+too.
+
+**Prescribed mutant — the pre-amendment `{text, letter}` pair shuffle.** Five coordinated inverses,
+each anchored to a string required to match **exactly once**; a count mismatch aborts with exit 2
+rather than reporting a green.
+
+```
+> node …\at8-fixed-index-slots.js .\frontend\index.html --mutant
+AT-8 fixed index slots  file=.\frontend\index.html  mode=MUTANT (pair)
+  CONTROL: cards q1=4 q2=4 (exactly 4 required)
+  CONTROL: seeded shuffle permuted the texts = true
+  CONTROL: q1 and q2 option texts differ = true
+  [FAIL] Layer 1 q1: tags read [A, D, C, B], expected [A, B, C, D] in document order
+  [FAIL] Layer 1 q2: tags read [B, A, C, D], expected [A, B, C, D] in document order
+  Layer 3 render 1  clicked the answer's card in slot 1 -> +1 point, that card revealed right
+  Layer 3 render 2  clicked the answer's card in slot 3 -> +1 point, that card revealed right
+  Layer 3 render 3  clicked the answer's card in slot 3 -> +1 point, that card revealed right
+  CONTROL: the stored answer "Leonardo da Vinci" occupied slots [1, 3, 3] over three renders of the same question
+  Layer 4  clicked the wrong card in slot 0 -> 0 points, that card wrong and the answer revealed right
+  RESULT: ASSERTION FAILED
+  process exitCode = 1
+```
+
+**exit 0 positive, exit 1 mutant.** The pair mutant is caught on **Layer 1 only**, and Layers 3, 4 and
+all four controls stay green — the same layer separation AT-7's controls hold. The mutant still
+shuffles and still scores correctly; the one thing it does wrong is carry each letter with its text.
+A check that could not tell those apart would have passed it.
+
+**The second mutant exists because of what that separation revealed.** The prescribed pair mutant
+never exercises the new click path, because a pair-shuffled build scores correctly *and* clicking it
+reaches the right verdict — it simply labels the wrong card. So the pair mutant's green Layers 3 and 4
+were not, by themselves, evidence that the click path is asserted. `--mutant=letter` is a
+**durable** second mutant: it keeps the fixed `A`–`D` index slots, so Layer 1 and all four controls
+stay green, and changes only the scorer to compare the card's letter against `"A"` instead of the
+text against the answer.
+
+```
+> node …\at8-fixed-index-slots.js .\frontend\index.html --mutant=letter
+AT-8 fixed index slots  file=.\frontend\index.html  mode=MUTANT (letter)
+  CONTROL: cards q1=4 q2=4 (exactly 4 required)
+  CONTROL: seeded shuffle permuted the texts = true
+  CONTROL: q1 and q2 option texts differ = true
+  [FAIL] Layer 3 render 1: clicking the card carrying the stored answer from slot 1 awarded 0 points, 1 required
+  [FAIL] Layer 3 render 1: the clicked card was marked wrong: "right,wrong"
+  [FAIL] Layer 3 render 2: clicking the card carrying the stored answer from slot 3 awarded 0 points, 1 required
+  [FAIL] Layer 3 render 2: the clicked card was marked wrong: "right,wrong"
+  [FAIL] Layer 3 render 3: clicking the card carrying the stored answer from slot 3 awarded 0 points, 1 required
+  [FAIL] Layer 3 render 3: the clicked card was marked wrong: "right,wrong"
+  CONTROL: the stored answer "Leonardo da Vinci" occupied slots [1, 3, 3] over three renders of the same question
+  Layer 4  clicked the wrong card in slot 0 -> 0 points, that card wrong and the answer revealed right
+  RESULT: ASSERTION FAILED
+  process exitCode = 1
+```
+
+**The failing assertion is the click path, and it is the only thing that fails.** Layer 1 passes
+untouched, which is the point: the click-path assertions are load-bearing on their own. Every failure
+above is about the score and reveal of the card the harness actually clicked.
+
+**Independent copy, because a mutant shipped inside the same file can drift from the check that
+cites it.** The same letter-scoring edit was also applied to a scratch copy of the file in
+`%TEMP%\opencode` and AT-8 was run against it in **positive** mode, so the finding does not depend on
+AT-8's own mutant code being correct:
+
+```
+> node …\at8-fixed-index-slots.js %TEMP%\opencode\at8-letter-mutant.html
+AT-8 fixed index slots  file=C:\Users\Iván\AppData\Local\Temp\opencode\at8-letter-mutant.html  mode=positive
+  CONTROL: cards q1=4 q2=4 (exactly 4 required)
+  CONTROL: seeded shuffle permuted the texts = true
+  CONTROL: q1 and q2 option texts differ = true
+  [FAIL] Layer 3 render 1: clicking the card carrying the stored answer from slot 1 awarded 0 points, 1 required
+  [FAIL] Layer 3 render 1: the clicked card was marked wrong: "right,wrong"
+  … identical for renders 2 and 3 …
+  CONTROL: the stored answer "Leonardo da Vinci" occupied slots [1, 3, 3] over three renders of the same question
+  [FAIL] Layer 4: clicking a wrong text awarded 1 points, 0 required
+  [FAIL] Layer 4: the clicked wrong card was not marked wrong: ""
+  RESULT: ASSERTION FAILED
+  process exitCode = 1
+```
+
+Here Layer 4 fails as well, because a letter-scoring build is wrong in both directions: clicking the
+answer scores 0 and clicking a wrong card scores 1. Two independent red runs, one inside the check and
+one outside it, both pointing at the click path.
+
+
+#### AT-9, upright sector labels — `checks/at9-upright-sector-labels.js`
+
+The harness composes the transform **from the written stylesheet**, not from a copy of the maths: it
+parses the `.seg-label` and `.wheel` rules, splits each declaration into top-level terms, substitutes
+`--a` and `--wheel-rot`, and sums the `rotate()` terms. Placement comes from the rotation immediately
+preceding the radial `translate(0, L)`. The wheel's angle is obtained by calling the page's own
+`spinWheel` and reading what it wrote.
+
+**The categories are the page's own, and the check no longer needs a fixture to run.** The
+`categories.json` argument is **optional**; with no argument the harness makes `fetch` reject, so the
+page falls back to its own six-item `FALLBACK` list and the check runs end to end with **no network
+and no server**. Passing a path to a real `/categories` response still exercises the API path, and a
+control asserts the fetch happened exactly once, so the six labels can never be a list the harness
+invented. The check is therefore self-contained in both modes.
+
+```
+> node openspec\changes\apply-neon-obsidian-theme\checks\at9-upright-sector-labels.js .\frontend\index.html
+AT-9 upright sector labels  file=.\frontend\index.html  mode=positive
+  categories: FALLBACK - fetch rejects and the page derives its own six categories
+  stylesheet: .seg-label transform = translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a))) rotate(calc(-1 * var(--wheel-rot)))
+  stylesheet: .wheel transform = rotate(var(--wheel-rot))
+  CONTROL: /categories fetches = 1 (1 required: the list is built from a response, never from this harness)
+  CONTROL: labels found = 6 (exactly 6 required)
+  CONTROL: ancestor chain above #wheel, 4 elements, each one's rotation added to the reading below (state classes read as satisfiable: active, right, wrong):
+    html                               0.000000deg   from 3 rule(s): :root | html, body | [hidden]
+    body                               0.000000deg   from 4 rule(s): :root | html, body | [hidden] | body
+    section#screen-wheel.panel         0.000000deg   from 4 rule(s): :root | [hidden] | .panel | .panel.active
+    div.wheel-wrap                     0.000000deg   from 3 rule(s): :root | [hidden] | .wheel-wrap
+  CONTROL: unread rotation above #wheel = 0.000000deg, and 14 rules reached the chain
+  spin wrote: #wheel.style.transform = rotate(2070deg)  and  --wheel-rot = 2070deg
+  CONTROL: wheel rotation at rest = 0deg, after the spin = 270deg, differ = true
+  at rest       composed rotation of six labels: max 0.000000deg off upright
+  post-spin     composed rotation of six labels: max 0.000000deg off upright
+  non-integral  composed rotation of six labels: max 0.000000deg off upright
+  RESULT: six labels upright at every moment and inside their own arcs - PASS
+  process exitCode = 0
+```
+
+**The ancestor chain is read out of the written markup, not asserted from a constant.** An earlier
+version printed `#wheel -> documentElement` as a hardcoded literal while only the geometric half
+worked. That literal was wrong the moment a transform-bearing wrapper existed above `#wheel`, and it
+would have kept reading "no other transform in between" while the labels rotated with the wrapper.
+The check now walks from each label's parent up to `documentElement`, collects every element whose
+computed rotation it can read, **adds each element's rotation into the composed reading** and sums
+them into `ANCESTOR_TOTAL`. The chain above `#wheel` is four deep — `html`, `body`,
+`section#screen-wheel.panel`, `div.wheel-wrap` — and every one of those rotations is now part of the
+number Layers 1 and 2 assert, so a wrapper that rotates the wheel no longer slips past.
+
+`STATE_CLASSES` are read by scanning the stylesheet for `classList.add` / `remove` / `toggle`, which is
+how the check knows `.panel.active` (and its `panelIn` animation) can carry a rotation. The scan also
+drives the keyframe reading. A class the scan cannot see is reported rather than assumed absent.
+
+Three moments, not two. **At rest** the wheel is at `0°`. **Post-spin** is a real spin through the
+page's own `spinWheel`, which wrote `rotate(2070deg)` — and the check confirms `--wheel-rot` agrees
+with the inline transform, because writing only one of the two is exactly the half-implementation
+that leaves the labels trailing for 3.5 s. **Non-integral** applies `37.5°`, which matters: `2070°`
+is `5 × 360 + 270`, a whole number of turns, so a counter-rotation that rounded, snapped to whole
+turns, or matched only accumulated turn values would pass the post-spin reading and fail this one.
+
+Two controls SM-22 insists on are present and live. **The wheel must have turned**: at rest `0°`,
+after the spin `270°`, and a run where those were equal fails rather than passing. And **every label
+is a child of `#wheel`**, asserted structurally — that is the half of containment that catches a
+label that stays upright by leaving the wheel entirely, which the geometric half provably cannot
+(see the note under Layer 2 in the check).
+
+**Anti-vacuity controls, all four load-bearing.** The walk must reach `documentElement`; the stylesheet
+scan must match at least one rule; `/categories` must be fetched exactly once; and `rotateSum` carries
+its own self-check. Remove any one of them and the check can report green while reading nothing.
+
+**Prescribed mutant — the wheel counter-rotation dropped**, anchored to
+`rotate(calc(-1 * var(--wheel-rot)))`, required to match **exactly once**.
+
+```
+> node …\at9-upright-sector-labels.js .\frontend\index.html --mutant
+AT-9 upright sector labels  file=.\frontend\index.html  mode=MUTANT (wheel counter-rotation dropped)
+  stylesheet: .seg-label transform = translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a)))
+  stylesheet: .wheel transform = rotate(var(--wheel-rot))
+  CONTROL: /categories fetches = 1 (1 required: the list is built from a response, never from this harness)
+  CONTROL: labels found = 6 (exactly 6 required)
+  CONTROL: ancestor chain above #wheel, 4 elements, each one's rotation added to the reading below (state classes read as satisfiable: active, right, wrong):
+    html                               0.000000deg   from 3 rule(s): :root | html, body | [hidden]
+    body                               0.000000deg   from 4 rule(s): :root | html, body | [hidden] | body
+    section#screen-wheel.panel         0.000000deg   from 4 rule(s): :root | [hidden] | .panel | .panel.active
+    div.wheel-wrap                     0.000000deg   from 3 rule(s): :root | [hidden] | .wheel-wrap
+  CONTROL: unread rotation above #wheel = 0.000000deg, and 14 rules reached the chain
+  spin wrote: #wheel.style.transform = rotate(2070deg)  and  --wheel-rot = 2070deg
+  CONTROL: wheel rotation at rest = 0deg, after the spin = 270deg, differ = true
+  [FAIL] Layer 1 post-spin label 0: composed rotation is 2070deg, 90.000deg off upright
+  … (labels 1 to 5 identical)
+  [FAIL] Layer 1 non-integral label 0: composed rotation is 37.5deg, 37.500deg off upright
+  … (labels 1 to 5 identical)
+  at rest       composed rotation of six labels: max 0.000000deg off upright
+  post-spin     composed rotation of six labels: max 90.000000deg off upright
+  non-integral  composed rotation of six labels: max 37.500000deg off upright
+  RESULT: ASSERTION FAILED
+  process exitCode = 1
+```
+
+**exit 0 positive, exit 1 mutant.** The mutant's most instructive line is the first summary: it is
+**still 0.000000° off upright at rest**. Dropping the counter-rotation is invisible until the wheel
+turns, so an at-rest-only reading would have passed this build. That is the whole reason SM-22
+demands a second moment, and the reason the non-integral third moment exists. The control that the
+wheel actually turned did **not** fire, correctly: the wheel turned in the mutant too, and the
+labels simply stopped cancelling it.
+
+**Three scratch mutants, because the chain had to be shown load-bearing rather than asserted.** The
+prescribed mutant only removes the counter-rotation term; it does not touch the ancestor walk. Three
+further mutants were applied to **copies of the file in `%TEMP%\opencode`**, never to the working
+tree, each adding a rotation the old hardcoded literal would have ignored, and each run against
+AT-9 in positive mode:
+
+| Scratch mutant | Change | Result |
+|---|---|---|
+| `at9-ancestor-mutant.html` | `div.wheel-wrap { transform: rotate(90deg); }` | **exit 1** — every moment reads `90deg` off upright, and the failure appears at all three moments, not only post-spin |
+| `at9-body-mutant.html` | `body { transform: rotate(30deg); }` | **exit 1** — the chain walk reaches `body` and adds its `30deg` |
+| `at9-keyframe-mutant.html` | `panelIn` gains a `rotate(12deg)` at both stops | **exit 1** — summed as `24deg` across the two stops, from the `classList` scan rather than a hardcoded rule list |
+
+The `.wheel-wrap` case is the one that matters: it is exactly the shape the old `#wheel ->
+documentElement` literal would have missed, and under the old code the check would have reported
+`0.000000deg` off upright and exited 0. Each of these rows is a red run, not a claim.
+
+**One more scratch mutant, to show the anti-vacuity controls are not decoration.**
+`at9-nowheel-mutant.html` deletes the `#wheel` element from the markup; the run **exits 2** with the
+structural reason rather than reporting a pass over an empty label set. A check that finds nothing to
+measure must not be able to report green.
+
+**What AT-9 does not observe, and it is not small.** Whether the glyph and text read normally, and are
+not mirrored, inverted, or clipped, is a rendered pixel. No agent in the fleet reads one. That stays
+with `test-plan.md` MT-12 and task 6.7, and AT-9 makes no claim about it.
+
+#### 8.5 — recomputed hashes and the extended containment proof
+
+`frontend/index.html` at the time of that pass was **810** lines / **32,818** bytes / LF only / SHA-256
+`4B7AE7F68B8FFBC2AF1809247AB143D60038FF84FEB45280117B34B1FD728FFE`; the current file is **815** lines
+/ **33,195** bytes / LF only / SHA-256
+`BAA7F37C3C403807A3BC3CF8CED4CD6BFB6B717704463E795059103194D59A6C`, the difference being one
+four-line comment above `applyWheelRotation` and nothing else. Both figures were computed from the file
+on disk
+with Python reading **bytes**, never with `Get-FileHash` and never through a text-mode read, because
+`.gitattributes` marks this file `-text` and the two disagree about what a line ending is. **0** CRLF
+sequences and **0** bare CR bytes: the file is LF-only, as it was before § 8.
+
+The reversal proof was extended, not replaced. On a scratch copy in `%TEMP%\opencode` — never in the
+working tree — the inverses of 8.1 and 8.2 were applied, each required to match **exactly once**; a
+count mismatch aborts non-zero rather than reporting a green that proves nothing. Re-run after the
+`applyWheelRotation` comment was added, the proof needs **14** inverses, not 8: the six extra split the
+summary's boundaries at the single-edit level, and the fourteenth removes exactly the comment.
+
+```
+current bytes = 33195
+  reversed [8.2 @property]: count=1
+  reversed [8.2 .wheel]: count=1
+  reversed [8.2 .seg-label]: count=1
+  reversed [8.2 SPIN_TRANSITION]: count=1
+  reversed [8.2 spin branch 1]: count=1
+  reversed [8.2 spin branch 2]: count=1
+  reversed [8.2 helper]: count=1
+  reversed [8.2 helper rationale]: count=1
+  reversed [8.1 render]: count=1
+  reversed [8.1 OPTION_SLOTS const]: count=1
+  reversed [8.1 loop]: count=1
+  reversed [8.1 key]: count=1
+  reversed [8.1 text]: count=1
+  reversed [8.1 onclick]: count=1
+  reversed sha256 = F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610
+  anchor   sha256 = F8947FE3C0787EEBC0B5FF749217E482270D5267BB0753AFC8D27D4296806610
+  byte-identical to the pre-amendment anchor: true
+REVERSAL CONTAINMENT: every inverse of this change reverts byte-for-byte to the pre-amendment anchor - PASS
+```
+
+A first attempt at this re-run reconstructed all nine pre-images from memory and produced
+`7D502101DB5F8D79E6F15E0939026A2B6CEF4C0413C0536E63241CE146BD9625` — every anchor still matched
+exactly once, so the counts alone would have reported a plausible pass. The hash is what caught it:
+three pre-images were wrong (the `.wheel` rule restored `transform: rotate(0deg)` rather than
+dropping the line, `SPIN_TRANSITION` was deleted outright rather than shortened, and the pre-8.1 loop
+was `opts.forEach(opt => {…})` rather than an indexed `texts.forEach((t, i) => {…})`). The pre-images
+were then taken from the earlier pass's own verified proof and the result landed on the anchor. This
+is recorded because it is the reason the proof hashes the result instead of counting matches: a
+count-only containment check cannot tell a correct pre-image from a plausible one.
+
+The pre-amendment anchor itself was verified before use: `%TEMP%\opencode\hoy-index.html` hashes to
+`F8947FE3…` at 796 lines / 32,431 bytes / 0 CRLF, so the proof reverses to a known file and not to
+whatever happened to be lying around.
+
+The ten protected files are untouched, and `test-plan.md` § 3 still records the same ten baseline
+hashes. `test-plan.md`'s pre-change `BF5FCFC2…` baseline at lines 22 and 168 is historical, correct
+as written, and needed no edit — which is why it appears nowhere in this pass's diff.
+`openspec validate apply-neon-obsidian-theme --strict` exits **0**. `openspec list` reads
+`apply-neon-obsidian-theme   30/34 tasks`: **6.3**, **6.4**, **6.5** and **6.7** are still open and
+wait on a human, which is the same four the "Not run" section below names. Thirty is the correct
+figure to read at Gate C until those four are run; it is not 34.
 
 ### 1.3 — `node --check` gate, with its positive control
 
@@ -1343,7 +1847,11 @@ curl.exe -s -m 10 http://localhost:8000/categories/stats
 ### 6.6 — scope containment
 
 SHA-256 against the HASH-1 baseline: **10 of 10** protected files byte-identical, `frontend/index.html`
-the only change, at `4F598508129B001BD31C5BC5B1489FA5B3A64F35A06060975E39BE60C0CF5E1E`.
+the only change. Its hash at the time of that pass was `4F598508129B001BD31C5BC5B1489FA5B3A64F35A06060975E39BE60C0CF5E1E`
+— the **pre-7.2** state. 7.2 and § 8 supersede it; the current file is
+`BAA7F37C3C403807A3BC3CF8CED4CD6BFB6B717704463E795059103194D59A6C` (815 lines, 33,195 bytes, LF only),
+after 8.5 measured `4B7AE7F6…B1FD728FFE` (810 lines, 32,818 bytes) and one later pass added a four-line
+comment and nothing else.
 
 Containment by **hash reconstruction**, which is stronger than a hunk count because it needs no git
 baseline and cannot be satisfied by a hunk that is individually plausible. All **seven** of this

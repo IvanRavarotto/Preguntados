@@ -6,11 +6,11 @@
 | Branch when authorized | `feature/apply-neon-obsidian-theme` |
 | Track | 1 (Light), per `proposal.md`. No `design.md`. |
 | Capability | `game-presentation` (new, the project's first) |
-| Delta under test | `openspec/changes/apply-neon-obsidian-theme/specs/game-presentation/spec.md` — 14 requirements, 23 scenarios |
+| Delta under test | `openspec/changes/apply-neon-obsidian-theme/specs/game-presentation/spec.md` — 15 requirements, 24 scenarios (14/23 before the R15 amendment) |
 | Other artifacts | `proposal.md`, `tasks.md`, `docs/adr/ADR-001-neon-category-palette.md` |
 | Surface | `frontend/index.html`, one file, 800 lines as of this reconciliation |
 | Author | `qa-manager` |
-| Status | reconciled three times: against the original delta, then against two amendments that rewrote S6, S18 and R10/S19. Ten findings in section 12; eight items recorded-not-adjudicated in section 10. SM-5, SM-16 and SM-17 rewritten in this pass; every new snippet run. |
+| Status | reconciled four times: against the original delta, then against two amendments that rewrote S6, S18 and R10/S19, then against the § 8 amendment that fixed the option index slots and added R15 for the upright sector labels. Eleven findings in section 12; ten items recorded-not-adjudicated in section 10. SM-5, SM-16 and SM-17 rewritten in this pass; SM-22 added; every new snippet run. |
 
 > **Read this before following any `:NNN` in this plan.** The citations here point at **two different
 > files**, because `dev` rewrote the surface while the plan was being written, and the delta's own
@@ -39,10 +39,11 @@ reviewer can see where the test came from.
 
 ### Covered
 
-The 23 scenarios of `game-presentation`: canvas and glass tokens, neon palette, icon set, the
+The 24 scenarios of `game-presentation`: canvas and glass tokens, neon palette, icon set, the
 derived wheel and its sector maths, the three feedback states, the timer, the fixed shell, the
-offline constraint, type roles, option cards, responsiveness, the preserved gameplay rules,
-document identity, and the unchanged API surface.
+offline constraint, type roles, option cards (index tag in a fixed `A`–`D` slot, texts shuffled
+across those slots), the upright sector labels that survive any wheel rotation, responsiveness, the
+preserved gameplay rules, document identity, and the unchanged API surface.
 
 ### Not covered, and why
 
@@ -52,6 +53,7 @@ document identity, and the unchanged API surface.
 | Any new test framework or dependency | Out of scope by instruction and by `project.md`. Adding pytest, Ruff, or mypy is a separate change with its own decision. |
 | Visual fidelity against `stitch/screen.png` by machine | No agent in this fleet can read images, per `proposal.md`. Human-only, MT-12. |
 | Cross-browser rendering | Not in the delta. Chrome/Edge on Windows 11, the declared deployment target. The delta's own `backdrop-filter` note cites Baseline 2024, so the *unprefixed* property is asserted in one engine only. |
+| R15's uprightness at **intermediate** wheel rotations on an engine without `@property` | The counter-rotation is carried by a registered custom property, and registration is what makes it interpolate. Where `@property` is unsupported the labels snap upright at the start of a spin, drift for its 4.2 s, and land upright again. No agent in this fleet can run a non-`@property` engine, so the degradation is documented in the delta's R15 note and not tested. It does not affect the declared target: `@property` is Baseline 2024 and Chrome/Edge on Windows 11 supports it. |
 | Performance, load, full a11y audit, keyboard navigation, contrast ratios | Not in the delta. Named in section 11 as follow-up work. |
 | The nine mockup features the proposal excludes | Lobby and room codes, the `00:45` turn clock, the `x1.5 XP` multiplier, per-category mastery percentages, the mode selector, the `x4` streak multiplier, daily missions, remote avatars, and the `v2.4.0-neon` / latency footer. Out of this change and therefore not tested. |
 
@@ -601,16 +603,19 @@ is the one that fires on the defect. Section 12 explains why AT-2 alone would no
 
 ## 6. Requirement-to-test map
 
-All 14 requirements, all 23 scenarios. `[DESIGN]` `[PRESERVE]` `[IMPL]` `[AUTHORED]` are the
+All 15 requirements, all 24 scenarios. `[DESIGN]` `[PRESERVE]` `[IMPL]` `[AUTHORED]` are the
 delta's own provenance tags.
 
 Re-verified against the amended delta by counting `### Requirement:` and `#### Scenario:` headings
-in the delta: **14 and 23**, unchanged. The amendment **retitled** R11, S3, and S20 without moving
-any ID, so the map below stays valid by ID and only the three quoted titles were stale; they are now
-the amended titles. Every one of S1 to S23 still has at least one test mapped to it, and no scenario
-lost its last test — the amendment created no coverage gap. S3's rewrite changed what SM-3 asserts,
-not which scenario it asserts, and S20's gained a third breakpoint and a containment half, both inside
-SM-18.
+in the delta: **15 and 24**. The first amendment **retitled** R11, S3, and S20 without moving any ID,
+so the map below stays valid by ID and only the three quoted titles were stale; they are now the
+amended titles. The § 8 amendment **rewrote R10/S19 in place** — the four index markers are now the
+fixed slots `A`, `B`, `C`, `D` and only the option texts shuffle across them — and **appended
+R15/S24** for the upright sector labels. No existing ID moved, so the map still resolves by ID. Every
+one of S1 to S24 has at least one test mapped to it, and no scenario lost its last test. S3's rewrite
+changed what SM-3 asserts, not which scenario it asserts; S20 gained a third breakpoint and a
+containment half, both inside SM-18; S19's rewrite changed what SM-17 asserts; and S24 is new, mapped
+to SM-22 with its pixel-level half left to MT-12.
 
 ### R1 Obsidian canvas and glass surface tokens
 
@@ -704,6 +709,12 @@ SM-18.
 | Scenario | Tag | Tests |
 |---|---|---|
 | S23 The API surface and the request count are unchanged | `[PRESERVE]` | SM-15, SM-20, HASH-1 |
+
+### R15 Wheel sector labels stay upright in the page frame at any wheel rotation
+
+| Scenario | Tag | Tests |
+|---|---|---|
+| S24 A sector label stays upright and inside its sector after a spin | `[IMPL]` `[AUTHORED]` | SM-22, MT-12 (pixel half) |
 
 ## 7. Test cases
 
@@ -1302,9 +1313,12 @@ The amended R10 relocates "selection" onto the two states that do exist -
 Chromium does not match `:focus-visible` on a mouse click, so a focus-only instrument would be
 invisible to a mouse player.
 
-**1. Index tags, unchanged.** The four cards' tags are exactly `A`, `B`, `C`, `D`, one each, in the
-shuffled presentation order rather than the stored `option_a` to `option_d` order. Control: assert
-four tags were found before asserting their letters.
+**1. Index tags — fixed slots, amended.** The four cards' tags are exactly `A`, `B`, `C`, `D`, one
+each, in document order. Since the § 8 amendment the tags are **fixed slots**, so this clause runs on
+**two** questions: the tags must read `A`, `B`, `C`, `D` both times while the four option texts are
+**not identical** between the two questions. That inequality is the control — without it, a game that
+never shuffled at all would pass. Control: assert four tags were found before asserting their
+letters.
 
 **2. The chip, unchanged.** `.q-cat` names the selected category and carries its accent on a glowing
 dot.
@@ -1612,6 +1626,53 @@ assert one and assume the other. Covers S22.
 HASH-1. See section 3 for the hashes and section 9 for why `git status` is not the instrument.
 Covers S23.
 
+### SM-22 sector labels stay upright in the page frame, with a negative control
+Reads computed transforms; no pointer, no screenshot. For each `.seg-label`, compose the rotation from
+the element's own `transform` and every ancestor's up to `document.documentElement`, and assert the
+result is `0°` modulo `360°` (`% 360 === 0`, with a small tolerance). Do it twice: at rest, and after
+setting `#wheel`'s inline transform to a deliberately **non-integral** rotation (for example
+`37.5deg`). Both readings must be `0°`.
+
+- **Control, not decoration.** The reading is worthless unless the wheel actually turned, so the same
+  snippet records `#wheel`'s own composed rotation at both moments and **requires the two to differ**.
+  A run where they are equal — the tester forgot to rotate, or the counter-rotation is a constant —
+  fails the control instead of passing.
+- **Containment, so upright does not mean "left behind".** For each label, compute the polar angle
+  from the wheel's centre to the label's bounding-box centre and require it to fall inside that
+  label's own sector arc (`--a` plus or minus half the sector, modulo `360°`). A label that stays
+  upright only because it stopped moving with the wheel fails here.
+- **Text present.** Each label's text node equals its category name, so an empty label cannot pass as
+  upright.
+
+**Negative control.** Run the same check against a mutated in-memory copy that drops the wheel
+counter-rotation, leaving only the original `.seg-label` rule: after the non-integral rotation the
+`0°` assertion must fail with a **non-zero exit**. Anchor the mutation to a string that must occur
+**exactly once**. If the anchor matches zero or more than one occurrence the mutation **aborts with a
+non-zero exit** rather than reporting a vacuous green — the same discipline as `AT-7`'s controls. The
+dev chooses whether the counter-rotation is a CSS custom property, a per-label style write, or a
+re-composition on the wheel's `transitionend`; the anchor is whatever string carries it in the chosen
+implementation, and task 8.2 fixes the observable, not the mechanism.
+
+**As built, the ancestor half is walked, not asserted.** `AT-9` starts at each label's parent and
+climbs to `document.documentElement`, reading each element's own rotation and **adding every one of
+them** into the composed figure, so a rotation-bearing wrapper above `#wheel` cannot hide. The chain
+in the built file is four deep — `html`, `body`, `section#screen-wheel.panel`, `div.wheel-wrap` — and
+`.panel.active` / `panelIn` are included because the classList scan finds them, not because they were
+listed. Three scratch mutants prove the walk is load-bearing: a `rotate(90deg)` on `.wheel-wrap`, a
+`rotate(30deg)` on `body`, and a `rotate(12deg)` on both `panelIn` stops turn the check red, reading
+90°, 30° and 24° off upright respectively, and a fourth copy with `#wheel` deleted from the markup
+exits 2 rather than passing over an empty label set. The earlier plan's hardcoded
+`#wheel -> documentElement` literal would have reported `0.000000deg` and exited 0 on all three.
+
+**The categories are the page's own, so the check needs no fixture.** `AT-9`'s `categories.json`
+argument is optional: with no argument it makes `fetch` reject, the page falls back to its own
+six-item list, and the check runs with no network and no server, asserting the fetch was attempted
+exactly once so the six labels can never be a list the harness invented. Passing a real
+`/categories` response exercises the API path and gives the same result.
+
+**What this cannot observe.** Whether the glyph reads normally, is mirrored, or is clipped: that is a
+rendered pixel and no agent in the fleet reads one. It stays with MT-12. Covers S24.
+
 ### HASH-1 must-not-change files
 Rerun SHA-256 over the ten files in section 3. The first ten must be byte-identical to the recorded
 values. `frontend/index.html` is expected to change, and that is the only production file allowed to.
@@ -1627,8 +1688,14 @@ begins. `maxlength="14"` still holds on both inputs. Empty names still default t
 Six sectors in the neon accents, pointer at the top, spin settles in 3.5s to 4.5s on a stopwatch
 across three spins. The revolution count is judged by eye here and by nothing else, because `+ 360 * 5`
 is a whole number of turns and is therefore invisible to any modulo-360 assertion: changing 5 turns
-to 4 was measured at 0 of 6 caught, an equivalence class rather than a defect class. Sector labels
-legible and upright. Covers S10, and the derived-wheel half of S7 by eye.
+to 4 was measured at 0 of 6 caught, an equivalence class rather than a defect class. **Sector labels,
+amended by § 8:** after a spin the six labels must read **upright in the page frame**, not at the
+wheel's accumulated angle. The mechanical half is **SM-22** — the rotation composed from the label's
+own `transform` and every ancestor `transform`, which must be `0°` modulo `360°`, with `#wheel`'s own
+composed rotation differing between the at-rest and post-spin readings as the control. This manual
+step is the human backstop for the one thing SM-22 cannot see: that the glyph and text are not
+inverted, mirrored, or clipped. Read the six labels after at least one spin and name the defect if one
+is upside down. Covers S10, S24, and the derived-wheel half of S7 by eye.
 
 ### MT-3 timeout
 Answer nothing for 20 seconds. The amber timed-out state appears, the stored answer is revealed in
@@ -1643,10 +1710,13 @@ with an A, B, C, or D tag. Covers S13, and the correct half of S11.
 
 ### MT-5 wrong answer, tags, and order
 Pick a wrong option. Zero points, the wrong card carries `#FF2A6D`, the correct card is also revealed
-and highlighted, and the revealed text equals the stored answer from the API. Confirm the four index
-tags read A, B, C, D in the **shuffled** order rather than the stored `option_a` to `option_d`
-order, by playing the same question twice and checking the order differs. Covers S13, S18, S19, and
-the incorrect half of S11.
+and highlighted, and the revealed text equals the stored answer from the API. **Index tags, amended
+by § 8:** the four tags read `A`, `B`, `C`, `D` top-to-bottom in that **fixed** order. Play the same
+question twice and confirm the tags are `A`–`D` **both times** while the four option **texts** are in
+a different arrangement between the two renders. That inequality is the control — a build that
+stopped shuffling altogether would also show `A`–`D` twice and must not pass. **Sector-label
+orientation belongs to MT-2 and SM-22, not here**; do not mark S24 from this test. Covers S13, S18,
+S19, and the incorrect half of S11.
 
 ### MT-6 the tenth point ends the match
 Drive one player to 9, answer correctly to reach 10. The winner screen names the player who reached
@@ -1695,8 +1765,33 @@ judgement and no instrument settles it. Record the tester's words. Covers S11.
 A human reviews the result in a browser against `stitch/screen.png`. `proposal.md` records that no
 agent in the fleet can read images, so visual fidelity is unreviewed by machine and **no claim of
 matching the screenshot is made**. Expect to iterate on `screen-question`: it is the busiest of the
-four panels and has prose only as its reference. Covers nothing mechanically; it is the gate on
-"looks right".
+four panels and has prose only as its reference. **R15's final bullet is here** for the same reason:
+the composed-rotation instrument in SM-22 can prove a label is upright in the page frame, but it
+cannot tell you whether a glyph reads normally, so confirm after a spin that all six sector labels
+are legible and none is inverted, mirrored, or clipped. Note that `stitch/code.html` renders its own
+labels rotated by their sector angle (`:241`, `:252`, `:263`, `:274`, `:285`, `:296`), so a
+side-by-side against the mockup will show a **deliberate** difference: the mockup is radial, this
+build is page-upright. Covers S24's human half; nothing mechanically.
+
+**Carry these two numbers into the review, because they are the tightest thing in the build.** The
+computed worst-case margin between neighbouring upright labels was measured at **320 px**, the narrow
+viewport:
+
+| Viewport | Label box | Worst-case margin between adjacent labels |
+|---|---|---|
+| 320 px (mobile floor) | 68 × 34 px | **3.77°** |
+| 320 px (mobile floor), two-line label | 68 × 44 px | **1.91°** |
+| default | 68 × 34 px | 12.37° (default) / 12.69° |
+
+The two-line case is the one to look at: at 1.91° a pair of adjacent labels is separated by about
+**2.3 px** of arc at the label ring. The reference is the same `screen-question` panel the section
+above already flags as the busiest, so the tightest geometry in the change sits on the densest
+screen. This is an **input to a human's judgement about legibility and collision, not a pass or fail
+an agent can decide** — no agent in this fleet reads a rendered pixel, which is why it is written
+here and not as a scenario. Confirm two things at 320 px after a spin: that the six labels are
+legible where they are closest together, and that no two of them visually collide. If either fails,
+the fix is in the label sizing at the `max-width: 420px` breakpoint, not in the counter-rotation, and
+the counter-rotation is not the thing under suspicion.
 
 ## 8. Demo path, the human integration test
 
@@ -1747,22 +1842,24 @@ screenshot review cannot do this, which is why it is written as an instruction t
    run is not evidence that the check can fail.
 3. SM-21 has been pasted and run, and its verdict recorded. It is not optional, and it is not a
    substitute for M2.
-4. Each of the 23 scenarios has at least one recorded pass.
+4. Each of the 24 scenarios has at least one recorded pass.
 5. Every SM, MT, DP, and HASH case executed with a recorded result.
 6. Every negative assertion paired with its control, and the controls run rather than assumed.
 7. Anything not run is named as not run, with a reason.
-8. The three rewritten cases carry their bars: SM-5 reads `inkIsCategoryDerived: true` and
-   `allFillIsDeclaredInk: true` - not `allMeet3to1` alone, which the palette cannot enforce on its
-   own, per Finding 8 - with `minimumRatio` at or above `3`; SM-16 reads `oneFamily: true` and
+8. The rewritten cases and the new SM-22 carry their bars: SM-5 reads `inkIsCategoryDerived: true`
+   and `allFillIsDeclaredInk: true` - not `allMeet3to1` alone, which the palette cannot enforce on
+   its own, per Finding 8 - with `minimumRatio` at or above `3`; SM-16 reads `oneFamily: true` and
    `differsFromBody: true` on each of the three panels at the 4 / 2 / 1 minima, and `countedDown:
-   true` with `hasTextNode: false` from the 20-second observation; SM-17 reads
-   `borderFollowsAccent`, `glowFollowsAccent` and `zeroOffset` true for **both** selectors, and the
-   two forced-state readings differ from `BASE`. The glow radius is not on that list and must not be
-   added to it.
+   true` with `hasTextNode: false` from the 20-second observation; SM-17 reads `borderFollowsAccent`,
+   `glowFollowsAccent` and `zeroOffset` true for **both** selectors, the two forced-state readings
+   differ from `BASE`, and the two-question tag check reads `A`–`D` both times with the option texts
+   not identical between them; SM-22 reads `uprightAtRest` and `uprightAfterRotation` true for all six
+   labels, `wheelTurned: true` as its control, and `containedInSector: true` for all six, with its
+   mutant exiting non-zero. The glow radius is not on that list and must not be added to it.
 
 ### Pass or fail
 
-The change passes when both automated families are green, SM-21 has been run, all 23 scenarios have
+The change passes when both automated families are green, SM-21 has been run, all 24 scenarios have
 a recorded pass, and nothing is left unrecorded. There is no partial pass and no numeric threshold,
 because no coverage bar exists in this project to measure against. The numeric bars the delta itself
 names are exact, and each is stated as a count rather than an impression: `node --check` exits 0; 42
@@ -1838,11 +1935,12 @@ is not this one.
 
 ### Recorded, not adjudicated
 
-Eight things found while reconciling against the two amendments to the delta. **None of them has a
+Ten things found while reconciling against the three amendments to the delta. **None of them has a
 test, and none should.** Four are judgment calls for a human, two are lines in documents this plan
-does not own, and two are places where a scenario's title or a parenthetical disagrees with the
-scenario it annotates. A test that adjudicated any of them would be the wrong instrument, and
-inventing one would be worse than the finding.
+does not own, two are places where a scenario's title or a parenthetical disagrees with the scenario
+it annotates, and two are consequences of the § 8 amendment that a reviewer will otherwise read as
+defects. A test that adjudicated any of them would be the wrong instrument, and inventing one would be
+worse than the finding.
 
 **1. S20's "exactly one further breakpoint" is brittle by construction — `architect` flagged it.**
 The requirement counts `@media` rules in the **whole stylesheet**, so it fails the moment a
@@ -1934,6 +2032,42 @@ the 40% alpha as the value and requires only that the three states be visibly di
 as a perception risk for the release conversation, and the colour-vision question belongs to the
 a11y follow-up in § 11.
 
+**9. The mockup's sector labels are radial, and R15 makes this build upright instead.** A brief for
+the § 8 amendment stated that `stitch/code.html` "renders labels with no rotation at all". **That is
+wrong.** Each label group in the mockup carries `rotate(<sector centre angle>)` — `:241`, `:252`,
+`:263`, `:274`, `:285`, `:296` — so the mockup's labels turn with their sector and the lower ones are
+upside down, exactly the defect the human objected to. Upright-relative-to-page is therefore a
+**deliberate product decision that diverges from the mockup**, which is why R15 is tagged `[AUTHORED]`
+and not `[DESIGN]`, and why MT-12 says a side-by-side will show a difference. A reviewer who diffs
+R15 against `stitch/code.html` and files the divergence as a defect has it backwards: the mockup is
+the thing R15 chose not to follow, and the delta's provenance note says so. **No test is written for
+an orientation the mockup does not specify**, and the human's confirmation is MT-12.
+
+**10. The fixed index slots mean a tag no longer identifies its stored option, and that will read as
+a lost shuffle.** Before § 8, `renderQuestion` shuffled `{text, letter}` pairs together, so the tags
+`A`–`D` moved with their texts. After 8.1, the tags are the slots and only the texts move: the same
+card index (`B`, say) holds a different stored option on every render. A reviewer who read the earlier
+delta wording — "the four index tags … in the shuffled presentation order" — and sees the tags static
+will call it a regression, when it is the requested behaviour. The `project.md` "4 opciones barajadas"
+rule still holds because the **texts** are shuffled; `proposal.md`'s § 8 note states this. **SM-17's
+two-question control is the only guard, and it is deliberately an inequality**: it fails a build that
+stops shuffling, which is the regression this item guards against at the review, not at the gate.
+
+**11. SM-17's scoring half is a click, not a direct call, and the slot argument above is what forces
+it.** A check that calls `pickAnswer(card, answerText, q)` directly never exercises the `onclick`
+wiring, so it cannot distinguish a build that renders four correct cards from one that renders four
+cards and wires them to nothing — and a check that finds the right card by *index* would pass against
+a slot-based scorer, which is the exact regression fixed in 8.1. `AT-8` therefore resolves the card
+whose rendered **text** equals the stored answer, then **clicks it** through that card's own
+`onclick`, and requires `typeof card.onclick === "function"` before dispatching, so a build that stops
+wiring the handler aborts with a reason instead of scoring zero and reporting green. Layers 3 and 4
+assert both the awarded score **and** the revealed classes of the clicked card, in both directions:
+the answer's card scores 1 and is marked `right`, a wrong card scores 0 and is marked `wrong` while
+the answer is revealed. The prescribed pair-shuffle mutant does not reach this path — a pair-shuffled
+build scores correctly when clicked, it simply labels the wrong card — so `AT-8` carries a second
+**letter** mutant that keeps the fixed slots and scores by letter instead of by text, and that one is
+caught on the click path alone with Layer 1 green.
+
 ### The `project.md` conflict, resolved — no longer a Gate B item
 
 `openspec/project.md` lines 46 and 119 read as though the previous color/icon treatment binds, while
@@ -1971,11 +2105,12 @@ release gate.
 
 ## 12. Findings from reconciling against the real delta
 
-Ten findings. The first two are material and were found by probing the real inline script in a
+Eleven findings. The first two are material and were found by probing the real inline script in a
 `node:vm` sandbox; they went to `architect` before Gate B and are already resolved in `tasks.md` 1.4.
 The rest are minor or noted, and they are recorded rather than fixed because the delta is not this
 plan's file. Findings 7 to 10 are new in the second and third reconciliations, from the amended R11
-and from the two amendments that rewrote S6, S18 and R10.
+and from the two amendments that rewrote S6, S18 and R10. Finding 11 is new in the fourth, from the
+§ 8 amendment, and it corrects a factual error in the brief that amendment was written from.
 
 ### Finding 1, material: the 42-pair check passes on the defect it exists to catch
 
@@ -2165,6 +2300,23 @@ reads the delta and then the stylesheet will conclude the change is half-done. N
 depends on the gap still existing, and SM-17's static half was written to pass on the fixed file -
 its negative case is the pre-fix rule text quoted in the note, which the harness keeps precisely so
 the check can still be shown to discriminate. No action; the note is simply stale.
+
+### Finding 11, material: the brief for the § 8 amendment misstated the mockup, and R15 departs from it on purpose
+
+The brief that produced the R15 amendment stated that `stitch/code.html` "renders labels with no
+rotation at all", so page-upright labels needed no justification against the design source. **The
+mockup does rotate its labels.** Each label group carries `rotate(<sector centre angle>)` — verified on
+disk at `code.html:241`, `:252`, `:263`, `:274`, `:285`, `:296` — so the mockup's labels turn with
+their sector and the lower three are upside down, which is the very defect the human reported in the
+built game.
+
+This matters twice. First, R15 is a **product decision that departs from the mockup**, not a faithful
+reading of it: it is tagged `[AUTHORED]` and its provenance note says so, and MT-12 warns that a
+side-by-side against `stitch/screen.png` will show a difference. Second, a reviewer who trusts the
+brief will treat the mockup as corroboration and file the build's upright labels as a fidelity
+regression. **No test asserts label orientation against the mockup**, because the mockup and the
+delta disagree and the human's decision wins. Recorded so the disagreement is not rediscovered as a
+bug. SM-22 measures the chosen behaviour; MT-12 is the human's read of it.
 
 ### Not a finding, recorded because it looked like one
 

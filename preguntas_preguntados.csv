@@ -129,7 +129,7 @@ entretenimiento,¿Qué serie sigue a Walter White?,"Better Call Saul","Breaking 
 entretenimiento,¿En qué película aparece el personaje "Black Panther"?,"Avengers: Endgame","Captain Marvel","Black Panther","Doctor Strange",C
 entretenimiento,¿Qué cantante interpretó "Hips Don't Lie"?,"Rihanna","Shakira","Beyoncé","Jennifer Lopez",B
 entretenimiento,¿Qué película animada de Pixar trata de un chef rata?,"Ratatouille","Up","Toy Story","Finding Nemo",A
-entretenimiento,¿Qué serie trata sobre un director de publicidad en los años 60?,"Mad Men","The Sopranos","Mad Men","Boardwalk Empire",A
+entretenimiento,¿Qué serie trata sobre un director de publicidad en los años 60?,"Mad Men","The Sopranos","The Wire","Boardwalk Empire",A
 entretenimiento,¿Quién canta "Despacito"?,"Daddy Yankee","Luis Fonsi","Maluma","J Balvin",B
 entretenimiento,"¿Qué juego de mesa se asocia a fichas rojas, amarillas, verdes y azules en una torre?","Jenga","Uno","Domino","Ajedrez",B
 entretenimiento,¿En qué serie hay un grupo llamado "Los Cazafantasmas"?,"Cazafantasmas","Stranger Things","Lost","Fringe",A
@@ -200,3 +200,102 @@ historia,¿Qué imperio tenía como capital a Constantinopla?,"Bizantino","Roman
 historia,¿Quién es el autor de "El capital"?,"Smith","Marx","Keynes","Ricardo",B
 historia,¿En qué año terminó la Segunda Guerra Mundial en Europa?,"1943","1944","1945","1946",C
 historia,¿Qué famoso rey de Francia construyó Versalles?,"Luis XIV","Luis XVI","Carlos IX","Napoleón III",A
+arte,¿Qué material utilizó principalmente Auguste Rodin en sus esculturas?,"Mármol","Bronce","Vidrio","Madera",B
+arte,¿Quién pintó la obra "El nacimiento de Venus"?,"Botticelli","Caravaggio","Rubens","Tiziano",A
+arte,¿Qué estilo arquitectónico caracteriza a la catedral de Notre Dame de París?,"Gótico","Románico","Barroco","Neoclásico",A
+arte,¿Quién compuso la Novena Sinfonía?,"Mozart","Beethoven","Bach","Vivaldi",B
+arte,¿Qué técnica consiste en pintar sobre yeso húmedo?,"Fresco","Grabado","Collage","Esmalte",A
+arte,¿Qué artista creó los móviles de formas abstractas?,"Alexander Calder","Andy Warhol","Paul Klee","Marcel Duchamp",A
+arte,¿En qué país se originó el teatro kabuki?,"China","Japón","India","Corea del Sur",B
+arte,¿Qué pintor español es conocido por sus pinturas negras?,"Francisco de Goya","Diego Velázquez","Joan Miró","El Greco",A
+arte,¿Qué museo alberga la obra "La noche estrellada"?,"Museo del Prado","MoMA","Louvre","Tate Modern",B
+arte,¿Quién escribió la novela "Don Quijote de la Mancha"?,"Miguel de Cervantes","Lope de Vega","Calderón de la Barca","Francisco de Quevedo",A
+arte,¿Qué corriente artística precedió al impresionismo?,"Realismo","Cubismo","Surrealismo","Futurismo",A
+arte,¿Qué instrumento tiene teclas y cuerdas golpeadas por martillos?,"Violín","Piano","Flauta","Arpa",B
+arte,¿Qué escultor argentino creó el monumento a la bandera en Rosario?,"Lola Mora","Ángel Guido","José Fioravanti","Rogelio Yrurtia",B
+arte,¿Qué color resulta de mezclar azul y amarillo?,"Violeta","Verde","Naranja","Marrón",B
+arte,¿Qué escritor creó al detective Sherlock Holmes?,"Agatha Christie","Arthur Conan Doyle","Edgar Allan Poe","Julio Verne",B
+arte,¿Qué movimiento artístico se asocia con Pablo Picasso y Georges Braque?,"Cubismo","Dadaísmo","Impresionismo","Expresionismo",A
+arte,¿Cómo se llama el arte japonés de doblar papel?,"Origami","Ikebana","Bonsái","Sumi-e",A
+geografia,¿Cuál es la capital de Nueva Zelanda?,"Auckland","Wellington","Christchurch","Dunedin",B
+geografia,¿Qué país tiene como capital a Nairobi?,"Kenia","Tanzania","Uganda","Etiopía",A
+geografia,¿Cuál es el río que atraviesa Egipto?,"Tigris","Nilo","Éufrates","Jordán",B
+geografia,¿Qué isla es la más grande del mar Mediterráneo?,"Cerdeña","Sicilia","Chipre","Creta",B
+geografia,¿Cuál es la capital de Portugal?,"Oporto","Lisboa","Faro","Braga",B
+geografia,¿En qué país se encuentra la ciudad de Marrakech?,"Marruecos","Túnez","Argelia","Egipto",A
+geografia,"¿Qué país está formado por cuatro islas principales llamadas Honshu, Hokkaido, Kyushu y Shikoku?","Filipinas","Japón","Indonesia","Nueva Zelanda",B
+geografia,¿Cuál es la capital de Noruega?,"Oslo","Estocolmo","Helsinki","Copenhague",A
+geografia,¿Qué mar separa Europa de África al oeste?,"Mar Negro","Mar Mediterráneo","Mar Báltico","Mar Rojo",B
+geografia,¿Qué río pasa por la ciudad de París?,"Támesis","Sena","Rin","Danubio",B
+geografia,¿Cuál es la capital de Grecia?,"Atenas","Salónica","Patras","Corinto",A
+geografia,¿En qué país se encuentra el monte Kilimanjaro?,"Kenia","Tanzania","Sudáfrica","Etiopía",B
+geografia,¿Cuál es el archipiélago español situado frente a la costa africana?,"Baleares","Canarias","Azores","Madeira",B
+geografia,¿Qué país comparte la península de Corea con Corea del Norte?,"Japón","Corea del Sur","China","Mongolia",B
+geografia,¿Cuál es la capital de Irlanda?,"Belfast","Dublín","Cork","Galway",B
+geografia,¿Qué continente contiene al desierto de Atacama?,"África","Asia","Sudamérica","Oceanía",C
+deportes,¿Cuántos sets debe ganar un tenista para ganar un partido masculino de Grand Slam?,"Dos","Tres","Cuatro","Cinco",B
+deportes,¿Qué pieza se mueve en forma de L en ajedrez?,"Alfil","Torre","Caballo","Peón",C
+deportes,¿Cuál es la distancia oficial de una carrera de 100 yardas en metros aproximadamente?,"91,44","100","110","80",A
+deportes,¿Qué país organizó los Juegos Olímpicos de 2016?,"China","Brasil","Reino Unido","Grecia",B
+deportes,¿En qué deporte se usa un scrum?,"Rugby","Hockey","Voleibol","Esgrima",A
+deportes,¿Cuántos anillos forman el símbolo olímpico?,"Cuatro","Cinco","Seis","Siete",B
+deportes,¿Qué color de tarjeta expulsa a un futbolista?,"Azul","Amarilla","Roja","Verde",C
+deportes,¿Quién fue apodado el "Mano de Piedra" en el boxeo?,"Mike Tyson","Roberto Durán","Muhammad Ali","Julio César Chávez",B
+deportes,"¿Qué prueba combina natación, ciclismo y carrera?","Duathlon","Triatlón","Pentatlón","Decatlón",B
+deportes,¿Cuál es el máximo break posible en snooker?,"147","100","180","200",A
+deportes,¿Qué país ganó la Copa Mundial de rugby de 2023?,"Nueva Zelanda","Sudáfrica","Inglaterra","Francia",B
+deportes,¿En qué deporte compite Simone Biles?,"Gimnasia artística","Atletismo","Natación","Patinaje",A
+deportes,¿Cuántos minutos dura cada cuarto de un partido NBA?,"10","12","15","20",B
+deportes,¿Qué bandera indica el final de una carrera de automovilismo?,"Roja","Verde","A cuadros","Amarilla",C
+deportes,¿En qué deporte se disputa el torneo de Roland Garros?,"Tenis","Golf","Ciclismo","Béisbol",A
+deportes,¿Qué atleta jamaicano fue récord mundial de 100 metros?,"Usain Bolt","Mo Farah","Yohan Blake","Carl Lewis",A
+deportes,¿Cómo se llama la máxima categoría del fútbol argentino?,"Primera División","Liga Nacional","Superliga Europea","Copa Argentina",A
+entretenimiento,¿Qué director dirigió la película "E.T. el extraterrestre"?,"Steven Spielberg","James Cameron","George Lucas","Tim Burton",A
+entretenimiento,¿Qué banda publicó el álbum "Abbey Road"?,"The Beatles","Queen","U2","The Who",A
+entretenimiento,¿Cuál es el nombre del reino de Elsa en "Frozen"?,"Arendelle","Narnia","Corona","Agrabah",A
+entretenimiento,¿Qué actor interpreta a Neo en "The Matrix"?,"Keanu Reeves","Tom Cruise","Hugh Jackman","Matt Damon",A
+entretenimiento,¿Qué instrumento toca principalmente Slash?,"Batería","Guitarra","Piano","Saxofón",B
+entretenimiento,¿Qué saga cinematográfica incluye al personaje Frodo Bolsón?,"Harry Potter","El Señor de los Anillos","Star Wars","Matrix",B
+entretenimiento,¿Qué plataforma produjo la serie "Stranger Things"?,"Netflix","HBO","Disney+","Apple TV+",A
+entretenimiento,¿Quién interpretó a la protagonista de "Wonder Woman" en 2017?,"Gal Gadot","Emma Stone","Natalie Portman","Anne Hathaway",A
+entretenimiento,¿Qué cantante lanzó el álbum "21"?,"Adele","Taylor Swift","Shakira","Rihanna",A
+entretenimiento,¿Qué personaje vive en una piña debajo del mar?,"Bob Esponja","Pikachu","Garfield","Mickey Mouse",A
+entretenimiento,¿Qué película animada presenta a Woody y Buzz Lightyear?,"Toy Story","Cars","Coco","Up",A
+entretenimiento,¿Qué director es conocido por la trilogía "El padrino"?,"Francis Ford Coppola","Martin Scorsese","Alfred Hitchcock","Ridley Scott",A
+entretenimiento,¿Qué grupo británico grabó "Wonderwall"?,"Oasis","Blur","Coldplay","Muse",A
+entretenimiento,¿En qué saga aparece el personaje Katniss Everdeen?,"Divergente","Los juegos del hambre","Crepúsculo","Maze Runner",B
+entretenimiento,¿Qué actor interpreta a Indiana Jones en la saga clásica?,"Harrison Ford","Sean Connery","Tom Hanks","Mel Gibson",A
+entretenimiento,¿Qué premio reconoce lo mejor de la televisión estadounidense?,"Grammy","Emmy","Tony","Pulitzer",B
+ciencia,¿Cuál es el símbolo químico del hierro?,"Ir","Fe","He","Hi",B
+ciencia,¿Qué fuerza mantiene a los planetas en órbita?,"Fricción","Gravedad","Electricidad","Magnetismo",B
+ciencia,¿Cuál es el animal terrestre más grande?,"Elefante africano","Jirafa","Hipopótamo","Rinoceronte",A
+ciencia,¿Qué órgano bombea la sangre por el cuerpo?,"Pulmón","Corazón","Riñón","Hígado",B
+ciencia,¿Qué unidad mide la corriente eléctrica?,"Voltio","Amperio","Ohmio","Vatio",B
+ciencia,¿Cómo se llama el cambio de líquido a gas?,"Condensación","Evaporación","Fusión","Solidificación",B
+ciencia,¿Qué planeta tiene los anillos más visibles?,"Júpiter","Saturno","Urano","Neptuno",B
+ciencia,¿Cuál es el mamífero capaz de volar?,"Ardilla","Murciélago","Pingüino","Avestruz",B
+ciencia,¿Qué científico desarrolló la teoría de la evolución por selección natural?,"Charles Darwin","Gregor Mendel","Louis Pasteur","Niels Bohr",A
+ciencia,¿Qué parte de la célula contiene el material genético?,"Membrana","Núcleo","Citoplasma","Ribosoma",B
+ciencia,¿Qué escala mide la acidez de una sustancia?,"pH","Kelvin","Beaufort","Mohs",A
+ciencia,¿Cuál es el mineral natural más duro?,"Cuarzo","Diamante","Granito","Talco",B
+ciencia,¿Qué gas es más abundante en la atmósfera terrestre?,"Oxígeno","Nitrógeno","Argón","Hidrógeno",B
+ciencia,¿Qué aparato registra los terremotos?,"Barómetro","Sismógrafo","Termómetro","Anemómetro",B
+ciencia,¿Qué proceso produce células sexuales?,"Mitosis","Meiosis","Ósmosis","Digestión",B
+ciencia,¿Cuál es la estrella más cercana a la Tierra después del Sol?,"Sirio","Próxima Centauri","Betelgeuse","Vega",B
+ciencia,¿Qué vitamina se asocia con la coagulación sanguínea?,"Vitamina K","Vitamina A","Vitamina C","Vitamina E",A
+historia,¿Qué pueblo construyó el Partenón?,"Romanos","Griegos","Persas","Fenicios",B
+historia,¿Quién fue conocido como el Libertador de América?,"Simón Bolívar","José de San Martín","Bernardo O'Higgins","Manuel Belgrano",A
+historia,¿Qué ciudad quedó sepultada por el Vesubio en el año 79?,"Pompeya","Atenas","Cartago","Tiro",A
+historia,¿Qué dinastía construyó gran parte de la Ciudad Prohibida?,"Ming","Han","Qing","Tang",A
+historia,¿En qué año comenzó la Revolución Francesa?,"1776","1789","1804","1815",B
+historia,¿Quién fue la primera mujer en ganar un Premio Nobel?,"Marie Curie","Ada Lovelace","Rosalind Franklin","Florence Nightingale",A
+historia,¿Qué tratado puso fin oficialmente a la Primera Guerra Mundial?,"Tratado de Versalles","Tratado de París","Tratado de Roma","Tratado de Utrecht",A
+historia,¿Qué civilización desarrolló la escritura cuneiforme?,"Egipcia","Sumeria","Romana","Maya",B
+historia,¿Quién fue el último zar de Rusia?,"Nicolás II","Pedro el Grande","Iván el Terrible","Alejandro III",A
+historia,¿Qué acontecimiento ocurrió el 14 de julio de 1789?,"Caída del Muro de Berlín","Toma de la Bastilla","Batalla de Waterloo","Llegada a América",B
+historia,¿Qué explorador lideró la primera vuelta al mundo iniciada en 1519?,"Cristóbal Colón","Fernando de Magallanes","Vasco da Gama","Marco Polo",B
+historia,¿Cuál fue la capital del Imperio inca?,"Cusco","Lima","Quito","Arequipa",A
+historia,¿Qué presidente estadounidense abolió la esclavitud durante la Guerra Civil?,"Thomas Jefferson","Abraham Lincoln","Theodore Roosevelt","Woodrow Wilson",B
+historia,¿Qué antigua ciudad fue destruida junto con Pompeya?,"Herculano","Esparta","Mileto","Siracusa",A
+historia,¿Quién fue el primer emperador de China unificada?,"Qin Shi Huang","Sun Yat-sen","Kublai Kan","Wu Zetian",A
+historia,¿Qué movimiento comenzó en Rusia en 1917?,"Revolución Rusa","Reforma Protestante","Primavera de los Pueblos","Renacimiento",A

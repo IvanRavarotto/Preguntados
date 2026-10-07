@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>¡Preguntados 1v1!</title>
+<title>Ã‚Â¡Preguntados 1v1!</title>
 <style>
+  @property --wheel-rot {
+    syntax: "<angle>";
+    inherits: true;
+    initial-value: 0deg;
+  }
+
   /* Every accent, surface and radius the presentation uses. The six category hues are
      consumed by name, never by the position a category happens to occupy in an array. */
   :root {
@@ -147,7 +153,7 @@
   .score-card.turn { border-color: var(--p-accent); box-shadow: 0 0 1.25rem var(--p-accent-glow); }
   .score-card .srow { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
   .score-card .sname { font-weight: 700; font-size: 0.9375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .score-card .spoints { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; color: var(--p-accent); }
+  .score-card .scrowns { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; color: var(--p-accent); }
   .score-card .sbar { display: flex; gap: 0.1875rem; }
   .score-card .slot { flex: 1; height: 0.625rem; border-radius: var(--r-sm); background: var(--surface-high); }
   .score-card .slot.on { background: var(--p-accent); box-shadow: 0 0 0.5rem var(--p-accent-glow); }
@@ -183,7 +189,8 @@
     position: relative; width: 100%; height: 100%; z-index: 1;
     border-radius: var(--r-pill);
     border: 1px solid var(--stroke-strong);
-    transform: rotate(0deg);
+    --wheel-rot: 0deg;
+    transform: rotate(var(--wheel-rot));
   }
   .wheel::before {
     content: ""; position: absolute; inset: 0; border-radius: var(--r-pill); pointer-events: none;
@@ -199,7 +206,7 @@
     position: absolute; left: 50%; top: 50%; width: 5.75rem;
     display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
     text-align: center; pointer-events: none;
-    transform: translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a)));
+    transform: translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a))) rotate(calc(-1 * var(--wheel-rot)));
   }
   .seg-label .ic { display: flex; }
   .seg-label .ic svg { width: 1.375rem; height: 1.375rem; display: block; fill: currentColor; }
@@ -291,6 +298,9 @@
   .feedback.ko { background: rgba(255, 42, 109, 0.2); border-color: var(--fail); }
   .feedback.timeout { background: rgba(255, 208, 0, 0.2); border-color: var(--timeout-border); }
   .next-btn { margin-top: 1rem; padding: 0.75rem 1.75rem; font-size: 1.125rem; }
+  .joker-panel { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .joker-btn { flex: 1 1 30%; min-width: 8rem; padding: 0.625rem 0.5rem; font-size: 0.75rem; }
+  .joker-btn[data-used="true"] { opacity: 0.45; }
 
   /* winner screen */
   .winner-box { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
@@ -311,7 +321,7 @@
 </head>
 <body>
   <section id="screen-start" class="panel active">
-    <h1>¡Preguntados 1v1!</h1>
+    <h1>Ã‚Â¡Preguntados 1v1!</h1>
     <div class="card names-form">
       <div class="player-input">
         <span class="pv pv1" aria-hidden="true">1</span>
@@ -321,11 +331,11 @@
         <span class="pv pv2" aria-hidden="true">2</span>
         <input id="name2" maxlength="14" placeholder="Nombre del jugador 2" aria-label="Nombre del jugador 2" autocomplete="off">
       </div>
-      <button id="start" class="btn start-btn">¡A JUGAR!</button>
+      <button id="start" class="btn start-btn">Ã‚Â¡A JUGAR!</button>
       <p id="err" class="err" role="alert" hidden></p>
     </div>
     <p class="rules">
-      Mejor de 10: el primero en juntar 10 puntos gana.<br>Giran la ruleta por turnos y responden la pregunta de su turno.
+      ReÃƒÂºne las seis coronas para ganar.<br>Giran la ruleta por turnos y responden la pregunta de su turno.
     </p>
   </section>
 
@@ -337,12 +347,12 @@
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 22 2 4h20z"/></svg>
       </div>
       <div id="wheel" class="wheel"></div>
-      <button id="spin" class="btn spin-btn">¡GIRAR!</button>
+      <button id="spin" class="btn spin-btn">Ã‚Â¡GIRAR!</button>
     </div>
   </section>
 
   <section id="screen-question" class="panel">
-    <h1>¡PON A PRUEBA TU CONOCIMIENTO!</h1>
+    <h1>Ã‚Â¡PON A PRUEBA TU CONOCIMIENTO!</h1>
     <div id="q-timer" class="timer" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuenow="0">
       <div id="tbar" class="timer-bar"></div>
     </div>
@@ -353,6 +363,11 @@
       </div>
       <div class="question-text" id="q-text"></div>
       <div class="options" id="q-opts"></div>
+      <div class="joker-panel" id="joker-panel" aria-label="Comodines del jugador activo">
+        <button class="btn joker-btn" data-joker="eliminate-two">Eliminar dos</button>
+        <button class="btn joker-btn" data-joker="second-chance">Segundo intento</button>
+        <button class="btn joker-btn" data-joker="auto-correct">AutocorrecciÃƒÂ³n</button>
+      </div>
       <div class="feedback" id="q-feedback" aria-live="polite" hidden></div>
       <button class="btn next-btn" id="q-next" hidden>Siguiente turno</button>
     </div>
@@ -362,13 +377,16 @@
     <div class="winner-box">
       <div id="w-name" class="wname"></div>
       <div id="w-score" class="wscore"></div>
-      <button class="btn start-btn" id="rematch">¡Jugar de nuevo!</button>
+      <button class="btn start-btn" id="rematch">Ã‚Â¡Jugar de nuevo!</button>
     </div>
   </section>
 
 <script>
   const API = "";
-  const WIN_POINTS = 10;
+  const OPTION_SLOTS = ["A", "B", "C", "D"];
+  const CROWN_SECTOR_NAME = "corona";
+  const MAX_CROWNS = 6;
+  const MAX_JOKER_USES = 2;
   const TIMER_SECONDS = 20;
   const TIMER_URGENT_RATIO = 0.2;
   const TURN_MS = TIMER_SECONDS * 1000;
@@ -377,6 +395,7 @@
   const SPIN_SETTLE_MS = SPIN_MS + 100;
   const SPIN_TURNS = 5;
   const SPIN_EASING = "cubic-bezier(0.24, 0.9, 0.3, 0.98)";
+  const SPIN_TRANSITION = `transform ${SPIN_MS}ms ${SPIN_EASING}, --wheel-rot ${SPIN_MS}ms ${SPIN_EASING}`;
   const INK = "#090a10";
   const NEUTRAL_ACCENT = "#849495";
 
@@ -428,7 +447,7 @@
     { name: "ciencia", label: "Ciencia" },
     { name: "deportes", label: "Deportes" },
     { name: "entretenimiento", label: "Entretenimiento" },
-    { name: "geografia", label: "Geografía" },
+    { name: "geografia", label: "GeografÃƒÂ­a" },
     { name: "historia", label: "Historia" }
   ];
   const SEATS = [
@@ -440,11 +459,16 @@
   let players = [];
   let turn = 0;
   let currentCat = null;
+  let currentFlow = null;
+  let pendingChallengeCategory = null;
+  let currentQuestion = null;
   let answered = false;
+  let secondChanceActive = false;
   let timerId = null;
   let tickId = null;
   let catCache = {};
-  let usedIds = {};
+  let usedQuestionIds = {};
+  let joker = null;
   let wheelRotation = 0;
   let spinning = false;
 
@@ -452,6 +476,26 @@
   const show = (id) => document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const player = () => players[turn];
+
+  function createJokers() {
+    return {
+      eliminateTwo: { used: 0, max: MAX_JOKER_USES },
+      secondChance: { used: 0, max: MAX_JOKER_USES },
+      selectCorrect: { used: 0, max: MAX_JOKER_USES }
+    };
+  }
+
+  function activeJokers() {
+    const p = player();
+    if (!p) return createJokers();
+    if (!p.jokers) p.jokers = createJokers();
+    return p.jokers;
+  }
+
+  function jokerState(type) {
+    const key = { "eliminate-two": "eliminateTwo", "eliminar-dos": "eliminateTwo", "second-chance": "secondChance", "segundo-intento": "secondChance", "select-correct": "selectCorrect", "seleccionar-correcta": "selectCorrect", "auto-correct": "selectCorrect" }[type];
+    return activeJokers()[key];
+  }
 
   function getAccent(name) {
     const entry = ACCENT_BY_NAME[name];
@@ -473,6 +517,7 @@
     const accent = getAccent(name);
     return {
       name: name,
+      kind: "category",
       label: source.label || name,
       accent: accent,
       fill: toRgba(accent, 1),
@@ -522,22 +567,56 @@
     $("start").addEventListener("click", beginMatch);
     $("spin").addEventListener("click", spinWheel);
     $("q-next").addEventListener("click", nextTurn);
-    $("rematch").addEventListener("click", () => show("screen-start"));
+    $("rematch").addEventListener("click", () => {
+      resetMatchState();
+      show("screen-start");
+    });
+    document.querySelectorAll("[data-joker]").forEach(button => {
+      button.addEventListener("click", () => activateJoker(button.dataset.joker));
+    });
     ["name1", "name2"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") beginMatch(); }));
+  }
+
+  function resetMatchState() {
+    stopTurnClock();
+    players = [];
+    turn = 0;
+    currentCat = null;
+    currentFlow = null;
+    pendingChallengeCategory = null;
+    currentQuestion = null;
+    answered = false;
+    secondChanceActive = false;
+    catCache = {};
+    usedQuestionIds = {};
+    joker = null;
+    wheelRotation = 0;
+    spinning = false;
   }
 
   function buildWheel() {
     const wheel = $("wheel");
-    const n = categories.length;
+    const sectors = [...categories, {
+      name: CROWN_SECTOR_NAME,
+      kind: "crown",
+      label: "Corona",
+      accent: "#FFD000",
+      fill: "#FFD000",
+      on: INK,
+      glyph: "<span aria-hidden=\"true\">Ã¢â„¢â€º</span>"
+    }];
+    if (categories.length !== 6 || sectors.length !== 7) throw new Error("La ruleta requiere seis categorÃƒÂ­as y un sector corona");
+    wheel.textContent = "";
+    const n = sectors.length;
     const span = 360 / n;
-    wheel.style.background = `conic-gradient(${categories.map((c, i) => `${c.fill} ${i * span}deg ${(i + 1) * span}deg`).join(", ")})`;
+    wheel.style.background = `conic-gradient(${sectors.map((c, i) => `${c.fill} ${i * span}deg ${(i + 1) * span}deg`).join(", ")})`;
     for (let i = 0; i < n; i++) {
       const divider = document.createElement("div");
       divider.className = "wheel-divider";
       divider.style.transform = `rotate(${i * span + 180}deg)`;
       wheel.appendChild(divider);
     }
-    categories.forEach((cat, i) => {
+    sectors.forEach((cat, i) => {
       const label = document.createElement("div");
       label.className = "seg-label";
       label.style.setProperty("--a", `${sectorCenterAngle(i, n)}deg`);
@@ -557,14 +636,13 @@
       return;
     }
     err.hidden = true;
+    resetMatchState();
     players = [
-      { name: n1, points: 0, accent: SEATS[0].accent, glow: SEATS[0].glow },
-      { name: n2, points: 0, accent: SEATS[1].accent, glow: SEATS[1].glow }
+      { name: n1, crowns: [], streak: 0, ordinaryStreak: 0, jokers: createJokers(), accent: SEATS[0].accent, glow: SEATS[0].glow },
+      { name: n2, crowns: [], streak: 0, ordinaryStreak: 0, jokers: createJokers(), accent: SEATS[1].accent, glow: SEATS[1].glow }
     ];
-    catCache = {};
-    usedIds = {};
+    joker = null;
     turn = Math.random() < 0.5 ? 0 : 1;
-    currentCat = null;
     show("screen-wheel");
     renderScoreboard();
     $("spin").disabled = false;
@@ -583,15 +661,15 @@
       const name = document.createElement("span");
       name.className = "sname";
       name.textContent = p.name;
-      const points = document.createElement("span");
-      points.className = "spoints";
-      points.textContent = p.points;
-      row.append(name, points);
+      const crowns = document.createElement("span");
+      crowns.className = "scrowns";
+      crowns.textContent = `${p.crowns.length}/${MAX_CROWNS}`;
+      row.append(name, crowns);
       const bar = document.createElement("div");
       bar.className = "sbar";
-      for (let k = 0; k < WIN_POINTS; k++) {
+      for (let k = 0; k < MAX_CROWNS; k++) {
         const slot = document.createElement("span");
-        slot.className = k < p.points ? "slot on" : "slot";
+        slot.className = k < p.crowns.length ? "slot on" : "slot";
         bar.appendChild(slot);
       }
       card.append(row, bar);
@@ -606,47 +684,94 @@
     chip.appendChild(strong);
   }
 
+  /* The two writes below are one operation and must stay together: the custom property is what
+     .seg-label cancels to keep itself upright, and the inline transform is what transitionend
+     and the settle timeout read. Dropping either one leaves the other silently wrong for the
+     whole spin - the labels trail the wheel, or the spin never settles - with no error. */
+  function applyWheelRotation(wheel, degrees) {
+    wheel.style.setProperty("--wheel-rot", `${degrees}deg`);
+    wheel.style.transform = `rotate(${degrees}deg)`;
+  }
+
   function spinWheel() {
     if (spinning) return;
     spinning = true;
     $("spin").disabled = true;
-    const idx = Math.floor(Math.random() * categories.length);
-    currentCat = categories[idx];
-    const n = categories.length;
+    const sectors = [...categories, { name: CROWN_SECTOR_NAME, kind: "crown" }];
+    const idx = Math.floor(Math.random() * sectors.length);
+    const selectedSector = sectors[idx];
+    currentCat = selectedSector.kind === "crown" ? null : selectedSector;
+    const n = sectors.length;
     const delta = rotationDeltaForSector(idx, n, wheelRotation);
     wheelRotation += delta;
     const wheel = $("wheel");
     wheel.style.transition = "none";
-    wheel.style.transform = `rotate(${wheelRotation - delta}deg)`;
+    applyWheelRotation(wheel, wheelRotation - delta);
     void wheel.offsetWidth;
-    wheel.style.transition = `transform ${SPIN_MS}ms ${SPIN_EASING}`;
-    wheel.style.transform = `rotate(${wheelRotation}deg)`;
+    wheel.style.transition = SPIN_TRANSITION;
+    applyWheelRotation(wheel, wheelRotation);
     let done = false;
-    const finish = () => { if (!done) { done = true; spinning = false; pickQuestionAsync(); } };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      spinning = false;
+      selectedSector.kind === "crown" ? beginCrownChallenge() : pickQuestionAsync("ordinary");
+    };
     wheel.addEventListener("transitionend", finish, { once: true });
     setTimeout(finish, SPIN_SETTLE_MS);
   }
 
-  function quiz() {
-    const pending = (catCache[currentCat.name] || []).filter(q => !usedIds[currentCat.name + ":" + q.id]);
+  function quiz(categoryName) {
+    const used = usedQuestionIds[categoryName] || new Set();
+    const pending = (catCache[categoryName] || []).filter(q => !used.has(q.id));
     if (!pending.length) return null;
     const q = pending[Math.floor(Math.random() * pending.length)];
-    usedIds[currentCat.name + ":" + q.id] = 1;
+    used.add(q.id);
+    usedQuestionIds[categoryName] = used;
     return q;
   }
 
-  async function pickQuestionAsync() {
+  async function pickQuestionAsync(flow) {
     const name = currentCat.name;
+    currentFlow = flow;
     if (!catCache[name]) {
       try {
         const r = await fetch(`${API}/questions/category/${name}?limit=200`);
         catCache[name] = await r.json();
       } catch (e) { catCache[name] = []; }
     }
-    const q = quiz();
-    if (!q) { nextTurn(); return; }
+    const q = quiz(name);
+    if (!q) {
+      showFlowError(`No quedan preguntas sin usar en ${currentCat.label}.`);
+      return;
+    }
+    currentQuestion = q;
     renderQuestion(q);
     show("screen-question");
+  }
+
+  function pendingCategories() {
+    const owned = new Set(player().crowns);
+    return categories.filter(category => !owned.has(category.name));
+  }
+
+  function beginCrownChallenge() {
+    $("q-next").hidden = true;
+    const pending = pendingCategories();
+    if (!pending.length) {
+      finishMatch();
+      return;
+    }
+    const choices = pending.map((category, index) => `${index + 1}: ${category.label}`).join("\\n");
+    const selected = Number(window.prompt(`Elige una categorÃƒÂ­a pendiente:\\n${choices}`, "1")) - 1;
+    if (!Number.isInteger(selected) || !pending[selected]) {
+      currentFlow = "crown-selection";
+      showFlowError("Selecci\u00f3n de categor\u00eda inv\u00e1lida. Elige una categor\u00eda pendiente para continuar.");
+      return;
+    }
+    pendingChallengeCategory = pending[selected].name;
+    currentCat = pending[selected];
+    pickQuestionAsync("crown-challenge");
   }
 
   function startTurnClock(onExpire) {
@@ -681,6 +806,8 @@
 
   function renderQuestion(q) {
     answered = false;
+    secondChanceActive = false;
+    joker = { usedOnCurrentQuestion: [] };
     const accent = currentCat ? currentCat.accent : NEUTRAL_ACCENT;
     const panel = $("screen-question");
     panel.style.setProperty("--accent", accent);
@@ -692,23 +819,23 @@
     const dot = document.createElement("span");
     dot.className = "dot";
     const label = document.createElement("span");
-    label.textContent = currentCat ? currentCat.label : (q.category || "Sin categoría");
+    label.textContent = currentCat ? currentCat.label : (q.category || "Sin categorÃƒÂ­a");
     chip.append(dot, label);
     $("q-player").textContent = `Turno: ${player().name}`;
     $("q-text").textContent = q.question;
-    const opts = shuffle([{ t: q.option_a, k: "A" }, { t: q.option_b, k: "B" }, { t: q.option_c, k: "C" }, { t: q.option_d, k: "D" }]);
+    const texts = shuffle([q.option_a, q.option_b, q.option_c, q.option_d]);
     const grid = $("q-opts");
     grid.textContent = "";
-    opts.forEach(opt => {
+    texts.forEach((t, i) => {
       const b = document.createElement("button");
       b.className = "opt";
       const key = document.createElement("span");
       key.className = "letra";
-      key.textContent = opt.k;
+      key.textContent = OPTION_SLOTS[i];
       const text = document.createElement("span");
-      text.textContent = opt.t;
+      text.textContent = t;
       b.append(key, text);
-      b.onclick = () => pickAnswer(b, opt.t, q);
+      b.onclick = () => pickAnswer(b, t, q);
       grid.appendChild(b);
     });
     const fb = $("q-feedback");
@@ -716,6 +843,7 @@
     fb.className = "feedback";
     fb.hidden = true;
     $("q-next").hidden = true;
+    updateJokerControls();
     startTurnClock(() => onTimeout(q));
   }
 
@@ -732,22 +860,104 @@
 
   function pickAnswer(btn, text, q) {
     if (answered) return;
-    finishQuestion(q);
     const ok = text === q.answer;
-    if (!ok) btn.classList.add("wrong");
-    if (ok) player().points++;
-    showFeedback(ok ? "ok" : "ko", q);
-    maybeEnd();
+    if (!ok && secondChanceActive) {
+      finishQuestion(q);
+      btn.classList.add("wrong");
+      resolveFailure(q, "ko");
+      return;
+    }
+    if (!ok && !secondChanceActive && joker.usedOnCurrentQuestion.includes("second-chance")) {
+      secondChanceActive = true;
+      btn.disabled = true;
+      btn.classList.add("wrong");
+      showFeedbackMessage("Segundo intento disponible: elige otra opciÃƒÂ³n.");
+      return;
+    }
+    ok ? resolveCorrect(q) : resolveFailure(q, "ko", btn);
   }
 
   function onTimeout(q) {
     if (answered) return;
-    finishQuestion(q);
     $("tbar").dataset.phase = "timeout";
-    showFeedback("timeout", q);
-    maybeEnd();
+    resolveFailure(q, "timeout");
   }
 
+  function syncStreak(p) { p.ordinaryStreak = p.streak; }
+
+  function resetOrdinaryProgress(p) {
+    if (!p) return;
+    p.streak = 0;
+    syncStreak(p);
+  }
+
+  function resolveCorrect(q) {
+    if (answered) return;
+    finishQuestion(q);
+    if (currentFlow === "ordinary") {
+      player().streak = Math.min(3, player().streak + 1);
+      syncStreak(player());
+    } else if (currentFlow === "crown-challenge") {
+      if (!player().crowns.includes(pendingChallengeCategory)) player().crowns.push(pendingChallengeCategory);
+      resetOrdinaryProgress(player());
+    }
+    showFeedback("ok", q);
+    renderScoreboard();
+    if (player().crowns.length === MAX_CROWNS) finishMatch();
+    else if (currentFlow === "ordinary" && player().streak === 3) beginCrownChallenge();
+  }
+
+  function resolveFailure(q, state, selectedButton) {
+    if (!answered) finishQuestion(q);
+    if (selectedButton) selectedButton.classList.add("wrong");
+    resetOrdinaryProgress(player());
+    turn = 1 - turn;
+    showFeedback(state, q);
+    renderScoreboard();
+  }
+
+  function updateJokerControls() {
+    const names = { "eliminate-two": "eliminateTwo", "eliminar-dos": "eliminateTwo", "second-chance": "secondChance", "segundo-intento": "secondChance", "select-correct": "selectCorrect", "seleccionar-correcta": "selectCorrect", "auto-correct": "selectCorrect" };
+    document.querySelectorAll("[data-joker]").forEach(button => {
+      const key = names[button.dataset.joker];
+      const state = activeJokers()[key];
+      const usedOnQuestion = joker && joker.usedOnCurrentQuestion && joker.usedOnCurrentQuestion.includes(button.dataset.joker);
+      const used = !state || state.used >= state.max || usedOnQuestion;
+      button.disabled = answered || used;
+      button.dataset.used = String(used);
+      button.textContent = `${button.dataset.joker === "eliminate-two" ? "Eliminar dos" : button.dataset.joker === "second-chance" ? "Segundo intento" : "Seleccionar correcta"} (${state ? state.max - state.used : 0})`;
+    });
+  }
+
+  function activateJoker(type) {
+    if (!currentQuestion || answered || !player()) return;
+    if (joker && joker.available) {
+      const legacyKey = { "eliminate-two": "eliminateTwo", "second-chance": "secondChance", "select-correct": "autoCorrect", "auto-correct": "autoCorrect" }[type];
+      if (joker.usedCount >= joker.maxUses || !joker.available[legacyKey]) return;
+      joker.available[legacyKey] = false;
+      joker.usedCount++;
+      joker.usedOnCurrentQuestion = joker.usedOnCurrentQuestion || [];
+      joker.usedOnCurrentQuestion.push(type);
+    } else {
+      if (joker && joker.usedOnCurrentQuestion && joker.usedOnCurrentQuestion.length) return;
+      const state = jokerState(type);
+      if (!state || state.used >= state.max) return;
+      state.used++;
+      joker = joker || { usedOnCurrentQuestion: [] };
+      joker.usedOnCurrentQuestion.push(type);
+      joker.usedCount = (joker.usedCount || 0) + 1;
+    }
+    if (type === "eliminate-two") {
+      const incorrect = [...$("q-opts").children].filter(button => button.querySelector("span:last-child").textContent !== currentQuestion.answer);
+      incorrect.slice(0, 2).forEach(button => { button.disabled = true; });
+      showFeedbackMessage("Dos opciones incorrectas fueron eliminadas.");
+    } else if (type === "second-chance") {
+      showFeedbackMessage("Segundo intento activado: el primer fallo no cambia el turno.");
+    } else {
+      resolveCorrect(currentQuestion);
+    }
+    updateJokerControls();
+  }
   /* Three named states, so a player can tell a timeout from a wrong answer by the
      wording alone and not only by the colour of the strip. */
   function showFeedback(state, q) {
@@ -755,35 +965,59 @@
     const answer = `Respuesta correcta: ${q.answer}`;
     fb.className = `feedback ${state}`;
     fb.textContent = {
-      ok: `¡${player().name} acierta! +1 punto (va ${player().points})`,
+      ok: `Ã‚Â¡${player().name} acierta! Racha: ${player().streak}`,
       ko: answer,
-      timeout: `¡Se acabó el tiempo! ${answer}`
+      timeout: `Ã‚Â¡Se acabÃƒÂ³ el tiempo! ${answer}`
     }[state];
     fb.hidden = false;
     $("q-next").hidden = false;
     renderScoreboard();
   }
 
-  function maybeEnd() {
-    if (player().points >= WIN_POINTS) {
-      finishMatch();
-    }
+  function showFeedbackMessage(message) {
+    const fb = $("q-feedback");
+    fb.className = "feedback ko";
+    fb.textContent = message;
+    fb.hidden = false;
+    $("q-next").hidden = true;
+  }
+
+
+  function showFlowError(message) {
+    stopTurnClock();
+    currentQuestion = null;
+    answered = true;
+    $("q-cat").textContent = "Error de flujo";
+    $("q-text").textContent = "";
+    $("q-opts").textContent = "";
+    $("q-feedback").className = "feedback ko";
+    $("q-feedback").textContent = message;
+    $("q-feedback").hidden = false;
+    $("q-next").textContent = currentFlow === "crown-selection" ? "Elegir categor\u00eda" : "Volver a la ruleta";
+    $("q-next").hidden = false;
+    show("screen-question");
   }
 
   function finishMatch() {
     stopTurnClock();
     const w = player();
     const loser = players[1 - turn];
-    $("w-name").textContent = `¡${w.name} GANA!`;
+    $("w-name").textContent = `Ã‚Â¡${w.name} GANA!`;
     $("w-name").style.color = w.accent;
-    $("w-score").textContent = `${w.name} ${w.points} - ${loser.points} ${loser.name}`;
-    setTimeout(() => show("screen-winner"), 700);
+    $("w-score").textContent = `${w.name}: ${w.crowns.length} coronas | ${loser.name}: ${loser.crowns.length} coronas`;
+    show("screen-winner");
     $("q-next").hidden = true;
   }
 
   function nextTurn() {
-    turn = 1 - turn;
+    if (currentFlow === "crown-selection") {
+      beginCrownChallenge();
+      return;
+    }
     currentCat = null;
+    currentFlow = null;
+    pendingChallengeCategory = null;
+    $("q-next").textContent = "Siguiente turno";
     renderScoreboard();
     $("spin").disabled = false;
     show("screen-wheel");

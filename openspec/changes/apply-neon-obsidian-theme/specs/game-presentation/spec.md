@@ -723,8 +723,9 @@ on uppercase labels. The primary question text SHALL NOT render below `18px` on 
   `font-family` computed on `body`, and the winner screen's score readout (`.wscore`) resolves to the
   same one
 - **AND** the question text computes to at least `18px`
-- **AND** the option index markers are the letters `A`, `B`, `C`, and `D` in that order of the shuffled
-  set
+- **AND** the four option index markers are exactly `A`, `B`, `C`, and `D`, one per card, in that
+  fixed top-to-bottom order, independent of the shuffle — the shuffle moves the option texts across
+  the four fixed slots and never permutes the letters
 - **AND** the timer carries no text node, and the seconds remaining are published on `#q-timer`'s
   `aria-valuenow`
 
@@ -857,8 +858,11 @@ chip in uppercase monospace with a glowing dot in the category's accent.
 - **WHEN** the four option cards are rendered; then one card is hovered, then another is
   keyboard-focused, and then one card is clicked
 - **THEN** their index tags are exactly `A`, `B`, `C`, and `D`, one each
-- **AND** the letters follow the shuffled presentation order, not the stored `option_a`…`option_d`
-  order
+- **AND** the four option **texts** are shuffled across those four fixed `A`–`D` slots, so the letters
+  occupy the same positions on every question while the text each carries changes; a letter therefore
+  no longer identifies its stored `option_a`…`option_d` source
+- **AND** correctness is decided by the option's text and never by its letter, so the card whose text
+  equals the stored `answer` is the one that scores
 - **AND** the category chip names the selected category and carries its accent
 - **AND** while the turn is open, hovering an option card and keyboard-focusing an option card each
   give that card a `border-color` equal to the active category's accent, and a `box-shadow` carrying
@@ -879,18 +883,23 @@ in a `rgba(255, 255, 255, 0.05)` inset pill with active color mirroring", and sp
 its own. The shipped `.letra` uses `var(--r-sm)`, i.e. `0.25rem` (`:46`, used at `:276`), which
 satisfies § Shape Philosophy's `0.25rem` to `0.5rem` band (`stitch/DESIGN.md:197`) and R1's closed
 radius set. The tag's fill and its `inset` treatment are **not** what the design describes, and that
-divergence is recorded in `proposal.md` rather than pinned here, per the note below. `[IMPL]` — the
-existing shuffle-and-tag at `frontend/index.html:699–713`, which already emits `A`–`D` after
-shuffling; this requirement makes it checkable. The earlier revision cited `:381–390` for this, which
-on the frozen file is `NEUTRAL_ACCENT` and `ACCENT_BY_NAME`, not the tag. `[AUTHORED]` — the
-pre-lock affordance, per the note above, which added the hover/focus clause and the no-`selected`-class
-clause that R10's state-change sentence previously lacked; this amendment added the two-layer
-requirement inside that same hover/focus clause. The **scenario title was left as it is** even though it
-now names only the index-tag clause: the `S19` key in `test-plan.md` § 6 resolves by position, and
-retitling for a third time would force a re-map for no gain. A later change may retitle it. Measurable:
-the four index tags, the chip's accent, the `border-color` and `box-shadow` readings under both
-selectors including the layer count and the `inset` layer's alpha, and a `document.querySelectorAll`
-for `.opt.selected` that must return zero.*
+divergence is recorded in `proposal.md` rather than pinned here, per the note below. `[IMPL]` — **superseded: the citation
+`frontend/index.html:699–713` described the pre-change shuffle-and-tag, which shuffled
+`{text, letter}` pairs and emitted `A`–`D` in the shuffled order. The file this delta specifies does
+not do that.** The shuffle now assigns the four option **texts** to four fixed `A`–`D` slots, so the
+tags read `A`, `B`, `C`, `D` in document order on every question and a letter no longer identifies
+its stored option; this requirement makes both halves checkable. The earlier revision cited `:381–390`
+for this, which on the frozen file is `NEUTRAL_ACCENT` and `ACCENT_BY_NAME`, not the tag. `[AUTHORED]`
+— the pre-lock affordance, per the note above, which added the hover/focus clause and the
+no-`selected`-class clause that R10's state-change sentence previously lacked; this amendment added
+the two-layer requirement inside that same hover/focus clause. The **scenario title was left as it is**
+even though it now names only the index-tag clause: the `S19` key in `test-plan.md` § 6 resolves by
+position, and retitling for a third time would force a re-map for no gain. A later change may retitle
+it. Measurable: the four index tags in document order on **two** questions, which must read
+`A`, `B`, `C`, `D` both times while the four option texts are not identical between them (so the
+letters are demonstrably not tracking the texts); the chip's accent; the `border-color` and
+`box-shadow` readings under both selectors including the layer count and the `inset` layer's alpha;
+and a `document.querySelectorAll` for `.opt.selected` that must return zero.*
 
 ### Requirement: Responsive behavior at the design's breakpoints, and the wheel's compact tier
 
@@ -1005,3 +1014,73 @@ and `poetry.lock` — byte-identical after the change. `git status` is **not** t
 claim: every file in this repository is untracked, so it prints the same output whether a file is
 untouched or was never committed. It remains a useful read-only containment check for unexpected
 paths, and nothing more.*
+
+### Requirement: Wheel sector labels stay upright in the page frame at any wheel rotation
+
+A wheel sector label SHALL read upright **relative to the page** at every wheel rotation, including
+the rotation a spin settles at, while remaining inside its own sector. The label's rendered
+orientation SHALL be upright: the rotation composed from the label's own `transform` and its ancestor
+`transform`s SHALL be `0°` modulo `360°`. Rotating the wheel SHALL NOT rotate the label's text or its
+glyph out of that orientation.
+
+Upright means the glyph and the label text read left-to-right along the page — not inverted, not
+mirrored, and not turned to an arbitrary angle. The label SHALL keep its place inside its own sector:
+its offset from the wheel centre SHALL rotate with the sector, so the label whose category is under
+the pointer is the one whose text names that category.
+
+#### Scenario: A sector label stays upright and inside its sector after a spin
+
+- **GIVEN** the wheel screen with its six derived sector labels, at rest
+- **WHEN** the wheel is deliberately rotated away from rest by a value that is not a whole number of
+  turns, so that the same label sits at two different page angles before and after the rotation
+- **THEN** for each of the six `.seg-label` elements the rotation composed from its own `transform`
+  and every ancestor `transform` up to the document root is `0°` modulo `360°`, so the label reads
+  upright in the page frame rather than at the wheel's accumulated angle
+- **AND** the reading is taken twice, once at rest and once after the rotation, and is `0°` both times
+  while `#wheel`'s own composed rotation **differs** between the two readings — the control that
+  proves the wheel actually turned and the `0°` is not a constant
+- **AND** each label still sits inside its own sector: the polar angle from the wheel's centre to the
+  label's bounding-box centre equals that label's sector centre angle `--a` plus the wheel's rotation,
+  modulo `360°`, so a label left static at rest while its sector moved would fail this
+- **AND** each label's text node is present and equals its category's label
+- **AND** *(human-only)* a person confirms in the browser that the glyph and the text read normally —
+  not inverted, not mirrored, not clipped, not collided with a neighbour. No agent in this fleet can
+  read a rendered pixel, and the composed-rotation reading above is a computed-style instrument, not
+  an observation of the glyph.
+
+*Provenance: `[AUTHORED]` — upright-relative-to-page is the human's decision after playing the built
+game, and is **not** a literal read of the mockup: `stitch/code.html` rotates each label group by its
+sector centre angle (`:241`, `:252`, `:263`, `:274`, `:285`, `:296`), so the mockup's labels are
+radial, not page-upright, and the human chose upright. `[IMPL]` — the defect this replaces is real on
+the frozen `frontend/index.html`: `.seg-label` carries
+`transform: translate(-50%, -50%) rotate(var(--a)) translate(0, var(--seg-r)) rotate(calc(-1 * var(--a)))`
+(`:202`), whose trailing `rotate(calc(-1 * var(--a)))` cancels only the sector's own centre angle
+`--a` (set at `:543` from `sectorCenterAngle`) and not the ancestor `#wheel` rotation, which
+`spinWheel` accumulates into `wheelRotation` and writes to `#wheel`'s inline transform (`:616`–`:623`);
+the net page rotation of a label after a spin is therefore the wheel's accumulated rotation, an
+arbitrary angle. Measurable: the composed rotation of each of the six labels, read at rest and after a
+deliberate non-integral rotation, which must be `0°` modulo `360°` on both readings while `#wheel`'s
+own composed rotation differs between them; the polar angle of each label's centre, which must track
+its sector's `--a` plus the wheel rotation; and the human-only glyph-and-text reading, recorded as a
+human step and never inferred from the computed rotation.*
+
+> `[AUTHORED]` **The mechanism, and the one engine boundary it has.** The angle is carried to the
+> labels by a registered inherited custom property: `--wheel-rot` is declared with `@property` as
+> `syntax: "<angle>"`, `inherits: true` and `initial-value: 0deg`, `.wheel` both declares
+> `--wheel-rot: 0deg` and rotates by it, and each `.seg-label` ends its `transform` with
+> `rotate(calc(-1 * var(--wheel-rot)))`. Registration is load-bearing in one specific way: an
+> unregistered custom property does not interpolate, so without it the counter-rotation would
+> resolve against a value that jumps at the start of the spin and every label would snap upright
+> and then stay put while the wheel turned beneath it.
+>
+> `@property` is Baseline 2024 — supported in Chrome/Edge 85+, Safari 16.4+, Firefox 128+ — so the
+> declared deployment target, Chrome or Edge on Windows 11, is covered. On an engine without it the
+> property remains an unresolved token and the behaviour degrades: labels snap upright at the
+> **start** of a spin, drift with the wheel for the remainder of the 4.2 s, and land upright again
+> where the spin settles. **The requirement's first clause is therefore satisfied at rest, at every
+> settled rotation, and at every rotation a caller writes, and it is not satisfied at intermediate
+> rotations on such an engine.** That narrower reading is stated here rather than left implied,
+> because the delta records the boundary of every other mechanism it introduces and this one had
+> none; the reviewer at Gate C should confirm the clause is intended to read that way, and if it is
+> not, the fix is a per-frame write or a `rotate` individual property on the label rather than any
+> change to the wheel.

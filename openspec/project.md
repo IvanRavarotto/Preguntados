@@ -28,7 +28,7 @@ The missing lint, type-check, behavioral-test, and coverage commands are explici
 - **Frontend**: `frontend/index.html` is a static HTML document with embedded CSS and vanilla JavaScript. It has no framework, bundler, or generated asset pipeline. The frontend owns the wheel animation, player names, turn indicator, 20-second timer, shuffled options, score, winner screen, and rematch flow.
 - **Testing**: No automated test framework is configured. Verification currently consists of Python syntax/import checks, Node syntax checking of the embedded script, database queries, and HTTP smoke checks. Pandas is used by the CSV loader, not by the game UI.
 
-The current dataset contains 201 questions and 201 categorization records. Question records contain four option fields and an answer stored as the correct option text.
+The current dataset contains 300 questions and 300 categorization records, 50 per category across the six categories. Question records contain four option fields and an answer stored as the correct option text.
 
 ## Datastores
 

@@ -1,7 +1,7 @@
 ﻿================================================================================
 SEGUIMIENTO DEL PROYECTO - Preguntados 1v1
 ================================================================================
-Ultima actualizacion: 2026-10-02
+Ultima actualizacion: 2026-10-08
 Estado: IMPLEMENTACION PARCIAL; pendiente verificar con PostgreSQL.
 
 Este archivo reemplaza el seguimiento anterior y registra solo el estado
@@ -99,4 +99,29 @@ Checks:
 
 Despues: repetir code review, presentar Gate C, ejecutar QA y archivar solo
 cuando la implementacion este aprobada y verificada.
+
+--------------------------------------------------------------------------------
+6. SESION 2026-10-08 - PENDIENTES PARA LA PROXIMA SESION
+--------------------------------------------------------------------------------
+[ ] Instalar el CLI openspec global: npm install -g @fission-ai/openspec@latest.
+    Hoy se instalo Node 24.19.0, que lo habilita; sin el CLI no corren
+    openspec list/status/validate/doctor/archive ni los flujos opsx.
+[ ] Re-baselinear apply-neon-obsidian-theme: su test-plan/tasks exigen
+    categorized=201 con {historia:89, entretenimiento:57, geografia:24,
+    deportes:17, arte:8, ciencia:6} y automatic:27/manual:174; el dataset
+    actual es 300 uniforme (50x6, automatic:300). El cambio sigue sin
+    archivar y su precondicion ya no se cumple.
+[ ] Resolver el sondeo repetido a /health (404) visto en el log de uvicorn;
+    no proviene de los tests HTTP ni del frontend.
+[ ] Cerrar Gate C + QA de add-crowns-jokers-gameplay y aplicar/archivar
+    ambos cambios OpenSpec; openspec/specs/ no refleja coronas/comodines
+    ni el tema aplicado.
+[ ] Corregir la ruta del venv en la seccion 1 de este archivo: la valida
+    real es fastapi-questions-iiM5SX4W-py3.14 (no M5XxuBxn).
+[ ] (Opcional) Configurar arranque automatico de Docker Desktop al login.
+
+Hecho en esta sesion: SVM+WSL2+Docker levantados; Poetry/venv ok; base
+cargada (300/300, 50x6); uvicorn en :8000 con 31/31 tests HTTP ok; Node
+24.19.0+npm instalados; PATH ampliado (python/poetry/node/npm); corregido
+el conteo del dataset en openspec/project.md (201 -> 300).
 ================================================================================

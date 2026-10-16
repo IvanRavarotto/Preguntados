@@ -7,6 +7,7 @@ from app.database import get_db, engine
 from app.models import Base, Question, Categorization
 from app.categories import CATEGORIES
 from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
+from app.ai_validation import AIValidationError, assess_question
 
 app = FastAPI(title="Questions API", version="1.0.0")
 
@@ -36,6 +37,15 @@ def add_question(payload: QuestionCreate, db: Session = Depends(get_db)):
     except QuestionValidationError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail)
     return {"id": question.id}
+
+
+@app.post("/questions/validate")
+def validate_question_with_ai(payload: QuestionCreate):
+    try:
+        result = assess_question(payload.category, payload.question, payload.correct_answer)
+    except AIValidationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+    return result
 
 
 @app.get("/questions/{question_id}")

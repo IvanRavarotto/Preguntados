@@ -24,6 +24,7 @@ The missing lint, type-check, behavioral-test, and coverage commands are explici
 
 - **Web / API**: FastAPI `>=0.141.1,<0.142.0` owns HTTP routing, request validation, JSON serialization, and the root static-page response. Uvicorn `>=0.53.0,<0.54.0` runs the ASGI application on port `8000`.
 - **Data access**: SQLAlchemy `>=2.1.0,<3.0.0` owns ORM models and sessions; `psycopg2-binary` `>=2.9.13,<3.0.0` is the PostgreSQL driver. The API owns database reads and startup table creation.
+- **AI validation**: `pydantic-ai-slim[google]` `>=2.56.0,<3.0.0` (which pulls in `google-genai`) backs `app.ai_validation`, the Gemini service used by `POST /questions/validate` to judge an authored question and, when plausible, generate three distractors. The model name is configurable through the `GEMINI_MODEL` environment variable; the key is read from `GEMINI_API_KEY`.
 - **Background work**: There is no server-side worker or scheduler. `app.load_data`, `app.categorize`, and `app.human_review` are one-off local command-line tools. Transformers, PyTorch, and the cached Hugging Face model are used by the offline categorization workflow, not by the web request path.
 - **Frontend**: `frontend/index.html` is a static HTML document with embedded CSS and vanilla JavaScript. It has no framework, bundler, or generated asset pipeline. The frontend owns the wheel animation, player names, turn indicator, 20-second timer, shuffled options, score, winner screen, and rematch flow.
 - **Testing**: No automated test framework is configured. Verification currently consists of Python syntax/import checks, Node syntax checking of the embedded script, database queries, and HTTP smoke checks. Pandas is used by the CSV loader, not by the game UI.
@@ -49,6 +50,7 @@ The local connection shape is `postgresql+psycopg2://<user>:<password>@localhost
 - A question is not reused within a category during the current match. A rematch returns to the player-name screen and clears the current game state.
 - The canonical existing route is plural: `GET /questions/{question_id}`. The singular `/question/{id}` path in the initial request is not the route currently implemented and must not be introduced without an approved API change.
 - The current frontend obtains a category batch from `GET /questions/category/{category_name}?limit=200`; it also uses `GET /categories` and `GET /categories/stats`.
+- `POST /questions` creates a manually authored question. `POST /questions/validate` returns an AI verdict (`plausible`, `status`, `reasons`) and, when the question is plausible, three generated distractors; it is advisory and the manual authoring path remains available when the AI is unreachable.
 - The API root `GET /` serves the game. Interactive API documentation is available at `GET /docs`.
 
 Verified response from `GET http://localhost:8000/questions/1`:
@@ -80,8 +82,8 @@ Authentication, remote multiplayer, accounts, and durable score history are outs
 
 ## Secrets
 
-- **Where they live**: Development database credentials are defined by the local Docker Compose configuration and are currently consumed by the local SQLAlchemy connection. The Hugging Face model cache is local under the user profile.
-- **How a process obtains one**: Docker Compose supplies the local PostgreSQL configuration to the database container. The current application uses a local SQLAlchemy URL; production deployment must replace local/static configuration with environment-backed secret injection or a managed secret store.
+- **Where they live**: Development database credentials are defined by the local Docker Compose configuration and are currently consumed by the local SQLAlchemy connection. The Hugging Face model cache is local under the user profile. The Gemini API key for question validation lives only in the local, git-ignored `.env` file.
+- **How a process obtains one**: Docker Compose supplies the local PostgreSQL configuration to the database container. The current application uses a local SQLAlchemy URL; production deployment must replace local/static configuration with environment-backed secret injection or a managed secret store. `app.ai_validation` reads `GEMINI_API_KEY` from the process environment, falling back to the local `.env` file, and never logs or returns the key.
 - **Never**: production credentials, tokens, or private model credentials in source, logs, errors, test fixtures, manifests, or build artifacts. Local development credentials must never be reused outside this machine.
 
 The current local credential arrangement is a development-only exception and must be recorded as an ADR before any deployment beyond the classroom/local setup.

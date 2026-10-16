@@ -1,0 +1,116 @@
+================================================================================
+HISTORIAL DE TAREAS - Preguntados 1v1
+================================================================================
+Fecha de la sesión: 2026-10-14 22:03
+Entorno: Windows 11 + PowerShell 5.1
+Alcance: análisis inicial, levantamiento del proyecto y corrección de textos.
+
+Este archivo registra las tareas realizadas en esta sesión, en orden, con el
+resultado verificado de cada una. Complementa a SEGUIMIENTO.txt.
+
+--------------------------------------------------------------------------------
+1. ANÁLISIS DEL PROYECTO
+--------------------------------------------------------------------------------
+[X] Se relevaron los dos subproyectos de la carpeta:
+    - full-app-ai-scenario: workspace SDD + juego de trivia "Preguntados 1v1".
+    - Pydantic/ruleta: ejercicio aparte de Pydantic (sin relación con el juego).
+[X] Se identificó el stack real: Python 3.14.7, FastAPI, Uvicorn, SQLAlchemy,
+    psycopg2-binary, PostgreSQL 15 (Docker Compose), Poetry, y frontend estático
+    en frontend/index.html (HTML/CSS/JS vanilla).
+[X] Se detectó que el workdir del shell no se aplica a rutas con corchetes
+    ("[01] - Practica Profesionalizante II"), por lo que se usó siempre la ruta
+    completa con -LiteralPath / -f / poetry -C.
+
+--------------------------------------------------------------------------------
+2. VERIFICACIÓN DE REQUISITOS PREVIOS
+--------------------------------------------------------------------------------
+[X] docker --version                -> Docker version 29.8.0
+[X] docker compose version          -> Docker Compose version v5.5.1
+[X] docker info (server)            -> daemon activo, ServerVersion 29.8.0
+[X] poetry --version                -> Poetry 2.5.1
+[X] python --version                -> Python 3.14.7
+[X] Entorno de Poetry válido en:
+    C:\Users\Ivan\AppData\Local\pypoetry\Cache\virtualenvs\fastapi-questions-M5XxuBxn-py3.14
+
+--------------------------------------------------------------------------------
+3. LEVANTAMIENTO DEL PROYECTO
+--------------------------------------------------------------------------------
+[X] PostgreSQL 15 (Docker Compose):
+    docker compose -f "<ruta>/docker-compose.yml" up -d
+    Resultado: contenedor full-app-ai-scenario-db-1 ya en estado "Up".
+    Puerto 5432 accesible en localhost: OK.
+[X] Dependencias Python:
+    poetry -C "<ruta>" install --no-root
+    Resultado: "No dependencies to install or update" (todo al día).
+[X] Datos en la base (ya cargados, no fue necesario ejecutar app.load_data):
+    - questions:        300 filas
+    - categorizations:  300 filas (50 por categoría: arte, ciencia, deportes,
+                        entretenimiento, geografía, historia)
+[X] API FastAPI/Uvicorn: ya estaba corriendo en 0.0.0.0:8000.
+    Proceso: PID 3864, lanzado hoy 19:12 sin --reload.
+    Comando: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+--------------------------------------------------------------------------------
+4. VERIFICACIÓN DE ENDPOINTS (todos respondieron 200)
+--------------------------------------------------------------------------------
+[X] GET /                          -> sirve el juego (HTML)
+[X] GET /docs                      -> Swagger UI
+[X] GET /categories                -> 6 categorías
+[X] GET /categories/stats          -> total_questions=300, categorized=300,
+                                      uncategorized=0, automatic=300, manual=0
+[X] GET /questions?limit=1         -> OK
+[X] GET /questions/1               -> {"error":"Pregunta no encontrada"}
+[X] GET /questions/category/arte   -> OK
+
+--------------------------------------------------------------------------------
+5. CORRECCIÓN DE TEXTOS (MOJIBAKE UTF-8)
+--------------------------------------------------------------------------------
+Problema: los textos visibles del frontend mostraban caracteres corruptos, por
+ejemplo el título decía "Ã‚Â¡Preguntados 1v1!" en lugar de "¡Preguntados 1v1!".
+
+Diagnóstico:
+[X] El archivo frontend/index.html tenía DOBLE mojibake de UTF-8 (texto UTF-8
+    mal interpretado como cp1252 dos veces). Ejemplo: la "¡" (C2 A1 en UTF-8)
+    había quedado como la secuencia de bytes C3 83 E2 80 9A C3 82 C2 A1.
+[X] Verificado: el archivo no tenía BOM y usaba saltos de línea LF.
+[X] Se escaneó todo el repositorio: solo frontend/index.html tenía mojibake.
+    Los datos en PostgreSQL ya estaban correctos.
+
+Corrección aplicada:
+[X] Transformación exacta y estable: dos pasadas inversas cp1252 -> UTF-8
+    (una tercera pasada no cambia nada, por lo que el resultado es estable).
+[X] Backup del original creado en:
+    C:\Users\IVN~1\AppData\Local\Temp\opencode\index.html.bak
+[X] Archivo reescrito en UTF-8 sin BOM, conservando los LF.
+
+Resultado verificado sirviendo vía GET / (200):
+[X] <title>¡Preguntados 1v1!</title>
+[X] Acentos restaurados: categoría, Geografía, opción, ¡GIRAR, Autocorrección,
+    Reúne, acabó, entre otros.
+[X] Icono ♛ restaurado.
+[X] 0 marcadores de mojibake ("Ã", "Â", "â€").
+
+Nota: se recomienda un refresco forzado (Ctrl+F5) en el navegador para descartar
+la versión en caché.
+
+--------------------------------------------------------------------------------
+6. OBSERVACIONES / PENDIENTES (no bloqueantes)
+--------------------------------------------------------------------------------
+[ ] Los IDs de las preguntas arrancan en 7303, no en 1 (la tabla se recargó
+    varias veces). Por eso GET /questions/1 devuelve "no encontrada".
+[ ] openspec/project.md declara 201 preguntas, pero la base tiene 300.
+[ ] El frontend todavía figura como implementación parcial (SEGUIMIENTO.txt):
+    contiene "corona" (6) pero casi nada de comodines y 0 referencias al tema
+    "neon-obsidian".
+[ ] Los cambios OpenSpec add-crowns-jokers-gameplay y apply-neon-obsidian-theme
+    siguen sin archivarse.
+[ ] No se realizó ningún commit en esta sesión.
+
+--------------------------------------------------------------------------------
+7. CÓMO QUEDÓ EL ENTORNO
+--------------------------------------------------------------------------------
+- PostgreSQL 15 corriendo (contenedor full-app-ai-scenario-db-1, puerto 5432).
+- API FastAPI sirviendo en http://127.0.0.1:8000/ (PID 3864).
+- Documentación interactiva en http://127.0.0.1:8000/docs.
+- frontend/index.html corregido y servido correctamente.
+================================================================================

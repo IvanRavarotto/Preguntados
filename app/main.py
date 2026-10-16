@@ -1,11 +1,12 @@
 from pathlib import Path
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db, engine
 from app.models import Base, Question, Categorization
 from app.categories import CATEGORIES
+from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
 
 app = FastAPI(title="Questions API", version="1.0.0")
 
@@ -26,6 +27,15 @@ def root():
 def list_questions(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     questions = db.query(Question).offset(skip).limit(limit).all()
     return questions
+
+
+@app.post("/questions", status_code=201)
+def add_question(payload: QuestionCreate, db: Session = Depends(get_db)):
+    try:
+        question = create_question(db, payload)
+    except QuestionValidationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+    return {"id": question.id}
 
 
 @app.get("/questions/{question_id}")

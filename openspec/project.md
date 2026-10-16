@@ -28,7 +28,7 @@ The missing lint, type-check, behavioral-test, and coverage commands are explici
 - **Frontend**: `frontend/index.html` is a static HTML document with embedded CSS and vanilla JavaScript. It has no framework, bundler, or generated asset pipeline. The frontend owns the wheel animation, player names, turn indicator, 20-second timer, shuffled options, score, winner screen, and rematch flow.
 - **Testing**: No automated test framework is configured. Verification currently consists of Python syntax/import checks, Node syntax checking of the embedded script, database queries, and HTTP smoke checks. Pandas is used by the CSV loader, not by the game UI.
 
-The current dataset contains 201 questions and 201 categorization records. Question records contain four option fields and an answer stored as the correct option text.
+The current dataset contains 300 questions and 300 categorization records. Question records contain four option fields and an answer stored as the correct option text.
 
 ## Datastores
 
@@ -45,7 +45,7 @@ The local connection shape is `postgresql+psycopg2://<user>:<password>@localhost
 - The first player is selected randomly. Players alternate turns.
 - The wheel has six segments and uses the current neon category palette defined in `docs/adr/ADR-001-neon-category-palette.md` and the `game-presentation` spec for `arte`, `ciencia`, `deportes`, `entretenimiento`, `geografia`, and `historia`.
 - A spin selects a category, then the game obtains a question and presents four options for 20 seconds.
-- A correct answer adds one point; an incorrect answer or timeout adds zero points. The first player to reach 10 points wins.
+- A correct answer advances progress toward claiming a crown; collecting six crowns wins. An incorrect answer or timeout adds zero points and may change turn. The exact crown and joker rules are defined by the `gameplay` capability.
 - A question is not reused within a category during the current match. A rematch returns to the player-name screen and clears the current game state.
 - The canonical existing route is plural: `GET /questions/{question_id}`. The singular `/question/{id}` path in the initial request is not the route currently implemented and must not be introduced without an approved API change.
 - The current frontend obtains a category batch from `GET /questions/category/{category_name}?limit=200`; it also uses `GET /categories` and `GET /categories/stats`.
@@ -116,7 +116,7 @@ The current local credential arrangement is a development-only exception and mus
 - Keep API route names and JSON field names stable unless an approved OpenSpec change explicitly changes the contract.
 - Use SQLAlchemy sessions through the existing `get_db` dependency; do not create ad hoc database connections in route handlers.
 - Keep the frontend as a static asset unless a change proposal introduces a build system or framework.
-- Preserve the two-player same-browser scope, six-category wheel, turn alternation, 20-second timer, four-option question format, and first-to-10 scoring rule unless the product scope is changed.
+- Preserve the two-player same-browser scope, six-category wheel, turn alternation, 20-second timer, four-option question format, and crown-based win condition (six crowns) unless the product scope is changed.
 - The frontend must remain usable at desktop and mobile viewport sizes and must provide visible feedback for correct, incorrect, and timed-out answers.
 - API and database availability are prerequisites for loading questions; the frontend must handle an unavailable category request without crashing the page.
 - Do not modify the local Docker Compose database contract as an incidental part of frontend work.

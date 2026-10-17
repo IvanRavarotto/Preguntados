@@ -5,7 +5,7 @@ description = "Juego de preguntados con FastAPI, PostgreSQL y dataset local"
 authors = [
     {name = "IvanRavarotto",email = "itravarotto@gmail.com"}
 ]
-requires-python = "^3.14"
+requires-python = ">=3.14,<4.0"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
     "uvicorn (>=0.53.0,<0.54.0)",
@@ -26,3 +26,53 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "ruff (>=0.17.1,<0.18.0)",
+    "mypy (>=2.4.0,<3.0.0)"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = [
+    "openspec",
+    ".check-temp",
+    ".opencode",
+    ".claude",
+    "harness",
+    "stitch",
+    "docs",
+    "*.md",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.14"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/load_data.py",
+    "app/categorize.py",
+    "app/classifier.py",
+    "app/human_review.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["if __name__ == .__main__.:"]

@@ -1,13 +1,15 @@
 from pathlib import Path
-from fastapi import FastAPI, Depends, HTTPException
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.database import get_db, engine
-from app.models import Base, Question, Categorization
-from app.categories import CATEGORIES
-from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
+
 from app.ai_validation import AIValidationError, assess_question
+from app.categories import CATEGORIES
+from app.database import engine, get_db
+from app.models import Base, Categorization, Question
+from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
 
 app = FastAPI(title="Questions API", version="1.0.0")
 
@@ -57,7 +59,9 @@ def get_question(question_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/questions/category/{category_name}")
-def list_by_category(category_name: str, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def list_by_category(
+    category_name: str, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)
+):
     """
     Retorna las preguntas categorizadas con una categoría específica.
     """
@@ -98,8 +102,16 @@ def category_stats(db: Session = Depends(get_db)):
     """Retorna estadísticas de categorización."""
     total_questions = db.query(func.count(Question.id)).scalar()
     categorized = db.query(func.count(func.distinct(Categorization.question_id))).scalar()
-    automatic = db.query(func.count(Categorization.id)).filter(Categorization.is_automatic.is_(True)).scalar()
-    manual = db.query(func.count(Categorization.id)).filter(Categorization.is_automatic.is_(False)).scalar()
+    automatic = (
+        db.query(func.count(Categorization.id))
+        .filter(Categorization.is_automatic.is_(True))
+        .scalar()
+    )
+    manual = (
+        db.query(func.count(Categorization.id))
+        .filter(Categorization.is_automatic.is_(False))
+        .scalar()
+    )
 
     by_category_rows = (
         db.query(Categorization.category_name, func.count(Categorization.id))

@@ -13,21 +13,23 @@ The initial product is a local demonstration, not an authenticated or persistent
 | Language and version | Python 3.14.7 for the API and data tools; browser JavaScript is ES2020-compatible and is checked with Node.js 24 |
 | Pinned by | `pyproject.toml` and `poetry.lock`; PostgreSQL is pinned to `postgres:15` in `docker-compose.yml` |
 | One command to build | `poetry install` (the frontend has no bundling or compilation step) |
-| One command to test | `poetry run python -m compileall -q app` for Python syntax; behavioral checks are HTTP smoke checks against a running server |
-| One command to lint and format | Not configured; no Ruff, Black, or equivalent tool is installed |
-| One command to type-check | Not configured; no mypy or pyright command is installed |
-| Coverage bar | Not established; there is currently no automated test suite |
+| One command to test | `poetry run pytest` — a hermetic suite over the HTTP contract, run against an in-memory SQLite database with the AI service stubbed |
+| One command to lint and format | `poetry run ruff check .` and `poetry run ruff format --check .` (Ruff, configured in `pyproject.toml`) |
+| One command to type-check | `poetry run mypy app` (mypy, configured in `pyproject.toml`) |
+| Coverage bar | `poetry run pytest --cov=app --cov-fail-under=80` — 80% of statements across the API-owned modules; the offline tools `app/load_data.py`, `app/categorize.py`, `app/classifier.py`, and `app/human_review.py` are excluded by design |
 
-The missing lint, type-check, behavioral-test, and coverage commands are explicit pre-release gaps. A change that adds or changes game behavior must either add the relevant checks or explicitly escalate the gap before implementation.
+Test, lint, format, and type-check commands are provided by the `quality-toolchain` capability
+(see `docs/adr/ADR-003-pytest-ruff-mypy-toolchain.md`). A change that adds or changes behavior must run
+these commands, or explicitly escalate the gap before implementation.
 
 ## Frameworks and libraries
 
 - **Web / API**: FastAPI `>=0.141.1,<0.142.0` owns HTTP routing, request validation, JSON serialization, and the root static-page response. Uvicorn `>=0.53.0,<0.54.0` runs the ASGI application on port `8000`.
 - **Data access**: SQLAlchemy `>=2.1.0,<3.0.0` owns ORM models and sessions; `psycopg2-binary` `>=2.9.13,<3.0.0` is the PostgreSQL driver. The API owns database reads and startup table creation.
 - **AI validation**: `pydantic-ai-slim[google]` `>=2.56.0,<3.0.0` (which pulls in `google-genai`) backs `app.ai_validation`, the Gemini service used by `POST /questions/validate` to judge an authored question and, when plausible, generate three distractors. The model name is configurable through the `GEMINI_MODEL` environment variable; the key is read from `GEMINI_API_KEY`.
-- **Background work**: There is no server-side worker or scheduler. `app.load_data`, `app.categorize`, and `app.human_review` are one-off local command-line tools. Transformers, PyTorch, and the cached Hugging Face model are used by the offline categorization workflow, not by the web request path.
+- **Background work**: There is no server-side worker or scheduler. `app.load_data`, `app.categorize`, `app.classifier`, and `app.human_review` are one-off local command-line tools. Transformers, PyTorch, and the cached Hugging Face model are used by the offline categorization workflow, not by the web request path.
 - **Frontend**: `frontend/index.html` is a static HTML document with embedded CSS and vanilla JavaScript. It has no framework, bundler, or generated asset pipeline. The frontend owns the wheel animation, player names, turn indicator, 20-second timer, shuffled options, score, winner screen, and rematch flow.
-- **Testing**: No automated test framework is configured. Verification currently consists of Python syntax/import checks, Node syntax checking of the embedded script, database queries, and HTTP smoke checks. Pandas is used by the CSV loader, not by the game UI.
+- **Testing**: pytest `>=9.1.1,<10.0.0` and `pytest-cov` back `tests/`, which drives the FastAPI app through `TestClient` against an isolated in-memory SQLite database and stubs the AI service so the suite needs no network and no API key. `httpx` provides the test-client transport, `ruff` the lint/format gate, and `mypy` the type-check gate — all dev-only dependencies. Pandas is used by the CSV loader, not by the game UI.
 
 The current dataset contains 300 questions and 300 categorization records. Question records contain four option fields and an answer stored as the correct option text.
 
@@ -95,7 +97,7 @@ The current local credential arrangement is a development-only exception and mus
 | Browser game (`frontend/index.html`) | Player names, wheel, turns, timer, options, score, winner and rematch state | FastAPI API | HTTP to `localhost:8000` |
 | FastAPI application (`app/main.py`) | Routes, request validation, JSON responses, static frontend delivery, startup table creation | PostgreSQL through SQLAlchemy | HTTP/JSON on port `8000`; SQL on port `5432` |
 | PostgreSQL 15 (`questions_db`) | Questions, options, answers, source metadata, and categorization records | Docker volume `postgres_data` | PostgreSQL protocol on `localhost:5432` |
-| Local data tools (`app.load_data`, `app.categorize`, `app.human_review`) | CSV loading and offline categorization/review | PostgreSQL, local CSV, Hugging Face cache | Local process invocation; not a web service |
+| Local data tools (`app.load_data`, `app.categorize`, `app.classifier`, `app.human_review`) | CSV loading and offline categorization/review | PostgreSQL, local CSV, Hugging Face cache | Local process invocation; not a web service |
 
 ## Deployment
 
@@ -126,7 +128,7 @@ The current local credential arrangement is a development-only exception and mus
 ## Known baseline constraints
 
 - There is no authentication, remote multiplayer, matchmaking, persistence, or deployment pipeline.
-- There is no configured automated behavioral test suite, lint command, type-check command, or coverage threshold.
+- Automated test, lint, format, and type-check commands and an 80% coverage bar are provided by the `quality-toolchain` capability; the offline data tools are excluded from coverage by design.
 - The current local database connection is development-oriented and must be replaced with environment-backed configuration before production use.
 - The current API route is `/questions/{id}`, not the initially suggested singular `/question/{id}` route.
 
@@ -136,5 +138,5 @@ The current local credential arrangement is a development-only exception and mus
 |---|---|---|
 | Local Windows/Docker deployment with development database credentials | Local classroom baseline only; production use is not approved | Must be recorded before deployment |
 | No authentication, persistence, or remote multiplayer | Initial MVP scope | Must be recorded if the scope changes |
-| No automated lint, type-check, behavioral-test, or coverage toolchain | Known baseline gap; escalation required before release | Must be recorded before adding production release gates |
+| Automated lint, type-check, behavioral-test, and coverage toolchain added as dev-only dependencies | Approved by the `add-quality-toolchain` change | `docs/adr/ADR-003-pytest-ruff-mypy-toolchain.md` |
 | Existing plural API route differs from the initially suggested singular route | Preserve the verified existing route; adding an alias requires a change proposal | Must be recorded before an API contract change |

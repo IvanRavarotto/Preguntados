@@ -48,7 +48,7 @@ def _collect_fields(payload: QuestionCreate) -> dict[str, str]:
 def question_exists(db: Session, question_text: str) -> bool:
     """Return True when an existing question normalizes to the same text."""
     target = normalize_question_text(question_text)
-    existing_texts = db.query(Question.question).all()
+    existing_texts: list[tuple[str]] = db.query(Question.question).all()
     return any(normalize_question_text(row[0]) == target for row in existing_texts)
 
 

@@ -8,14 +8,14 @@ Orquesta todo el flujo:
 4. Si el score < threshold → pide revisión humana
 5. Guarda el resultado en la tabla categorizations
 """
+
 from tqdm import tqdm
 
-from app.database import SessionLocal
-from app.models import Question, Categorization
-from app.categories import CATEGORIES, get_category_names, get_category_labels
+from app.categories import CATEGORIES, get_category_names
 from app.classifier import AIClassifier
-from app.human_review import display_question_context, ask_human_for_category, confirm_ai_suggestion
-
+from app.database import SessionLocal
+from app.human_review import ask_human_for_category, confirm_ai_suggestion, display_question_context
+from app.models import Categorization, Question
 
 # Umbral de confianza (70%)
 CONFIDENCE_THRESHOLD = 0.70
@@ -29,7 +29,9 @@ def get_uncategorized_questions(db) -> list:
     return db.query(Question).filter(~Question.id.in_(categorized_ids)).all()
 
 
-def save_categorization(db, question_id: int, category_name: str, confidence_score: float, is_automatic: bool) -> None:
+def save_categorization(
+    db, question_id: int, category_name: str, confidence_score: float, is_automatic: bool
+) -> None:
     """Guarda una categorización en la base de datos."""
     try:
         categorization = Categorization(
@@ -81,7 +83,9 @@ def categorize_all(batch_size: int = 32, threshold: float = CONFIDENCE_THRESHOLD
                 automatic += 1
                 continue
 
-            display_question_context(question.question, result.category_name, result.confidence_score, result.all_scores)
+            display_question_context(
+                question.question, result.category_name, result.confidence_score, result.all_scores
+            )
 
             if confirm_ai_suggestion(result.category_name, result.confidence_score):
                 save_categorization(
@@ -112,7 +116,11 @@ def categorize_all(batch_size: int = 32, threshold: float = CONFIDENCE_THRESHOLD
         print("  RESUMEN DE CATEGORIZACIÓN")
         print("=" * 50)
         print(f"  Total procesadas:    {total}")
-        print(f"  Automáticas (IA):    {automatic} ({automatic / total:.0%})" if total else "  Automáticas (IA):    0")
+        print(
+            f"  Automáticas (IA):    {automatic} ({automatic / total:.0%})"
+            if total
+            else "  Automáticas (IA):    0"
+        )
         print(f"  Manuales (humano):   {manual}")
         print(f"  Omitidas (skip):     {skipped}")
         print("=" * 50)

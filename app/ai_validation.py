@@ -128,11 +128,7 @@ def _run(output_type, instructions, prompt):
 
 
 def _validation_prompt(category: str, question: str, answer: str) -> str:
-    return (
-        f"Categoria: {category}\n"
-        f"Pregunta: {question}\n"
-        f"Respuesta marcada como correcta: {answer}"
-    )
+    return f"Categoria: {category}\nPregunta: {question}\nRespuesta marcada como correcta: {answer}"
 
 
 def validate_content(category: str, question: str, answer: str) -> ValidationResult:

@@ -303,13 +303,6 @@
     border: 1px solid var(--stroke); border-radius: var(--r-pill);
     background: rgba(255, 255, 255, 0.08); overflow: hidden;
   }
-  .timer-num {
-    flex: none; width: 2.5rem; text-align: right;
-    font-family: var(--mono); font-size: 1.125rem; font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--time-color, var(--accent));
-    transition: color 0.2s ease;
-  }
   .timer-bar {
     width: 100%; height: 100%; border-radius: var(--r-pill);
     background: var(--time-color, var(--accent));
@@ -616,7 +609,6 @@
       <div id="q-timer" class="timer" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuenow="0">
         <div id="tbar" class="timer-bar"></div>
       </div>
-      <span id="tnum" class="timer-num" aria-hidden="true">20</span>
     </div>
     <div class="card question-card">
       <div class="q-top">
@@ -681,6 +673,7 @@
   const MAX_JOKER_USES = 2;
   const TIMER_SECONDS = 20;
   const TIMER_URGENT_RATIO = 0.2;
+  const TIMER_URGENT_COLOR = "#FF2A6D";
   const TURN_MS = TIMER_SECONDS * 1000;
   const TURN_TICK_MS = 100;
   const SPIN_MS = 4200;
@@ -1238,8 +1231,8 @@
       return;
     }
     currentQuestion = q;
-    renderQuestion(q);
     show("screen-question");
+    renderQuestion(q);
   }
 
   function pendingCategories() {
@@ -1297,18 +1290,11 @@
     pickQuestionAsync("crown-challenge");
   }
 
-  /* The remaining-time colour walks green -> orange -> red as the clock drains, so the
-     bar and the seconds agree and the player can read urgency at a glance. */
+  /* The bar carries the active category's accent while the turn is healthy, and shifts to the
+     failure accent once less than a fifth of the turn is left, so urgency reads at a glance. */
   function timerColor(ratio) {
-    const green = [5, 255, 161];
-    const orange = [255, 107, 0];
-    const red = [255, 42, 109];
-    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
-    const clamped = Math.max(0, Math.min(1, ratio));
-    const c = clamped >= 0.5
-      ? mix(orange, green, (clamped - 0.5) / 0.5)
-      : mix(red, orange, clamped / 0.5);
-    return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+    if (ratio < TIMER_URGENT_RATIO) return TIMER_URGENT_COLOR;
+    return (currentCat && currentCat.accent) || NEUTRAL_ACCENT;
   }
 
   function applyTimerColor(element, ratio) {
@@ -1318,7 +1304,6 @@
   function startTurnClock(onExpire) {
     const bar = $("tbar");
     const track = $("q-timer");
-    const num = $("tnum");
     const startedAt = performance.now();
     clearTimeout(timerId);
     clearInterval(tickId);
@@ -1327,8 +1312,6 @@
     bar.style.transition = "none";
     bar.style.width = "100%";
     applyTimerColor(bar, 1);
-    applyTimerColor(num, 1);
-    num.textContent = String(TIMER_SECONDS);
     void bar.offsetWidth;
     bar.style.transition = `width ${TIMER_SECONDS}s linear`;
     bar.style.width = "0%";
@@ -1337,8 +1320,6 @@
       const state = timerState(performance.now() - startedAt);
       const secondsLeft = Math.ceil(TURN_MS * state.ratio / 1000);
       applyTimerColor(bar, state.ratio);
-      applyTimerColor(num, state.ratio);
-      num.textContent = String(secondsLeft);
       track.setAttribute("aria-valuenow", String(secondsLeft));
       if (state.expired) clearInterval(tickId);
     }, TURN_TICK_MS);
@@ -1427,9 +1408,7 @@
 
   function onTimeout(q) {
     if (answered) return;
-    $("tbar").style.setProperty("--time-color", "#FF2A6D");
-    $("tnum").style.setProperty("--time-color", "#FF2A6D");
-    $("tnum").textContent = "0";
+    $("tbar").style.setProperty("--time-color", TIMER_URGENT_COLOR);
     resolveFailure(q, "timeout");
   }
 

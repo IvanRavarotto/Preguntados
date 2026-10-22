@@ -443,6 +443,7 @@
     font-size: clamp(1.75rem, 8vw, 3.25rem); font-weight: 800; letter-spacing: -0.02em; text-align: center;
   }
   .winner-box .wscore { font-family: var(--mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-dim); }
+  .winner-box .wending { max-width: 34rem; text-align: center; font-size: clamp(0.875rem, 3.5vw, 1.0625rem); color: var(--text-dim); }
 
   .podium { display: flex; gap: 1rem; justify-content: center; align-items: stretch; flex-wrap: wrap; width: 100%; }
   .pcard {
@@ -473,6 +474,25 @@
   .winner-actions .btn { padding: 0.8125rem 1.75rem; font-size: clamp(1rem, 3.5vw, 1.125rem); }
   .btn-ghost { background: transparent; color: var(--text); border-color: var(--stroke-strong); box-shadow: none; }
   .btn-ghost:hover:not(:disabled) { filter: none; border-color: var(--geografia); box-shadow: 0 0 1rem rgba(0, 240, 255, 0.3); }
+
+  /* A surrender control reads as destructive without competing with the screen's primary action:
+     small, outlined in the failure accent, and never filled unless the player confirms. */
+  .surrender-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: clamp(0.5rem, 2vw, 0.75rem); }
+  .surrender-btn {
+    flex: none;
+    padding: clamp(0.375rem, 2vw, 0.5rem) clamp(0.625rem, 3vw, 0.875rem);
+    border-color: var(--fail); background: transparent; box-shadow: none;
+    color: var(--fail); font-family: var(--mono); font-size: clamp(0.625rem, 2.4vw, 0.75rem);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .surrender-btn:hover:not(:disabled) { filter: brightness(1.15); border-color: var(--fail); box-shadow: none; }
+  .surrender-btn:focus-visible { border-color: var(--fail); box-shadow: 0 0 0 1px var(--fail); }
+  .surrender-btn:disabled { filter: grayscale(0.6) brightness(0.7); }
+  .surrender-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 1rem; }
+  .surrender-actions .btn { padding: clamp(0.625rem, 2.5vw, 0.75rem) clamp(1rem, 4vw, 1.5rem); font-size: clamp(0.875rem, 3.5vw, 1rem); }
+  .surrender-confirm { border-color: var(--fail); background: var(--fail); color: var(--ink); box-shadow: none; }
+  .surrender-confirm:hover:not(:disabled) { filter: brightness(1.08); box-shadow: none; }
+  .surrender-confirm:focus-visible { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
 
   /* victory case opening: one shared canvas plays every effect, the reel is driven by the catalog */
   .panel > .fx { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
@@ -602,6 +622,7 @@
   <section id="screen-wheel" class="panel">
     <div class="scoreboard" id="scoreboard"></div>
     <div id="turnchip" class="turn-chip"></div>
+    <div id="surrender-wheel" class="surrender-row"></div>
     <div class="wheel-wrap">
       <div class="wheel-pin">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 22 2 4h20z"/></svg>
@@ -617,6 +638,7 @@
       <div id="q-timer" class="timer" role="progressbar" aria-label="Tiempo restante" aria-valuemin="0" aria-valuenow="0">
         <div id="tbar" class="timer-bar"></div>
       </div>
+      <button id="surrender-question" class="btn surrender-btn" type="button" aria-label="Rendirse">Rendirse</button>
     </div>
     <div class="card question-card">
       <div class="q-top">
@@ -641,6 +663,7 @@
       <div id="w-crown" class="winner-crown" aria-hidden="true"></div>
       <div id="w-name" class="wname"></div>
       <div id="w-score" class="wscore"></div>
+      <div id="w-ending" class="wending"></div>
       <div id="w-podium" class="podium"></div>
       <div class="winner-actions">
         <button class="btn" id="case-open">Abrir caja</button>
@@ -670,6 +693,17 @@
       <h2 id="crown-title">¡Reclamá una corona!</h2>
       <p class="crown-hint" id="crown-hint">Elegí una categoría pendiente y respondé su pregunta.</p>
       <div id="crown-grid" class="crown-grid"></div>
+    </div>
+  </div>
+
+  <div id="surrender-overlay" class="crown-overlay" hidden>
+    <div class="crown-modal" role="dialog" aria-modal="true" aria-labelledby="surrender-title">
+      <h2 id="surrender-title">¿Rendirse?</h2>
+      <p class="crown-hint" id="surrender-hint">La partida termina y gana el rival. Las coronas de ambos se conservan.</p>
+      <div class="surrender-actions">
+        <button id="surrender-cancel" class="btn btn-ghost" type="button">Cancelar</button>
+        <button id="surrender-confirm" class="btn surrender-confirm" type="button">Confirmar rendición</button>
+      </div>
     </div>
   </div>
 
@@ -796,6 +830,8 @@
   let crownPending = false;
   let caseLanding = null;
   let caseSpinToken = 0;
+  let surrenderTargetIndex = null;
+  let surrenderOpener = null;
 
   const $ = (id) => document.getElementById(id);
   const show = (id) => document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
@@ -888,6 +924,7 @@
 
   function init() {
     wireCase();
+    wireSurrender();
     if (new URLSearchParams(location.search).get("demo") === "winner") {
       players = [
         { name: "Ana", crowns: ["arte", "ciencia", "historia", "deportes", "geografia", "entretenimiento"], streak: 0, ordinaryStreak: 0, correct: 14, wrong: 5, bestStreak: 3, jokers: createJokers(), accent: SEATS[0].accent, glow: SEATS[0].glow },
@@ -897,7 +934,7 @@
       players[0].jokers.secondChance.used = 1;
       players[1].jokers.eliminateTwo.used = 3;
       turn = 0;
-      finishMatch();
+      finishMatch(players[0], players[1], false);
       return;
     }
     fetch(`${API}/categories`)
@@ -1052,8 +1089,14 @@
     wheelRotation = 0;
     spinning = false;
     crownPending = false;
+    surrenderTargetIndex = null;
+    surrenderOpener = null;
     $("crown-picker").hidden = true;
     $("case-overlay").hidden = true;
+    $("surrender-overlay").hidden = true;
+    $("scoreboard").textContent = "";
+    $("surrender-wheel").textContent = "";
+    $("turnchip").textContent = "";
   }
 
   function buildWheel() {
@@ -1114,17 +1157,9 @@
     $("spin").disabled = false;
   }
 
-  /* A rematch keeps the same names and seats and deals a fresh match, skipping the start form. */
   function startRematch() {
-    if (players.length !== 2) { show("screen-start"); return; }
-    const names = players.map(p => p.name);
     resetMatchState();
-    players = makePlayers(names[0], names[1]);
-    joker = null;
-    turn = Math.random() < 0.5 ? 0 : 1;
-    show("screen-wheel");
-    renderScoreboard();
-    $("spin").disabled = false;
+    show("screen-start");
   }
 
   function renderScoreboard() {
@@ -1167,6 +1202,17 @@
       streak.append(streakLabel, pips);
       card.append(row, bar, streak);
       sb.appendChild(card);
+    });
+    const surrenderRow = $("surrender-wheel");
+    surrenderRow.textContent = "";
+    players.forEach((p, i) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn surrender-btn";
+      button.textContent = `Rendirse: ${p.name}`;
+      button.setAttribute("aria-label", `Rendirse: ${p.name}`);
+      button.onclick = () => openSurrender(i, button);
+      surrenderRow.appendChild(button);
     });
     const chip = $("turnchip");
     chip.style.setProperty("--p-accent", player().accent);
@@ -1251,7 +1297,7 @@
   function beginCrownChallenge() {
     $("q-next").hidden = true;
     if (!pendingCategories().length) {
-      finishMatch();
+      finishMatch(player(), players[1 - turn], false);
       return;
     }
     openCrownPicker();
@@ -1359,6 +1405,9 @@
     label.textContent = currentCat ? currentCat.label : (q.category || "Sin categoría");
     chip.append(dot, label);
     $("q-player").textContent = `Turno: ${player().name}`;
+    const surrenderQuestion = $("surrender-question");
+    surrenderQuestion.disabled = false;
+    surrenderQuestion.setAttribute("aria-label", `Rendirse: ${player().name}`);
     $("q-text").textContent = q.question;
     const texts = shuffle([q.option_a, q.option_b, q.option_c, q.option_d]);
     const grid = $("q-opts");
@@ -1389,6 +1438,7 @@
   function finishQuestion(q) {
     answered = true;
     stopTurnClock();
+    $("surrender-question").disabled = true;
     const buttons = [...$("q-opts").children];
     buttons.forEach(b => {
       b.disabled = true;
@@ -1446,7 +1496,7 @@
     showFeedback("ok", q);
     renderScoreboard();
     if (player().crowns.length === MAX_CROWNS) {
-      finishMatch();
+      finishMatch(player(), players[1 - turn], false);
       return;
     }
     if (wasOrdinary && player().streak === 3) {
@@ -1537,6 +1587,7 @@
     stopTurnClock();
     currentQuestion = null;
     answered = true;
+    $("surrender-question").disabled = true;
     $("q-cat").textContent = "Error de flujo";
     $("q-text").textContent = "";
     $("q-opts").textContent = "";
@@ -2148,18 +2199,66 @@
     };
   }
 
-  function finishMatch() {
+  function wireSurrender() {
+    $("surrender-question").addEventListener("click", () => openSurrender(turn, $("surrender-question")));
+    $("surrender-cancel").addEventListener("click", closeSurrender);
+    $("surrender-confirm").addEventListener("click", confirmSurrender);
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !$("surrender-overlay").hidden) closeSurrender();
+    });
+  }
+
+  /* The dialog is bound to one player, because two people share the device: the waiting player
+     must never be able to end the active player's game by pressing the wrong control. */
+  function openSurrender(index, opener) {
+    const target = players[index];
+    if (!target) return;
+    surrenderTargetIndex = index;
+    surrenderOpener = opener || document.activeElement;
+    $("surrender-title").textContent = `¿${target.name} se rinde?`;
+    $("surrender-confirm").setAttribute("aria-label", `Confirmar rendición de ${target.name}`);
+    $("surrender-overlay").hidden = false;
+    $("surrender-cancel").focus();
+  }
+
+  function closeSurrender() {
+    $("surrender-overlay").hidden = true;
+    const opener = surrenderOpener;
+    surrenderTargetIndex = null;
+    surrenderOpener = null;
+    if (opener && opener.isConnected) opener.focus();
+  }
+
+  function confirmSurrender() {
+    if (surrenderTargetIndex === null) return;
+    const index = surrenderTargetIndex;
+    const target = players[index];
+    const rival = players[1 - index];
+    $("surrender-overlay").hidden = true;
+    surrenderTargetIndex = null;
+    surrenderOpener = null;
+    answered = true;
+    currentQuestion = null;
     stopTurnClock();
-    const w = player();
-    const loser = players[1 - turn];
-    document.querySelector(".winner-box").style.setProperty("--w-accent", w.accent);
+    [...$("q-opts").children].forEach(button => { button.disabled = true; });
+    $("surrender-question").disabled = true;
+    finishMatch(rival, target, true);
+  }
+
+  function finishMatch(winner, loser, surrendered) {
+    stopTurnClock();
+    document.querySelector(".winner-box").style.setProperty("--w-accent", winner.accent);
     $("w-crown").innerHTML = CROWN_GLYPH;
-    $("w-name").textContent = `¡${w.name} GANA!`;
-    $("w-name").style.color = w.accent;
-    $("w-score").textContent = `Resultado final  ${w.crowns.length} — ${loser.crowns.length}`;
-    renderPodium(w, loser);
+    $("w-name").textContent = `¡${winner.name} GANA!`;
+    $("w-name").style.color = winner.accent;
+    $("w-score").textContent = `Resultado final  ${winner.crowns.length} — ${loser.crowns.length}`;
+    $("w-ending").textContent = surrendered
+      ? `Partida terminada por rendición de ${loser.name}.`
+      : `${winner.name} completó las seis coronas.`;
+    renderPodium(winner, loser);
     show("screen-winner");
     $("q-next").hidden = true;
+    $("surrender-question").disabled = true;
     stopEffect();
     const overlay = $("case-overlay");
     if (overlay) { overlay.hidden = true; overlay.classList.remove("played"); }

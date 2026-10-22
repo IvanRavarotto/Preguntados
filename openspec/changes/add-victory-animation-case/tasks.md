@@ -53,7 +53,7 @@ Branch when authorized: `feature/add-victory-animation-case`. One file changes:
       5.1. **Verify**: the mutated copy goes red (pointed vs played mismatch).
 - [x] 5.3 Run `node --check` on the extracted script and `openspec validate
       "add-victory-animation-case" --strict`. **Verify**: both pass.
-- [ ] 5.4 Human browser pass at desktop and mobile widths: open the case, confirm the reel stops on the
+- [x] 5.4 Human browser pass at desktop and mobile widths: open the case, confirm the reel stops on the
       named effect, the effect plays, "Girar de nuevo" re-rolls, Escape/close restores focus. **Verify**:
       recorded as a human step; no effect scrolls the page or makes a network request.
 

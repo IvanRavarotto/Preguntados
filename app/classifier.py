@@ -4,6 +4,7 @@ Módulo de clasificación de texto usando IA.
 Este módulo provee una estrategia de clasificación:
 1. Zero-shot classification con transformers (más preciso, más lento)
 """
+
 from dataclasses import dataclass
 
 
@@ -17,6 +18,7 @@ class ClassificationResult:
         confidence_score: score de confianza (0.0 a 1.0)
         all_scores: diccionario con los scores de todas las categorías
     """
+
     category_name: str
     confidence_score: float
     all_scores: dict[str, float]
@@ -70,7 +72,9 @@ class AIClassifier:
             all_scores=all_scores,
         )
 
-    def classify_batch(self, texts: list[str], candidate_labels: list[str]) -> list[ClassificationResult]:
+    def classify_batch(
+        self, texts: list[str], candidate_labels: list[str]
+    ) -> list[ClassificationResult]:
         """
         Clasifica múltiples textos contra las mismas categorías candidatas.
 

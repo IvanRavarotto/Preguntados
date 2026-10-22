@@ -5,8 +5,8 @@ from pathlib import Path
 
 from sqlalchemy import delete, func, select
 
-from app.database import SessionLocal, engine
 from app.categories import get_category_names
+from app.database import SessionLocal, engine
 from app.models import Base, Categorization, Question
 
 CSV_PATH = Path("preguntas_preguntados.csv")
@@ -45,7 +45,9 @@ def read_and_validate(source_path: Path) -> list[dict[str, str]]:
         raise ValueError(f"Se requieren exactamente 300 filas; se recibieron {len(rows)}")
 
     category_counts = Counter(row["categoria"].strip() for row in rows)
-    if set(category_counts) != expected_categories or any(count != 50 for count in category_counts.values()):
+    if set(category_counts) != expected_categories or any(
+        count != 50 for count in category_counts.values()
+    ):
         raise ValueError(f"Cada categoría debe tener 50 filas: {dict(category_counts)}")
 
     normalized_questions = set()
@@ -120,14 +122,17 @@ def load_questions(source_path: Path = CSV_PATH) -> None:
             session.flush()
             question_count = session.scalar(select(func.count(Question.id)))
             categorization_count = session.scalar(select(func.count(Categorization.id)))
-            category_counts = dict(
+            category_counts: dict[str, int] = dict(
                 session.execute(
-                    select(Categorization.category_name, func.count(Categorization.id))
-                    .group_by(Categorization.category_name)
+                    select(Categorization.category_name, func.count(Categorization.id)).group_by(
+                        Categorization.category_name
+                    )
                 ).all()
             )
-            if question_count != 300 or categorization_count != 300 or any(
-                category_counts.get(category) != 50 for category in get_category_names()
+            if (
+                question_count != 300
+                or categorization_count != 300
+                or any(category_counts.get(category) != 50 for category in get_category_names())
             ):
                 raise RuntimeError(
                     "La revalidación de la importación no coincide con el dataset canónico: "

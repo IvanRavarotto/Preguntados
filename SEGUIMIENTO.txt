@@ -124,4 +124,86 @@ Hecho en esta sesion: SVM+WSL2+Docker levantados; Poetry/venv ok; base
 cargada (300/300, 50x6); uvicorn en :8000 con 31/31 tests HTTP ok; Node
 24.19.0+npm instalados; PATH ampliado (python/poetry/node/npm); corregido
 el conteo del dataset en openspec/project.md (201 -> 300).
+
+================================================================================
+SESION 2026-10-22 - ESTADO ACTUAL (retomar aca)
+================================================================================
+Entorno: PostgreSQL 15 en Docker :5432 arriba; uvicorn levantado en
+http://127.0.0.1:8000 (Ctrl+F5 en el navegador para descartar cache).
+Nota: la rama de trabajo actual es feature/surrender-button.
+
+--------------------------------------------------------------------------------
+1. CERRADO, COMMITEADO Y ARCHIVADO (en la rama docs/session-2026-10-22)
+--------------------------------------------------------------------------------
+[X] turn-timer-bar-drain (archivado)
+    BUG: el hue de urgencia de la barra era #FF2A6D, EL MISMO hex que el
+    acento de la categoria `arte` (frontend/index.html:33 vs :684). Con la
+    ruleta en arte, la barra quedaba roja TODO el turno y el cambio de color
+    en los ultimos segundos no se notaba.
+    FIX: TIMER_URGENT_COLOR -> #FF0033 (arte = #FF2A6D intacto, ADR-001).
+    El check check_timer_bar.mjs ahora fuerza la categoria arte via la costura
+    window.__startCategory("arte") y asserta que la fase urgente != acento.
+    Evidencia: check PASS; el mutante con el hue viejo FALLA 2 aserciones.
+    Commits: 7accad9 (fix), c79fa33 (archive).
+[X] add-victory-animation-case (archivado)
+    La "Abrir caja" (ruleta de 8 efectos) sobre la pantalla del ganador.
+    Pase humano registrado; tarea 5.4 cerrada. Commits: c4b32ab, d59c672.
+[X] Fix de ruta relativa del check archivado de victory (apuntaba a
+    openspec/frontend/index.html tras el archivado; ahora 5x ../).
+    Commit: 629ae26.
+[X] PUSHEADO: rama docs/session-2026-10-22 -> origin (GitHub Preguntados).
+    NO se toco main (origin/main sigue en 83876aa).
+    PR (si se quiere abrir):
+    https://github.com/IvanRavarotto/Preguntados/pull/new/docs/session-2026-10-22
+
+--------------------------------------------------------------------------------
+2. EN CURSO - surrender-button (SIN COMMITEAR, rama feature/surrender-button)
+--------------------------------------------------------------------------------
+Implementado por el agente dev, verificado a mano por el orquestador:
+  - Controles de rendicion en ruleta (uno por jugador) y en pregunta (jugador
+    activo); dialogo de confirmacion (.crown-overlay/.crown-modal, reusa el
+    patron; NO es un quinto panel); foco en Cancelar al abrir (no en Confirmar);
+    Escape y Cancelar cierran y devuelven el foco; confirmar termina con el
+    rival ganador sin mover coronas; pantalla de ganador distingue rendicion de
+    seis coronas; reloj se detiene y la pregunta ya no puntua; rematch OK.
+  - startRematch() ahora vuelve a la pantalla de nombres: esto COINCIDE con la
+    spec viva (game-presentation/spec.md:998-1008), o sea corrige una
+    desviacion previa del codigo, no es regresion.
+  - finishMatch(winner, loser, surrendered) + linea #w-ending.
+Verificado verde: check_surrender (54 aserciones, PASS), check_timer_bar PASS,
+check_victory_case PASS, pytest/ruff/mypy, openspec validate --strict.
+
+PENDIENTE:
+[ ] Pasar por code-reviewer (intentado 3 veces, cancelado por falta de tiempo).
+[ ] Gate C (aprobar merge) -> QA contra los criterios -> OPENSPEC ARCHIVE.
+[ ] Task 5.1 humana: probar el boton en el navegador y validar textos en espanol.
+[ ] Commitear en feature/surrender-button y pushear esa rama (no main).
+
+--------------------------------------------------------------------------------
+3. PENDIENTES GENERALES (sin empezar o a medias)
+--------------------------------------------------------------------------------
+[ ] mobile-layout-overflow   (0/11) - rama fix/mobile-layout-overflow.
+    Medido con check_layout.mjs: 17 aserciones fallan. El form de autoría no
+    entra a 320x568, 360x640, 844x390 ni 1440x900; opciones de pregunta se
+    salen a 844x390; HAY UN @media (max-width: 420px) nuevo que viola la regla
+    "sin media query nueva"; el propio check tiene un bug (WHEEL_DETAIL no
+    devuelve `bottom`, la asercion del wheel siempre falla) y a 414x896 no
+    renderizo la pregunta (timing).
+[ ] game-audio               (0/11) - audio del giro + 3 cues de respuesta
+    (sin toggle de mute; el humano lo declino).
+[ ] fix/stale-rules-clause   - cambio chico NUEVO, no creado aun: la spec viva
+    game-presentation/spec.md:992-1008 dice "el primero en llegar a 10 puntos
+    gana", pero gameplay/spec.md:13 dice que gana quien reune 6 coronas. Las
+    specs vivas se contradicen; crear un cambio que corrija la clausula.
+
+--------------------------------------------------------------------------------
+4. COMANDOS PARA RETOMAR
+--------------------------------------------------------------------------------
+  git branch --show-current             # feature/surrender-button
+  git status --short                    # WIP de surrender sin commitear
+  openspec list                         # surrender-button, mobile-layout-overflow, game-audio
+  node openspec/changes/surrender-button/checks/check_surrender.mjs
+  poetry run pytest --cov=app --cov-fail-under=80
+  poetry run ruff check . ; poetry run ruff format --check . ; poetry run mypy app
+  openspec validate "surrender-button" --strict
 ================================================================================

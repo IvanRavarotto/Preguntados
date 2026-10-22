@@ -8,9 +8,11 @@ The countdown SHALL run for `20` seconds and SHALL NOT become configurable. The 
 duration and the timeout that fires the timed-out state SHALL derive from the same single constant, so
 a restyle cannot desynchronize the bar from the outcome. The bar SHALL be **visible for the whole
 countdown** and SHALL drain continuously from full to empty, reaching empty at the moment the
-timed-out state fires. The bar SHALL shift to `#FF2A6D` when less than **20%** of the countdown
+timed-out state fires. The bar SHALL shift to `#FF0033` when less than **20%** of the countdown
 remains, expressed as a proportion of the timer rather than as an absolute number of seconds; at or
-above that threshold the bar SHALL carry the active category's accent colour.
+above that threshold the bar SHALL carry the active category's accent colour. The urgency colour
+SHALL be distinguishable from every category accent, because a hue that doubles as a category's
+accent makes the phase change invisible whenever the wheel lands on that category.
 
 > `[AUTHORED]` The visibility and drain clause is new. The previous wording tied the bar's *duration*
 > to the outcome but said nothing about the bar being on screen, so an implementation that rendered it
@@ -51,15 +53,21 @@ a check that passes on a file whose bar never drains has no teeth.*
 - **WHEN** the remaining proportion of the countdown is at or above 20%, and then again below 20%
 - **THEN** the bar's computed background colour is the active category's accent colour at or above
   the threshold
-- **AND** it is exactly `rgb(255, 42, 109)` below the threshold
+- **AND** it is exactly `rgb(255, 0, 51)` (`#FF0033`) below the threshold
+- **AND** the urgency colour differs from the active category's accent, including when the category is
+  `arte`, whose accent is `#FF2A6D` — a copy of the file that reuses a category accent as the urgency
+  hue FAILS this scenario
 - **AND** the threshold is expressed as a proportion of the timer, so a copy of the file with
   `TIMER_SECONDS` changed to any other value moves the threshold with it
 - **AND** a copy of the file that walks a continuous green-to-orange-to-red gradient FAILS this
   scenario
 
-*Provenance: `[DESIGN]` for the `#FF2A6D` urgency hue and the proportional rule; `[AUTHORED]` for the
-exact-value clause below the threshold. Measurable: the computed `background` colour of the bar at
-both sides of the threshold, compared as an exact RGB triple. The negative control is required.*
+*Provenance: `[DESIGN]` for the `#FF0033` urgency hue and the proportional rule; `[AUTHORED]` for the
+exact-value clause below the threshold and for the distinct-from-category-accent clause. Measurable:
+the computed `background` colour of the bar at both sides of the threshold, compared as an exact RGB
+triple, checked with the category forced to `arte`. The negative controls are required. The original
+hue was `#FF2A6D`, which is `arte`'s own accent; the collision was caught by observation in a browser,
+not by the check, because the check sampled whatever category the random spin produced.*
 
 ### Requirement: Type pairing is preserved without webfonts
 

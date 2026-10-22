@@ -21,8 +21,9 @@ scope.
 |---|---|---|
 | The bar has a running `width` transition when the screen becomes visible | `openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs` — `getAnimations()` on the bar element sampled immediately after the question panel becomes visible | the transition list contains an animation whose `transitionProperty` is `width`; **1 or more** |
 | The bar drains monotonically and reaches zero at expiry | sampled `getBoundingClientRect().width` at ~0ms, ~50%, ~90% and at expiry | strictly non-increasing, `width(0) > 0`, `width(expiry) <= 1px` |
-| The bar's colour is the category accent at or above 20% remaining | computed `background` of the bar at 80% remaining | exact RGB triple of the category's accent |
-| The bar's colour is exactly `#FF2A6D` below 20% remaining | computed `background` of the bar at 19% remaining | exactly `rgb(255, 42, 109)` |
+| The bar's colour is the category accent at or above 20% remaining | computed `background` of the bar at 80% remaining, with the turn forced to the `arte` category via `window.__startCategory("arte")` | exact RGB triple of the category's accent |
+| The bar's colour is exactly `#FF0033` below 20% remaining | computed `background` of the bar at 19% remaining | exactly `rgb(255, 0, 51)` |
+| The urgency colour is distinct from the category accent | the healthy-phase and urgent-phase `background` reads, with the category forced to `arte` (whose accent is `#FF2A6D`) | the two reads differ |
 | The threshold is a proportion of the timer | source inspection: the urgency constant is referenced as a ratio, and no absolute-seconds variant exists | the only urgency threshold in the file is the ratio constant |
 | No numeric countdown in the question panel | DOM query for an element in `#screen-question` whose text is the remaining seconds | **0** matches |
 | `aria-valuenow` still tracks the remaining seconds | attribute read on `#q-timer` at three points | non-increasing integers, `20` at the start, `0` at expiry |
@@ -34,6 +35,7 @@ scope.
 |---|---|
 | `renderQuestion(q)` moved back **before** `show("screen-question")` | the running-transition check and the drain check |
 | the continuous green→orange→red walk restored | the exact-colour check at 19% remaining |
+| the urgency hue set back to `arte`'s accent `#FF2A6D` | the distinct-from-category-accent check (and the exact-colour check) |
 | the `#tnum` readout restored | the no-numeric-countdown check |
 
 Each control is a copy of the file with a single edit; the check is run against the copy and the
@@ -44,8 +46,9 @@ failure is recorded in `tasks.md` § 4.2.
 1. Open `http://127.0.0.1:8000/`, enter two different names, start the match, spin the wheel.
 2. Watch the question screen: the bar must be visible, full, and draining from the first frame — not
    appearing after a delay and not sitting empty.
-3. Watch the bar's colour: it holds the category's accent, then turns exactly `#FF2A6D` in the last
-   four seconds.
+3. Watch the bar's colour: it holds the category's accent, then turns exactly `#FF0033` in the last
+   four seconds. This is the phase change that a category accent of the same hue would hide, so it is
+   most worth watching when the wheel lands on `arte`.
 4. Confirm no number is displayed next to the bar.
 5. Let the clock run out: the bar empties as the timed-out state fires, and the correct answer is
    revealed.

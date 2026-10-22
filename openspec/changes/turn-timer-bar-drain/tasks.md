@@ -49,6 +49,20 @@ Branch when authorized: `fix/turn-timer-bar-drain`.
 - [x] 4.2 Record the measured evidence in this file: the transition's presence, the sampled widths,
       the two colours, the negative-control failures, and the command output of each check.
 
+## 5. Correction: the urgency hue collided with the `arte` accent
+
+- [x] 5.1 Move the urgency hue off `#FF2A6D` (which is `arte`'s own accent) to `#FF0033`, and require
+      in the delta that the urgency colour be distinguishable from every category accent. Update
+      `check_timer_bar.mjs` to force the turn to the `arte` category (through the `window.__startCategory`
+      seam) so the collision can never ship again. **Verify**: the healthy phase renders the `arte`
+      accent and the urgent phase renders `rgb(255, 0, 51)`; a copy with the hue restored to `#FF2A6D`
+      FAILS.
+
+> Caught by observation in a browser during a later session, not by the check: the check sampled
+> whatever category the random spin produced, and `arte` was never guaranteed to be it. The defect and
+> the change of hue were approved by the human before implementation; `arte`'s accent is left untouched
+> because the palette is `ADR-001`'s contract.
+
 ## Evidence
 
 **Before** (measured on the shipped file, Chromium headless over the served game):
@@ -57,21 +71,32 @@ Branch when authorized: `fix/turn-timer-bar-drain`.
 |---|---|
 | running transitions on `#tbar` | **0** |
 | rendered bar width | **0px** against a `499.8px` track |
-| colour at 19% remaining | `rgb(255, 67, 68)` — the gradient's red, not `rgb(255, 42, 109)` |
+| colour at 19% remaining | `rgb(255, 67, 68)` — the gradient's red, not the urgency hue |
 | numeric readout | `#tnum` present in the question panel |
 
-**After** — `node openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs`, exit **0**:
+**Defect found after the change, during a later session** (the `arte` collision):
+
+| Reading | Value |
+|---|---|
+| healthy phase with the wheel on `arte` | `rgb(255, 42, 109)` — the `arte` accent |
+| urgent phase with the wheel on `arte` | `rgb(255, 42, 109)` — **identical**, because `#FF2A6D` was both the `arte` accent and the urgency hue |
+| why the old check missed it | the check sampled the random spin's category; it was never forced to `arte` |
+
+**After** — `node openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs`, exit **0**, with the turn forced to the `arte` category:
 
 | Assertion | Result |
 |---|---|
+| the turn under test is the arte category | PASS — driven by `window.__startCategory("arte")` |
 | the question screen appears | PASS |
+| the arte accent resolves to a colour | PASS — `rgb(255, 42, 109)` (`--accent` for `arte`) |
 | the bar has a running width transition | PASS — `CSSTransition`, `transitionProperty: "width"` |
 | the bar starts wider than empty | PASS |
-| the bar's colour is the category accent while the turn is healthy | PASS — `rgb(255, 208, 0)` (`#FFD000`, the `historia` accent the wheel selected) |
-| the bar drains across the countdown | PASS — `547.33px` at the question, `522.66px` a second later |
+| the bar's colour is the category accent while the turn is healthy | PASS — `rgb(255, 42, 109)`, the `arte` accent |
+| the bar drains across the countdown | PASS — `546.86px` at the question, `524.05px` a second later |
 | the published remaining time decreases | PASS — `aria-valuenow` `20` → `19` |
 | the published remaining time stays within the turn | PASS |
-| the bar shifts to the failure accent below a fifth of the turn | PASS — `rgb(255, 42, 109)` with `aria-valuenow` `4` and a `109.75px` bar |
+| the bar shifts to the urgency accent below a fifth of the turn | PASS — `rgb(255, 0, 51)` with `aria-valuenow` `4` and a `111.14px` bar |
+| the urgency accent is distinct from the arte accent | PASS — the two phases no longer render the same colour |
 | the question screen carries no numeric countdown | PASS |
 | the urgency threshold is a proportion of the timer | PASS — the comparison reads `TIMER_URGENT_RATIO` |
 
@@ -83,6 +108,7 @@ its own reason:
 | the ordering restored (`renderQuestion` before `show`) | **exit 1** — "the question panel never became active with a visible bar" (the bar renders at `0px`, the transition never arms) |
 | the green-to-orange-to-red gradient restored | **exit 1** — 3 assertions failed: the accent colour (`rgb(5, 255, 161)`), the failure colour (`rgb(255, 68, 66)`), and the proportional threshold |
 | the numeric readout restored (markup, CSS and every write) | **exit 1** — "the question screen carries no numeric countdown" |
+| the urgency hue restored to `#FF2A6D` (the `arte` accent) | **exit 1** — 2 assertions failed: "the bar shifts to the urgency accent…" (`rgb(255, 42, 109)` at `aria-valuenow` `4`) and "the urgency accent is distinct from the arte accent" (both phases rendered `rgb(255, 42, 109)`) |
 
 **Quality gate**
 

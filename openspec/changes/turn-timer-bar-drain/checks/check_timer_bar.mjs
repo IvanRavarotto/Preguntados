@@ -235,7 +235,16 @@ async function main() {
       return true;
     })()`);
     await sleep(400);
-    await cdp.eval(`document.getElementById("spin").click()`);
+    const startedArte = await cdp.eval(`window.__startCategory ? window.__startCategory("arte") : false`);
+    check(
+      "the turn under test is the arte category",
+      startedArte === true,
+      "could not start a turn for the arte category (test seam missing or category not found)",
+    );
+    if (!startedArte) {
+      await cleanup();
+      process.exit(1);
+    }
 
     let appeared = null;
     for (let i = 0; i < 120; i++) {
@@ -253,6 +262,12 @@ async function main() {
       process.exit(1);
     }
 
+    const arteAccentRgb = hexToRgb(await cdp.eval(`getComputedStyle(document.getElementById("screen-question")).getPropertyValue("--accent")`));
+    check(
+      "the arte accent resolves to a colour",
+      /^rgb\(/.test(arteAccentRgb || ""),
+      `--accent computed to ${arteAccentRgb}`,
+    );
     check(
       "the bar has a running width transition",
       appeared.anims.some((a) => a.prop === "width"),
@@ -261,8 +276,8 @@ async function main() {
     check("the bar starts wider than empty", appeared.width > 1, `rendered width ${appeared.width}px`);
     check(
       "the bar's colour is the category accent while the turn is healthy",
-      appeared.background === hexToRgb(await cdp.eval(`getComputedStyle(document.getElementById("screen-question")).getPropertyValue("--accent")`)),
-      `bar background ${appeared.background}`,
+      appeared.background === arteAccentRgb,
+      `bar background ${appeared.background} against the arte accent ${arteAccentRgb}`,
     );
 
     const first = await cdp.eval(READ_BAR);
@@ -283,9 +298,14 @@ async function main() {
     await sleep(14800);
     const late = await cdp.eval(READ_BAR);
     check(
-      "the bar shifts to the failure accent below a fifth of the turn",
-      late.background === "rgb(255, 42, 109)",
+      "the bar shifts to the urgency accent below a fifth of the turn",
+      late.background === "rgb(255, 0, 51)",
       `bar background ${late.background} with aria-valuenow ${late.ariaNow}`,
+    );
+    check(
+      "the urgency accent is distinct from the arte accent",
+      late.background !== arteAccentRgb,
+      `both the healthy and the urgent phase rendered ${late.background}`,
     );
 
     const hasReadout = await cdp.eval(`!!document.getElementById("tnum")`);

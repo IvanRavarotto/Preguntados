@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 
-const html = fs.readFileSync(new URL("../../../../frontend/index.html", import.meta.url), "utf8");
+const html = fs.readFileSync(new URL("../../../../../frontend/index.html", import.meta.url), "utf8");
 const match = html.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(match, "Debe existir un script inline");
 const source = match[1];

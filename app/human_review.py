@@ -6,7 +6,9 @@ este módulo le pregunta al usuario por terminal qué categoría corresponde.
 """
 
 
-def display_question_context(question_text: str, ai_suggestion: str, confidence: float, all_scores: dict[str, float]) -> None:
+def display_question_context(
+    question_text: str, ai_suggestion: str, confidence: float, all_scores: dict[str, float]
+) -> None:
     """Muestra al usuario la pregunta, la sugerencia de la IA, y los scores."""
     separator = "=" * 68
     print("\n" + separator)
@@ -15,7 +17,9 @@ def display_question_context(question_text: str, ai_suggestion: str, confidence:
     print(f"\nPregunta: {question_text}\n")
     print(f"Sugerencia de la IA: {ai_suggestion} (confianza: {confidence:.0%})\n")
     print("Scores de todas las categorías:")
-    for i, (category, score) in enumerate(sorted(all_scores.items(), key=lambda item: item[1], reverse=True), start=1):
+    for i, (category, score) in enumerate(
+        sorted(all_scores.items(), key=lambda item: item[1], reverse=True), start=1
+    ):
         print(f"  {i}. {category:<20} -> {score:.0%}")
     print(separator + "\n")
 
@@ -50,7 +54,11 @@ def ask_human_for_category(categories: list[dict[str, str]]) -> str | None:
 def confirm_ai_suggestion(ai_suggestion: str, confidence: float) -> bool:
     """Pregunta al usuario si acepta la sugerencia de la IA."""
     while True:
-        answer = input(f'¿Aceptás la sugerencia "{ai_suggestion}" ({confidence:.0%})? [S/n]: ').strip().lower()
+        answer = (
+            input(f'¿Aceptás la sugerencia "{ai_suggestion}" ({confidence:.0%})? [S/n]: ')
+            .strip()
+            .lower()
+        )
         if answer in ("", "s", "si", "yes", "y"):
             return True
         if answer in ("n", "no"):

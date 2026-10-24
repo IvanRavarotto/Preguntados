@@ -1,0 +1,183 @@
+================================================================================
+HISTORIAL DE TAREAS - Preguntados 1v1
+================================================================================
+Fecha de la sesion: 2026-10-15
+Entorno: Windows 11 + PowerShell 5.1
+Alcance: cierre de add-question-authoring, implementacion y cierre de
+         validate-question-with-ai (validacion con IA Gemini), archivado OpenSpec.
+
+Este archivo registra las tareas realizadas en esta sesion, en orden, con el
+resultado verificado de cada una. Complementa a SEGUIMIENTO.txt.
+
+Antecedentes: la sesion anterior (2026-10-14) hizo el analisis inicial, el
+levantamiento y la correccion de mojibake UTF-8 del frontend. Este archivo fue
+pisado por el registro de la sesion actual.
+
+--------------------------------------------------------------------------------
+1. ESTADO DE PARTIDA Y HERRAMIENTAS
+--------------------------------------------------------------------------------
+[X] El repositorio Git NO es la carpeta con corchetes, sino:
+    <ruta>\full-app-ai-scenario  (git rev-parse --show-toplevel).
+[X] Ramas existentes: main, feature/add-question-authoring,
+    feature/add-crowns-jokers-gameplay, feature/apply-neon-obsidian-theme.
+    No se hizo push; todo quedo local.
+[X] Entorno Poetry valido (CAMBIÓ respecto de la sesion anterior):
+    C:\Users\Ivan\AppData\Local\pypoetry\Cache\virtualenvs\
+        fastapi-questions-r5yHRoYV-py3.14
+    (antes era ...-M5XxuBxn-py3.14). No usar .venv dentro del repo.
+[X] TRAMPA de rutas: el perfil tiene tilde ("Ivan"). Leer la salida de
+    `poetry env info -p` rompe el acento por encoding. SOLUCION: usar la ruta
+    corta 8.3: C:\Users\IVN~1\... tanto para el proyecto como para la venv.
+[X] Regla del harness: dependencia fuera de project.md = escalacion (aprobada).
+
+--------------------------------------------------------------------------------
+2. CIERRE DE add-question-authoring
+--------------------------------------------------------------------------------
+[X] Auditoria del diff del frontend (~68 hunks): autoría + fix mojibake +
+    tema/gameplay (crown picker, timer numerico, podio/confeti, streak,
+    rematch, ?demo=winner, URLSearchParams). Cambios de tema/gameplay quedan
+    como WIP dentro de este snapshot.
+[X] Verificacion end-to-end del backend de autoría:
+    - POST /questions                -> 201 {"id":8203}
+    - POST /questions (respuesta mala)-> 400 answer_not_in_options
+    - POST /questions (duplicada)    -> 409 duplicate_question
+    - GET /questions/category/{name} -> aparece con is_automatic=false,
+                                        confidence=1.0
+    - Filas de prueba borradas: DB vuelve a 300 questions / 300 categories.
+[X] openspec/changes/add-question-authoring/tasks.md marcado como completo
+    con evidencia.
+[X] .gitignore: se agrego .check-temp/.
+[X] Commit snapshot (rama feature/add-question-authoring):
+    5d6d4c4 feat(authoring): add manual question authoring with start-screen
+            form  (17 files, +1042/-67)
+
+--------------------------------------------------------------------------------
+3. validate-question-with-ai - IMPLEMENTACION
+--------------------------------------------------------------------------------
+Decisiones tomadas con el usuario antes de codificar:
+[X] Commit como snapshot unico honesto (Gate C).
+[X] Instalar pydantic-ai y actualizar project.md + ADR.
+[X] La IA es ADVISORY: el camino manual de autoría sigue disponible.
+
+Artefactos:
+[X] docs/adr/ADR-002-pydantic-ai-gemini-validation.md  (Accepted, 2026-10-15;
+    incluye loader de .env sin dependencia extra).
+[X] app/ai_validation.py (nuevo):
+    - AIValidationError(detail, status_code), ValidationResult(plausible,
+      status, reasons), DistractorSet(distractors).
+    - _load_env / get_api_key / get_model_name.
+    - validate_content, generate_distractors(attempts=2), assess_question.
+    - DEFAULT_MODEL = "gemini-3.5-flash".
+    - _run con FALLBACK entre modelos (ver punto 4).
+    - os.environ.setdefault("PYDANTIC_AI_NO_BANNER","1") para silenciar banner.
+[X] app/main.py: POST /questions/validate
+    -> mapea AIValidationError a HTTPException(exc.status_code, exc.detail).
+[X] frontend/index.html: submitAuthoring verifica con IA ANTES de guardar:
+    - llama POST /questions/validate;
+    - si plausible=false  -> muestra reasons y NO guarda;
+    - si la IA no responde (502/503) -> guarda igual con nota "No se pudo
+      verificar con IA";
+    - si valid/uncertain -> guarda. Helpers authoringPayload/postAuthoring.
+    - Hint del form actualizado. Sintaxis JS validada con vm.Script -> OK.
+[X] Dependencia: poetry add "pydantic-ai-slim[google]" ^2.56.0
+    (arrastra google-genai 2.31.0, google-auth, etc.).
+[X] openspec/project.md actualizado: bullet de AI validation en Frameworks,
+    contrato de POST /questions/validate, y GEMINI_API_KEY en Secrets.
+[X] openspec/changes/validate-question-with-ai/tasks.md -> 15/15 con evidencia.
+
+--------------------------------------------------------------------------------
+4. MODELO GEMINI (free tier intermitente)
+--------------------------------------------------------------------------------
+Hallazgos:
+[X] gemini-2.5-flash -> "no longer available to new users".
+[X] gemini-3.8-flash -> 503 UNAVAILABLE ("high demand") de forma intermitente.
+[X] Probados varios: gemini-3.5-flash responde de forma estable-ish; otros
+    (gemini-3.8-flash, gemini-flash-latest, gemini-3.1-flash-lite) tambien
+    dieron 503 en algun momento.
+Solucion aplicada: DEFAULT_MODEL = "gemini-3.5-flash" y _run intenta en orden
+    GEMINI_MODEL (override por env) + fallbacks
+    ["gemini-3.5-flash","gemini-3.8-flash","gemini-flash-latest"]; si todos
+    fallan -> AIValidationError("ai_provider_error", 502).
+Nota: el 503 es de la free tier; NO es un bug de la app.
+
+--------------------------------------------------------------------------------
+5. VERIFICACION
+--------------------------------------------------------------------------------
+[X] Sin red: missing-key -> gemini_api_key_missing (503); get_model_name
+    default/override; _clean_distractors dedupe; compileall OK; import
+    app.main OK.
+[X] Servicio en vivo (scripts en %TEMP%\opencode):
+    - Implausible: "Cual es la capital de Francia? -> Madrid" (categoria
+      ciencia) => plausible=false, reasons correctos, distractors=[].
+    - Plausible: "Cual de estos es un tipo de cable de video? -> HDMI" =>
+      plausible=true, status=valid.
+[X] HTTP en vivo: se levanto un 2do uvicorn en 127.0.0.1:8001 (la ruta corta
+    IVN~1) para no tocar el server del usuario:
+    - GET /openapi.json lista /questions/validate.
+    - POST /questions/validate (implausible) =>
+      {"plausible":false,"status":"implausible","reasons":[...],
+       "distractors":[]}.
+[X] Sin secretos en logs: la key solo va al provider; no se imprime ni se
+    devuelve.
+
+--------------------------------------------------------------------------------
+6. COMMITS Y ARCHIVADO
+--------------------------------------------------------------------------------
+[X] Commit del cambio (rama nueva feature/validate-question-with-ai):
+    2fc4407 feat(validate-question-with-ai): verify authored questions with
+            Gemini  (8 files, +1022/-36)
+    (incluye como ancestro el commit 5d6d4c4 de authoring).
+[X] Archivado OpenSpec (rama feature/validate-question-with-ai):
+    effaf81 docs(openspec): archive authoring and AI-validation changes into
+            living specs
+    - openspec/specs/ai-question-validation/spec.md   (creado)
+    - openspec/specs/question-authoring/spec.md       (creado)
+    - changes movidos a openspec/changes/archive/2026-10-15-<nombre>/
+    Primer archivado del proyecto (changes/archive solo tenia .gitkeep).
+
+--------------------------------------------------------------------------------
+7. CÓMO QUEDÓ EL ENTORNO
+--------------------------------------------------------------------------------
+- PostgreSQL 15 corriendo (contenedor full-app-ai-scenario-db-1, :5432),
+  DB en 300 questions / 300 categorizations.
+- API en http://127.0.0.1:8000 -> PID 3896, lanzado ANTES de los cambios:
+  NO tiene /questions/validate. HAY QUE REINICIARLO para usarlo en vivo.
+- openspec list -> solo quedan:
+    add-crowns-jokers-gameplay   16/17
+    apply-neon-obsidian-theme    30/34
+- Git (local, sin push):
+    feature/add-question-authoring   -> 5d6d4c4
+    feature/validate-question-with-ai-> 2fc4407, effaf81
+    Ninguna rama mergeada a main.
+
+--------------------------------------------------------------------------------
+8. PENDIENTES / PROXIMOS PASOS
+--------------------------------------------------------------------------------
+[ ] Reiniciar uvicorn (:8000) para exponer /questions/validate y probar el
+    flujo real "verificar antes de guardar" en el navegador (Ctrl+F5).
+[ ] Probar la integracion del frontend end-to-end en navegador (solo se valido
+    sintaxis + endpoint; no el click real).
+[ ] Mergear a main las ramas de los cambios archivados cuando corresponda.
+[ ] add-crowns-jokers-gameplay (16/17): sus checks
+    (checks/check_frontend.mjs, check_gameplay.mjs) estan OBSOLETOS
+    (mock sin URLSearchParams, document.querySelector, document.body,
+    getComputedStyle, requestAnimationFrame) -> no verificable; no archivar.
+[ ] apply-neon-obsidian-theme (30/34): idem, revisar antes de archivar.
+[ ] WIP de tema/gameplay vive dentro del snapshot 5d6d4c4 (revisar antes de
+    mergear; podria separarse).
+[ ] Considerar rotacion/regeneracion de GEMINI_API_KEY (esta en .env,
+    git-ignored; nunca commitear).
+[ ] Recomendacion: refresco forzado (Ctrl+F5) para descartar cache del
+    frontend viejo.
+
+--------------------------------------------------------------------------------
+9. NOTAS PARA LA PROXIMA SESION (comandos utiles)
+--------------------------------------------------------------------------------
+- Levantar DB:      docker compose -f "<ruta>\docker-compose.yml" up -d
+- Correr API:       poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+- Sintaxis Python:  poetry run python -m compileall -q app
+- Validar cambio:   openspec validate <nombre> --strict
+- Ver cambios:      openspec list   /   openspec list --specs
+- Archivar:         openspec archive <nombre> --yes
+- Rutas con tilde:  usar C:\Users\IVN~1\... (ruta corta 8.3)
+================================================================================

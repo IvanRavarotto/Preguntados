@@ -2,16 +2,17 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.ai_validation import AIValidationError, assess_question
 from app.categories import CATEGORIES
 from app.database import engine, get_db
 from app.models import Base, Categorization, Question
+from app.neural_classifier import QuestionClassifier, get_classifier
 from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
 
-app = FastAPI(title="Questions API", version="1.0.0")
+app = FastAPI(title="Questions API", version="2.0.0")
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -19,6 +20,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    get_classifier()
 
 
 @app.get("/")
@@ -32,22 +34,41 @@ def list_questions(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)
     return questions
 
 
+class ClassifyRequest(BaseModel):
+    question: str = ""
+
+
 @app.post("/questions", status_code=201)
-def add_question(payload: QuestionCreate, db: Session = Depends(get_db)):
+def add_question(
+    payload: QuestionCreate,
+    db: Session = Depends(get_db),
+    classifier: QuestionClassifier = Depends(get_classifier),
+):
     try:
-        question = create_question(db, payload)
+        question, categorization = create_question(db, payload, classifier)
     except QuestionValidationError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail)
-    return {"id": question.id}
+    return {
+        "id": question.id,
+        "category": categorization.category_name,
+        "confidence_score": categorization.confidence_score,
+    }
 
 
-@app.post("/questions/validate")
-def validate_question_with_ai(payload: QuestionCreate):
-    try:
-        result = assess_question(payload.category, payload.question, payload.correct_answer)
-    except AIValidationError as exc:
-        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
-    return result
+@app.post("/classify")
+def classify_question(
+    payload: ClassifyRequest, classifier: QuestionClassifier = Depends(get_classifier)
+):
+    """Predice con la red neuronal la categoría de una pregunta, sin guardarla."""
+    text = payload.question.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="missing_question")
+    result = classifier.classify(text)
+    return {
+        "category": result.category_name,
+        "confidence_score": result.confidence_score,
+        "scores": result.all_scores,
+    }
 
 
 @app.get("/questions/{question_id}")

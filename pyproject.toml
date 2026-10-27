@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-questions"
 version = "0.1.0"
-description = "Juego de preguntados con FastAPI, PostgreSQL y dataset local"
+description = "Juego de preguntados con FastAPI, PostgreSQL y una red neuronal que categoriza las preguntas"
 authors = [
     {name = "IvanRavarotto",email = "itravarotto@gmail.com"}
 ]
@@ -12,15 +12,20 @@ dependencies = [
     "sqlalchemy (>=2.1.0,<3.0.0)",
     "psycopg2-binary (>=2.9.13,<3.0.0)",
     "pandas (>=3.0.6,<4.0.0)",
-    "pyarrow (>=25.0.1,<26.0.0)",
-    "requests (>=2.34.2,<3.0.0)",
-    "transformers (>=5.17.0,<6.0.0)",
     "torch (>=2.14.0,<3.0.0)",
-    "sentence-transformers (>=6.1.0,<7.0.0)",
-    "scikit-learn (>=1.9.1,<2.0.0)",
-    "tqdm (>=4.70.1,<5.0.0)",
-    "pydantic-ai-slim[google] (>=2.56.0,<3.0.0)"
+    # El vectorizador TF-IDF se reconstruye al arrancar: otra versión menor podría
+    # tokenizar distinto y desalinear la entrada de la red.
+    "scikit-learn (>=1.9.1,<1.10.0)"
 ]
+
+# La red solo hace inferencia en CPU; los wheels CPU evitan descargar CUDA en la imagen.
+[tool.poetry.dependencies]
+torch = { source = "pytorch-cpu" }
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 
 [build-system]
@@ -66,12 +71,6 @@ check_untyped_defs = true
 
 [tool.coverage.run]
 source = ["app"]
-omit = [
-    "app/load_data.py",
-    "app/categorize.py",
-    "app/classifier.py",
-    "app/human_review.py",
-]
 
 [tool.coverage.report]
 show_missing = true

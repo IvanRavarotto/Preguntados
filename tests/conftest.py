@@ -1,7 +1,9 @@
 """Shared fixtures.
 
 Every test runs against a fresh in-memory SQLite database so the suite never
-touches the development PostgreSQL instance and needs no network access.
+touches the development PostgreSQL instance and needs no network access. The
+neural classifier is the real one, built once per test session from the
+dataset and weights shipped in ``app/``.
 """
 
 from __future__ import annotations
@@ -69,7 +71,7 @@ def _make_question(
     question: str,
     category: str,
     answer: str = "A",
-    options: tuple[str, str, str, str] = ("A", "B", "C", "D"),
+    options: tuple[str, str, str | None, str | None] = ("A", "B", "C", "D"),
     automatic: bool = True,
     categorize: bool = True,
 ) -> Question:
@@ -107,34 +109,3 @@ def seed_question(session):
         return _make_question(session, **kwargs)
 
     return _seed
-
-
-@pytest.fixture
-def stub_ai_ok(monkeypatch):
-    """Stub ``assess_question`` with a fixed plausible verdict."""
-
-    def fake_assess(category: str, question: str, answer: str) -> dict:
-        return {
-            "plausible": True,
-            "status": "valid",
-            "reasons": [],
-            "distractors": ["d1", "d2", "d3"],
-        }
-
-    monkeypatch.setattr(main, "assess_question", fake_assess)
-    return fake_assess
-
-
-@pytest.fixture
-def stub_ai_error(monkeypatch):
-    """Install an ``assess_question`` stub that raises ``AIValidationError``."""
-
-    def install(status_code: int):
-        from app.ai_validation import AIValidationError
-
-        def fake_assess(category: str, question: str, answer: str) -> dict:
-            raise AIValidationError("forced", status_code=status_code)
-
-        monkeypatch.setattr(main, "assess_question", fake_assess)
-
-    return install

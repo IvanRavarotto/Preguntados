@@ -1,6 +1,6 @@
 # ADR-002 — pydantic-ai with Gemini for question validation
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-004
 - **Date**: 2026-10-15
 - **Change**: `validate-question-with-ai`
 

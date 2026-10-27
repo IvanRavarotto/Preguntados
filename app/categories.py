@@ -6,9 +6,12 @@ Cada categoría tiene:
 - label: nombre legible para mostrar al usuario
 - description: texto que la IA usa para entender el significado de la categoría
 
-Las categorías están alineadas con el dataset preguntas_preguntados.csv
-(trivia en español) y son mutuamente excluyentes.
+Las categorías están alineadas con el dataset trivia_latam_argentina.csv
+(trivia en español) y son mutuamente excluyentes. El dataset y la red neuronal
+usan etiquetas legibles con tildes ("Geografía"); la API usa el name sin tildes.
 """
+
+import unicodedata
 
 CATEGORIES: list[dict[str, str]] = [
     {
@@ -83,3 +86,12 @@ def find_category_by_name(name: str) -> dict | None:
         if category["name"] == name:
             return category
     return None
+
+
+def category_name_for_label(label: str) -> str:
+    """Convierte una etiqueta del dataset ("Geografía") en el name de la API ("geografia")."""
+    decomposed = unicodedata.normalize("NFKD", label.strip())
+    name = "".join(char for char in decomposed if not unicodedata.combining(char)).casefold()
+    if find_category_by_name(name) is None:
+        raise ValueError(f"Categoría desconocida en el dataset: {label!r}")
+    return name

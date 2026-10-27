@@ -43,3 +43,17 @@ def test_list_by_category_returns_empty_for_unused_category(client, seed_questio
     rows = client.get("/questions/category/historia").json()
 
     assert rows == []
+
+
+def test_true_false_question_is_served_without_options_c_and_d(client, seed_question):
+    seed_question(
+        question="Verdadero o falso: el Aconcagua está en Mendoza.",
+        category="geografia",
+        answer="Verdadero",
+        options=("Verdadero", "Falso", None, None),
+    )
+
+    rows = client.get("/questions/category/geografia").json()
+
+    assert rows[0]["option_c"] is None
+    assert rows[0]["option_d"] is None

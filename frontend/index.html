@@ -568,9 +568,6 @@
     <details id="authoring" class="authoring">
       <summary>Agregar una pregunta</summary>
       <form id="authoring-form" class="authoring-form" novalidate>
-        <label class="auth-field" for="q-category">Categoría
-          <select id="q-category" required></select>
-        </label>
         <label class="auth-field" for="q-question">Pregunta
           <textarea id="q-question" maxlength="280" placeholder="Escribí la pregunta" required></textarea>
         </label>
@@ -592,7 +589,7 @@
             <input type="text" id="q-option-d" maxlength="120" placeholder="Opción D" aria-label="Opción D" required>
           </div>
         </div>
-        <p class="auth-hint">Marcá el círculo de la opción correcta. La pregunta se verifica con IA antes de guardarse.</p>
+        <p class="auth-hint">Marcá el círculo de la opción correcta. La red neuronal elige la categoría al guardarla.</p>
         <button type="submit" class="btn auth-submit">Guardar pregunta</button>
         <p id="authoring-status" class="err" role="status" hidden></p>
       </form>
@@ -929,21 +926,6 @@
   function initAuthoring() {
     const form = $("authoring-form");
     if (!form) return;
-    const populate = (list) => {
-      const select = $("q-category");
-      select.textContent = "";
-      (list || []).forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat.name;
-        option.textContent = cat.label || cat.name;
-        select.appendChild(option);
-      });
-    };
-    populate(FALLBACK);
-    fetch(`${API}/categories`)
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data) && data.length) populate(data); })
-      .catch(() => {});
     form.addEventListener("submit", submitAuthoring);
   }
 
@@ -955,15 +937,13 @@
 
   function authoringMessage(status, detail) {
     const byCode = {
-      missing_fields: "Completá la categoría, la pregunta y las cuatro opciones.",
-      category_unknown: "La categoría seleccionada no es válida.",
+      missing_fields: "Completá la pregunta y las cuatro opciones.",
       options_not_distinct: "Las cuatro opciones deben ser distintas.",
       answer_not_in_options: "La respuesta correcta debe ser una de las opciones.",
       duplicate_question: "Ya existe una pregunta igual."
     };
     if (detail && byCode[detail]) return byCode[detail];
     if (status === 409) return "Ya existe una pregunta igual.";
-    if (status === 404) return "La categoría seleccionada no es válida.";
     return "No se pudo guardar la pregunta. Revisá los datos.";
   }
 
@@ -973,7 +953,6 @@
     Object.keys(optionIds).forEach(letter => { options[letter] = $(optionIds[letter]).value.trim(); });
     const selected = form.querySelector('input[name="correct-option"]:checked');
     return {
-      category: $("q-category").value,
       question: $("q-question").value.trim(),
       option_a: options.a,
       option_b: options.b,
@@ -993,40 +972,25 @@
     return { ok: response.ok, status: response.status, data };
   }
 
-  /* The question is verified with the AI before it is saved. An implausible verdict
-     blocks the save; an unavailable or misconfigured AI falls through to the manual
-     path, so authoring never depends on the model being reachable. */
+  /* The server's neural network decides the category when the question is saved. */
   async function submitAuthoring(event) {
     event.preventDefault();
     const form = $("authoring-form");
     const status = $("authoring-status");
     const button = form.querySelector(".auth-submit");
     const payload = authoringPayload(form);
-    setAuthoringStatus(status, "Verificando con IA…", true);
+    setAuthoringStatus(status, "Guardando y categorizando…", true);
     button.disabled = true;
     try {
-      const verdict = await postAuthoring(`${API}/questions/validate`, payload);
-      if (!verdict.ok && verdict.status !== 502 && verdict.status !== 503) {
-        setAuthoringStatus(status, authoringMessage(verdict.status, verdict.data.detail), false);
-        return;
-      }
-      if (verdict.ok && verdict.data.plausible === false) {
-        const reasons = (verdict.data.reasons || []).join(" ");
-        setAuthoringStatus(status, `La IA marcó la pregunta como implausible: ${reasons}`, false);
-        return;
-      }
-      const unverified = !verdict.ok;
       const saved = await postAuthoring(`${API}/questions`, payload);
       if (!saved.ok) {
         setAuthoringStatus(status, authoringMessage(saved.status, saved.data.detail), false);
         return;
       }
-      const tail = unverified
-        ? " No se pudo verificar con IA, se guardó igual."
-        : verdict.data.status === "uncertain"
-          ? " La IA no pudo confirmarla."
-          : "";
-      setAuthoringStatus(status, `Pregunta verificada y agregada (#${saved.data.id}).${tail}`, true);
+      const category = categories.find(cat => cat.name === saved.data.category);
+      const label = category ? category.label : saved.data.category;
+      const confidence = Math.round(saved.data.confidence_score * 100);
+      setAuthoringStatus(status, `Pregunta agregada (#${saved.data.id}) en ${label} (${confidence}% de confianza).`, true);
       form.reset();
     } catch (error) {
       setAuthoringStatus(status, "No se pudo contactar al servidor. Verificá la conexión.", false);
@@ -1360,7 +1324,8 @@
     chip.append(dot, label);
     $("q-player").textContent = `Turno: ${player().name}`;
     $("q-text").textContent = q.question;
-    const texts = shuffle([q.option_a, q.option_b, q.option_c, q.option_d]);
+    /* Verdadero/falso questions arrive with only two options; C and D come back empty. */
+    const texts = shuffle([q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean));
     const grid = $("q-opts");
     grid.textContent = "";
     texts.forEach((t, i) => {
@@ -1472,15 +1437,21 @@
       const state = activeJokers()[key];
       const usedOnQuestion = joker && joker.usedOnCurrentQuestion && joker.usedOnCurrentQuestion.includes(button.dataset.joker);
       const used = !state || state.used >= state.max || usedOnQuestion;
-      button.disabled = answered || used;
+      button.disabled = answered || used || !jokerFitsQuestion(button.dataset.joker);
       button.dataset.used = String(used);
       button.textContent = `${button.dataset.joker === "eliminate-two" ? "Eliminar dos" : button.dataset.joker === "second-chance" ? "Segundo intento" : "Seleccionar correcta"} (${state ? state.max - state.used : 0})`;
     });
   }
 
+  /* Removing two wrong options from a two-option question would leave only the answer. */
+  function jokerFitsQuestion(type) {
+    return type !== "eliminate-two" || $("q-opts").children.length === 4;
+  }
+
   function activateJoker(type) {
     if (!currentQuestion || answered || !player()) return;
     if (currentFlow === "crown-challenge") return;
+    if (!jokerFitsQuestion(type)) return;
     if (joker && joker.available) {
       const legacyKey = { "eliminate-two": "eliminateTwo", "second-chance": "secondChance", "select-correct": "autoCorrect", "auto-correct": "autoCorrect" }[type];
       if (joker.usedCount >= joker.maxUses || !joker.available[legacyKey]) return;

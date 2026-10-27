@@ -13,8 +13,8 @@ class Question(Base):
     question = Column(Text, nullable=False)
     option_a = Column(Text, nullable=False)
     option_b = Column(Text, nullable=False)
-    option_c = Column(Text, nullable=False)
-    option_d = Column(Text, nullable=False)
+    option_c = Column(Text, nullable=True)
+    option_d = Column(Text, nullable=True)
     answer = Column(Text, nullable=False)
     category = Column(String(100), nullable=True)
     source = Column(String(255), nullable=True)
@@ -23,7 +23,7 @@ class Question(Base):
 class Categorization(Base):
     """
     Registra la categorización de cada pregunta.
-    Guarda tanto las decisiones automáticas de la IA como las manuales del humano.
+    Guarda la categoría que asignó la red neuronal y su probabilidad.
     """
 
     __tablename__ = "categorizations"
@@ -33,6 +33,6 @@ class Categorization(Base):
     category_name = Column(String(100), nullable=False)
     confidence_score = Column(Float, nullable=False)
     is_automatic = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     question = relationship("Question", backref="categorizations")

@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.categories import find_category_by_name
 from app.models import Categorization, Question
+from app.neural_classifier import QuestionClassifier
 
 
 class QuestionCreate(BaseModel):
-    category: str = ""
     question: str = ""
     option_a: str = ""
     option_b: str = ""
@@ -35,7 +34,6 @@ def normalize_question_text(text: str) -> str:
 
 def _collect_fields(payload: QuestionCreate) -> dict[str, str]:
     return {
-        "category": payload.category.strip(),
         "question": payload.question.strip(),
         "option_a": payload.option_a.strip(),
         "option_b": payload.option_b.strip(),
@@ -63,9 +61,6 @@ def validate_question(payload: QuestionCreate, db: Session) -> dict[str, str]:
     if any(not value for value in fields.values()):
         raise QuestionValidationError("missing_fields")
 
-    if find_category_by_name(fields["category"]) is None:
-        raise QuestionValidationError("category_unknown", status_code=404)
-
     options = [fields["option_a"], fields["option_b"], fields["option_c"], fields["option_d"]]
     if len(set(options)) != 4:
         raise QuestionValidationError("options_not_distinct")
@@ -79,9 +74,15 @@ def validate_question(payload: QuestionCreate, db: Session) -> dict[str, str]:
     return fields
 
 
-def create_question(db: Session, payload: QuestionCreate, source: str = "user_input") -> Question:
-    """Validate, persist the question and its categorization, and return it."""
+def create_question(
+    db: Session,
+    payload: QuestionCreate,
+    classifier: QuestionClassifier,
+    source: str = "user_input",
+) -> tuple[Question, Categorization]:
+    """Validate the question, let the network pick its category, persist both, and return them."""
     fields = validate_question(payload, db)
+    result = classifier.classify(fields["question"])
     question = Question(
         question=fields["question"],
         option_a=fields["option_a"],
@@ -89,19 +90,17 @@ def create_question(db: Session, payload: QuestionCreate, source: str = "user_in
         option_c=fields["option_c"],
         option_d=fields["option_d"],
         answer=fields["correct_answer"],
-        category=fields["category"],
+        category=result.category_name,
         source=source,
     )
-    db.add(question)
-    db.flush()
-    db.add(
-        Categorization(
-            question_id=question.id,
-            category_name=fields["category"],
-            confidence_score=1.0,
-            is_automatic=False,
-        )
+    categorization = Categorization(
+        question=question,
+        category_name=result.category_name,
+        confidence_score=result.confidence_score,
+        is_automatic=True,
     )
+    db.add_all([question, categorization])
     db.commit()
     db.refresh(question)
-    return question
+    db.refresh(categorization)
+    return question, categorization

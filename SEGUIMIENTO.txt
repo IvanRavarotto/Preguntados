@@ -207,3 +207,44 @@ PENDIENTE:
   poetry run ruff check . ; poetry run ruff format --check . ; poetry run mypy app
   openspec validate "surrender-button" --strict
 ================================================================================
+
+================================================================================
+SESION 2026-10-26 - BACK REEMPLAZADO POR LA RED NEURONAL (retomar aca)
+================================================================================
+Rama: docs/session-2026-10-22 (commit local, NO subido a GitHub).
+Cambio OpenSpec: replace-backend-neural-classifier (valido, sin archivar).
+Decision: docs/adr/ADR-004-mlp-question-classifier.md (reemplaza ADR-002).
+
+HECHO
+[X] Se saco el back anterior: Gemini (ai_validation), zero-shot
+    (classifier/categorize), human_review, load_data y
+    preguntas_preguntados.csv; tambien la ruta POST /questions/validate.
+[X] Dataset propio: app/trivia_latam_argentina.csv (5000 preguntas,
+    ~833 por categoria; 1950 son verdadero/falso con 2 opciones).
+[X] Red: MLPClassifier(nn.Module) en app/neural_classifier.py con los pesos
+    de app/modelo.pth. El .pth no trae el vectorizador: se reconstruye igual
+    que en el notebook (split 80/20 estratificado, seed 42, TF-IDF
+    max_features=5000) -> 3360 terminos, igual a la entrada de la red.
+    Precision: 98.5% en el split de prueba, 99.7% sobre las 5000.
+[X] app/load_dataset.py carga el CSV y guarda la categoria que elige la red.
+    La categoria del CSV queda en Question.category para comparar.
+[X] POST /classify (nuevo) y POST /questions (la red elige la categoria).
+[X] Frontend: preguntas de 2 opciones, "Eliminar dos" deshabilitado en
+    verdadero/falso, formulario sin selector de categoria ni paso de IA.
+[X] Docker: Dockerfile (targets runtime y test), servicios db, api y tests.
+[X] Checks en Docker: 38 tests OK, cobertura 100%, ruff y mypy OK.
+    Smoke HTTP y una partida en el navegador contra el contenedor: OK.
+
+PENDIENTE
+[ ] 15 de 5000 preguntas: la red no coincide con la categoria del CSV.
+    Listarlas con la consulta de la seccion COMANDOS.
+[ ] Code review independiente y Gate C; despues archivar el cambio
+    replace-backend-neural-classifier.
+[ ] Antes de abrir un PR, renombrar la rama a
+    feature/replace-backend-neural-classifier.
+
+COMANDOS
+  docker compose up -d --build            (db + api en http://localhost:8000)
+  docker compose --profile test run --rm tests
+  docker compose exec api python -m app.load_dataset   (recarga completa)
+  docker compose exec db psql -U admin -d questions_db -c "select q.category, c.category_name, q.question from questions q join categorizations c on c.question_id = q.id where q.category <> c.category_name;"

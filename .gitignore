@@ -15,7 +15,10 @@ env/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
+htmlcov/
 .ipynb_checkpoints/
+.check-temp/
 
 # Sistema operativo
 .DS_Store

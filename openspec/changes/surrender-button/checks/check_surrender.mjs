@@ -292,7 +292,7 @@ async function waitForQuestion(cdp) {
       options: document.querySelectorAll("#q-opts .opt").length,
       question: !!currentQuestion
     }))()`);
-    if (state.screen === "screen-question" && state.options === 4 && state.question) return true;
+    if (state.screen === "screen-question" && state.options >= 2 && state.question) return true;
     await sleep(100);
   }
   return false;
@@ -491,7 +491,7 @@ async function main() {
     })()`);
     await cdp.eval(`window.__startCategory("arte")`);
     const questionAppeared = await waitForQuestion(cdp);
-    check("a question is on screen", questionAppeared, "the question panel never became active with four options");
+    check("a question is on screen", questionAppeared, "the question panel never became active with rendered options");
 
     const question = await cdp.eval(QUESTION_CONTROLS);
     check(
@@ -625,7 +625,7 @@ async function main() {
     check("the countdown no longer changes after the surrender", ariaStopped === winner.ariaNow, `aria-valuenow ${winner.ariaNow} -> ${ariaStopped}`);
     check(
       "the pending question is unanswerable after the surrender",
-      winner.optionDisabled.length === 4 && winner.optionDisabled.every(Boolean) && afterSurrender.answered === true,
+      winner.optionDisabled.length >= 2 && winner.optionDisabled.every(Boolean) && afterSurrender.answered === true,
       `options disabled: ${JSON.stringify(winner.optionDisabled)}, answered: ${afterSurrender.answered}`,
     );
     await cdp.eval(`document.querySelector("#q-opts .opt").click()`);

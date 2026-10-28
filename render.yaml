@@ -1,0 +1,26 @@
+# Render Blueprint: full game (FastAPI + PostgreSQL + the MLP classifier).
+# Free plan is enough to try it, but the container loads torch, pandas and
+# scikit-learn; if the service runs out of memory or the first boot times out,
+# move the web service and the database to the "starter" plan (2 GB RAM).
+databases:
+  - name: preguntados-db
+    databaseName: questions_db
+    user: preguntados
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: preguntados
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /categories
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: preguntados-db
+          property: connectionString

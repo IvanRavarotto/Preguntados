@@ -21,4 +21,4 @@ CMD ["pytest", "--cov=app", "--cov-fail-under=80"]
 
 FROM base AS runtime
 EXPOSE 8000
-CMD ["sh", "-c", "python -m app.load_dataset --if-missing && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "python -m app.load_dataset --if-missing && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

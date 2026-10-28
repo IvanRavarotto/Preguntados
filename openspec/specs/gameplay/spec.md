@@ -115,25 +115,37 @@ Each player SHALL start with two uses of each of exactly three joker types: `eli
 
 *Provenance: [AUTHORED] from the two-option questions in the 5000-row dataset.*
 
-### Requirement: Canonical 300-question dataset
+### Requirement: Rematch keeps the players
 
-The importer SHALL accept exactly 300 valid questions, with exactly 50 in each of the six canonical categories, four distinct non-empty options per row, and an answer belonging to those options. Normalized question text and complete duplicate rows SHALL be rejected before database mutation. Valid imports SHALL replace the local question and categorization rows transactionally and be idempotent; invalid imports SHALL leave existing counts unchanged. The SQLAlchemy schema and API routes SHALL remain unchanged.
+The winner screen SHALL offer a rematch that keeps both player names and starts a fresh match with empty crowns, zeroed streaks and counters, restored jokers, and cleared used-question state, landing on the wheel screen. The separate new-game control SHALL discard the players and return to the name screen.
 
-#### Scenario: Repeated valid import is stable
+#### Scenario: Rematch starts from zero with the same names
 
-- **GIVEN** the canonical source contains 300 valid unique rows
-- **WHEN** the importer runs twice with that source
-- **THEN** the database contains 300 questions and 300 categorizations
-- **AND** each category contains 50 questions
-- **AND** the second run does not append a duplicate copy
+- **GIVEN** a finished match between two named players
+- **WHEN** a player chooses rematch
+- **THEN** both names are preserved and the wheel is shown
+- **AND** both players have no crowns, zero streaks and counters, and full joker uses
+- **AND** choosing new game instead returns to the name screen with no players
 
-*Provenance: [AUTHORED] from Gate A's approved dataset scope.*
+*Provenance: [AUTHORED] from the 2026-10-28 rematch feedback.*
+
+### Requirement: Project dataset import
+
+The importer SHALL load `app/trivia_latam_argentina.csv` (5000 rows) transactionally. Each row SHALL have two or four distinct non-empty options and an answer among them; invalid rows SHALL be rejected before any database mutation, leaving the existing questions and categorizations unchanged. A valid import SHALL replace the local question and categorization rows, store each question's dataset category, and store the neural network's predicted category and confidence as its automatic categorization. Re-running the import SHALL be idempotent.
+
+#### Scenario: Valid import replaces the dataset
+
+- **GIVEN** the canonical source has 5000 valid rows
+- **WHEN** the importer runs
+- **THEN** the database contains 5000 questions and 5000 automatic categorizations
+- **AND** true/false rows store `null` in `option_c` and `option_d`
+- **AND** each question exposes the network's category to the game
 
 #### Scenario: Invalid source is atomic
 
-- **GIVEN** a source has a duplicate, invalid answer, missing category, or non-50 category count
-- **WHEN** validation runs
-- **THEN** the importer exits non-zero before destructive mutation
+- **GIVEN** a source row has an invalid option count, duplicate option, or an answer outside the options
+- **WHEN** the importer runs
+- **THEN** it exits non-zero before mutating the database
 - **AND** existing question and categorization counts remain unchanged
 
-*Provenance: [AUTHORED].*
+*Provenance: [AUTHORED] from the 2026-10-22 neural-classifier change and the 2026-10-28 integration review.*

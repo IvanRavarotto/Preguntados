@@ -646,21 +646,61 @@ async function main() {
       `panels: ${JSON.stringify(panelsAfter.ids)}`,
     );
 
-    /* --- rematch clears the match and returns to the name screen --- */
+    /* --- rematch keeps the players and starts a fresh match --- */
     await cdp.eval(`document.getElementById("rematch").click()`);
     await sleep(250);
     const rematch = await cdp.eval(`(() => ({
       screen: (document.querySelector(".panel.active") || {}).id || null,
       playerCount: players.length,
+      names: players.map(p => p.name),
+      crowns: players.map(p => p.crowns.length),
+      streaks: players.map(p => p.streak),
+      correct: players.map(p => p.correct),
+      wrong: players.map(p => p.wrong),
+      jokerUses: players.map(p => Object.values(p.jokers).reduce((sum, j) => sum + j.used, 0)),
       scoreboardCards: document.getElementById("scoreboard").childElementCount,
       surrenderButtons: document.getElementById("surrender-wheel").childElementCount
     }))()`);
-    check("rematch returns to the player-name screen", rematch.screen === "screen-start", `active screen: ${rematch.screen}`);
-    check("rematch clears both crown sets", rematch.playerCount === 0, `players left: ${rematch.playerCount}`);
     check(
-      "rematch clears the visible score state",
-      rematch.scoreboardCards === 0 && rematch.surrenderButtons === 0,
+      "rematch keeps the two named players and shows the wheel",
+      rematch.screen === "screen-wheel" && rematch.playerCount === 2,
+      `active screen: ${rematch.screen}, players: ${rematch.playerCount}`,
+    );
+    check(
+      "rematch preserves both names",
+      JSON.stringify(rematch.names) === JSON.stringify(["Ana", "Beto"]),
+      `names: ${JSON.stringify(rematch.names)}`,
+    );
+    check(
+      "rematch starts every score at zero",
+      rematch.crowns.every((n) => n === 0) &&
+        rematch.streaks.every((n) => n === 0) &&
+        rematch.correct.every((n) => n === 0) &&
+        rematch.wrong.every((n) => n === 0),
+      JSON.stringify({ crowns: rematch.crowns, streaks: rematch.streaks, correct: rematch.correct, wrong: rematch.wrong }),
+    );
+    check(
+      "rematch restores every joker",
+      rematch.jokerUses.every((n) => n === 0),
+      `joker uses: ${JSON.stringify(rematch.jokerUses)}`,
+    );
+    check(
+      "rematch refreshes the visible score state",
+      rematch.scoreboardCards === 2 && rematch.surrenderButtons === 2,
       `scoreboard cards: ${rematch.scoreboardCards}, surrender controls: ${rematch.surrenderButtons}`,
+    );
+
+    /* --- new game returns to the name screen and drops the players --- */
+    await cdp.eval(`document.getElementById("new-match").click()`);
+    await sleep(200);
+    const newMatch = await cdp.eval(`(() => ({
+      screen: (document.querySelector(".panel.active") || {}).id || null,
+      playerCount: players.length
+    }))()`);
+    check(
+      "new game returns to the player-name screen and discards the players",
+      newMatch.screen === "screen-start" && newMatch.playerCount === 0,
+      `active screen: ${newMatch.screen}, players: ${newMatch.playerCount}`,
     );
 
     /* --- the six-crown ending survives the refactor and reads differently --- */

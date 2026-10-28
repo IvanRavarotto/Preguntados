@@ -1124,8 +1124,19 @@
   }
 
   function startRematch() {
+    if (players.length !== 2) {
+      resetMatchState();
+      show("screen-start");
+      return;
+    }
+    const names = players.map((p) => p.name);
     resetMatchState();
-    show("screen-start");
+    players = makePlayers(names[0], names[1]);
+    joker = null;
+    turn = Math.random() < 0.5 ? 0 : 1;
+    show("screen-wheel");
+    renderScoreboard();
+    $("spin").disabled = false;
   }
 
   function renderScoreboard() {
@@ -1257,79 +1268,95 @@
       const duration = durationMs / 1000;
       const bus = ctx.createGain();
       bus.gain.setValueAtTime(0.0001, now);
-      bus.gain.exponentialRampToValueAtTime(0.09, now + 0.05);
-      bus.gain.setValueAtTime(0.09, now + Math.max(0.1, duration - 0.15));
+      bus.gain.exponentialRampToValueAtTime(0.3, now + 0.08);
+      bus.gain.setValueAtTime(0.3, now + Math.max(0.1, duration - 0.28));
       bus.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      bus.connect(ctx.destination);
+      const softener = ctx.createBiquadFilter();
+      softener.type = "lowpass";
+      softener.frequency.value = 5200;
+      softener.Q.value = 0.35;
+      bus.connect(softener);
+      softener.connect(ctx.destination);
 
       const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * duration)), ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
-      const filter = ctx.createBiquadFilter();
-      filter.type = "bandpass";
-      filter.Q.value = 0.7;
-      filter.frequency.setValueAtTime(1400, now);
-      filter.frequency.exponentialRampToValueAtTime(320, now + duration);
-      noise.connect(filter);
-      filter.connect(bus);
+      const whir = ctx.createBiquadFilter();
+      whir.type = "lowpass";
+      whir.Q.value = 0.6;
+      whir.frequency.setValueAtTime(900, now);
+      whir.frequency.exponentialRampToValueAtTime(260, now + duration);
+      const whirGain = ctx.createGain();
+      whirGain.gain.setValueAtTime(0.0001, now);
+      whirGain.gain.exponentialRampToValueAtTime(0.055, now + 0.3);
+      whirGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      noise.connect(whir);
+      whir.connect(whirGain);
+      whirGain.connect(bus);
       noise.start(now);
       noise.stop(now + duration);
 
       let t = 0, clicks = 0;
       while (t < duration && clicks < 500) {
         const when = now + t;
+        const progress = t / duration;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = "square";
-        osc.frequency.setValueAtTime(1700 + Math.random() * 500, when);
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(1250 - 420 * progress + Math.random() * 90, when);
         gain.gain.setValueAtTime(0.0001, when);
-        gain.gain.exponentialRampToValueAtTime(0.05, when + 0.002);
-        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.1, when + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.045);
         osc.connect(gain);
         gain.connect(bus);
         osc.start(when);
-        osc.stop(when + 0.04);
-        t += audioEventInterval(t / duration);
+        osc.stop(when + 0.05);
+        t += audioEventInterval(progress);
         clicks++;
       }
 
       const graph = { bus, source: noise, stopAt: now + duration };
       spinGraph = graph;
       audioStats.liveGraphs = 1;
-      audioStats.nodes = 2 + clicks;
+      audioStats.nodes = 4 + clicks;
       window.setTimeout(() => { if (spinGraph === graph) stopSpin(); }, Math.round(duration * 1000));
     } catch (e) {
       stopSpin();
     }
   }
 
-  /* Each outcome owns a distinct synthesis parameter set, so the three cues cannot be confused. */
+  /* Each outcome owns a distinct synthesis parameter set, so the three cues cannot be confused.
+     The cues are soft bell/gong tones: a major third for a hit, a low minor second for a miss,
+     and a deeper two-note fall for a timeout. */
   function playCue(kind) {
     const ctx = ensureAudio();
     if (!ctx) return;
     try {
       const params = kind === "correct"
-        ? { type: "sine", from: 660, to: 990, dur: 0.16, gain: 0.12, steps: [0, 0.12] }
+        ? { type: "sine", notes: [523.25, 783.99], dur: 0.3, gain: 0.18, gap: 0.1 }
         : kind === "incorrect"
-          ? { type: "sawtooth", from: 220, to: 110, dur: 0.18, gain: 0.11, steps: [0, 0.18] }
-          : { type: "triangle", from: 520, to: 180, dur: 0.2, gain: 0.1, steps: [0, 0.2, 0.38] };
+          ? { type: "triangle", notes: [220, 174.61], dur: 0.24, gain: 0.14, gap: 0.12 }
+          : { type: "sine", notes: [164.81, 123.47], dur: 0.38, gain: 0.14, gap: 0.16 };
       const now = ctx.currentTime;
       const bus = ctx.createGain();
-      bus.gain.value = params.gain;
-      bus.connect(ctx.destination);
-      params.steps.forEach((offset, i) => {
+      bus.gain.value = 1;
+      const softener = ctx.createBiquadFilter();
+      softener.type = "lowpass";
+      softener.frequency.value = kind === "correct" ? 4200 : 2600;
+      softener.Q.value = 0.4;
+      bus.connect(softener);
+      softener.connect(ctx.destination);
+      params.notes.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = params.type;
-        const start = now + offset;
+        const start = now + i * params.gap;
         const end = start + params.dur;
-        const f0 = params.from + (params.to - params.from) * (i / Math.max(1, params.steps.length - 1));
-        osc.frequency.setValueAtTime(f0, start);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(1, params.to), end);
+        osc.frequency.setValueAtTime(freq, start);
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.8, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(params.gain, start + 0.012);
         gain.gain.exponentialRampToValueAtTime(0.0001, end);
         osc.connect(gain);
         gain.connect(bus);

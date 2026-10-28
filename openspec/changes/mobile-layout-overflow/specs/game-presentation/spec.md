@@ -81,9 +81,10 @@ exactly `768px`, `1024px` and the wheel-only `640px` compact tier, and the fitti
 with fluid sizing — `clamp()`, `min()`, `vh`/`dvh` and flexbox — so that one rule covers every
 viewport instead of a new breakpoint per problem.
 
-The design's option-grid rule SHALL be preserved: below `768px` the four answer options SHALL keep
-stacking in a single column with `0.75rem` between them. Fitting a phone screen SHALL NOT be bought
-by turning the options into two narrow columns.
+The design's option-grid rule SHALL be preserved: below `768px` every answer option SHALL keep
+stacking in a single column with `0.75rem` between them, whether the question has four options or the
+two of a true/false question. Fitting a phone screen SHALL NOT be bought by turning the options into
+two narrow columns.
 
 > `[AUTHORED]` The viewport list is the set the project actually has to survive, taken from the
 > shortest and the most common phone sizes, the shortest common landscape size, a tablet, and two
@@ -116,10 +117,10 @@ file, and the authoring form's height. Measurable: deepest-descendant bottom aga
 #### Scenario: Nothing is clipped beyond reach on the question screen
 
 - **GIVEN** a question on screen at `320x568` and at `844x390`
-- **WHEN** the four options, the feedback strip and the next-turn control are measured
+- **WHEN** the rendered options, the feedback strip and the next-turn control are measured
 - **THEN** each of them is within the viewport or reachable by scrolling the panel
 - **AND** the question text's computed font size is at least `18px`
-- **AND** the four options are still in a single column below `768px`
+- **AND** every rendered option is still in a single column below `768px`
 
 *Provenance: `[PRESERVE]` as above, plus the question-text floor from the "Type pairing" requirement
 and the option-grid rule from "Responsive behavior at the design's breakpoints". Measurable: the

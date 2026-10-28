@@ -81,3 +81,24 @@ def test_main_if_missing_skips_an_already_loaded_database(small_load, session, c
 
     assert session.query(Question).count() == len(small_load)
     assert "ya está cargado" in capsys.readouterr().out
+
+
+def test_invalid_dataset_leaves_the_database_untouched(
+    monkeypatch, engine, session_factory, session
+):
+    valid_rows = loader.read_dataset()[:5]
+    loader.store_dataset(session, valid_rows, get_classifier())
+    before = session.query(Question).count()
+
+    def invalid_dataset():
+        raise ValueError("Fila 2: se esperaban 2 o 4 opciones distintas")
+
+    monkeypatch.setattr(loader, "engine", engine)
+    monkeypatch.setattr(loader, "SessionLocal", session_factory)
+    monkeypatch.setattr(loader, "read_dataset", invalid_dataset)
+
+    with pytest.raises(ValueError, match="Fila 2"):
+        loader.main([])
+
+    assert session.query(Question).count() == before
+    assert session.query(Categorization).count() == before

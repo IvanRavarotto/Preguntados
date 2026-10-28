@@ -99,12 +99,13 @@ def main(argv: list[str] | None = None) -> None:
                 print("El dataset ya está cargado; no se recarga.")
                 return
 
+    rows = read_dataset()
+
     # La carga reemplaza el esquema completo: así una base creada con el esquema
     # anterior (opciones C y D obligatorias) queda alineada con el modelo actual.
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
-    rows = read_dataset()
     with SessionLocal() as db:
         matches = store_dataset(db, rows, get_classifier())
     print(

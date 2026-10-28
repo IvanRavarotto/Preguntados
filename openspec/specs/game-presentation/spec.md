@@ -666,9 +666,24 @@ panel container SHALL keep `position: fixed; inset: 0`. Exactly four panels SHAL
 `screen-start`, `screen-wheel`, `screen-question`, and `screen-winner`, and the existing
 `show(id)` mechanism that activates one by class SHALL continue to switch between them.
 
+**The document SHALL NOT scroll.** A panel whose content exceeds the viewport MAY scroll **internally**
+so that no content is ever unreachable; this is the one sanctioned exception to "single screen" and it
+is bounded to the panel's own box. Internal scrolling SHALL NOT be used to shorten a panel that
+fits: a panel that fits its viewport SHALL NOT be scrollable.
+
 The scrolling three-column dashboard layout and the footer of `stitch/code.html` SHALL NOT be adopted.
 
 > Decision, not an open question. Recorded in `proposal.md`.
+
+> `[AUTHORED]` Why the requirement is amended rather than satisfied as written. The previous wording
+> forbade scrolling without saying what a panel does with content that does not fit, and the
+> implemented answer was *clip it*: `body { overflow: hidden }` plus a fixed panel plus flex children
+> that shrink means the overflow is painted outside the viewport and cannot be reached. Measured
+> overflow on the shipped file: 355px on the start screen at 320x568, 150px on the question screen at
+> 320x568, 47px on the wheel screen at 844x390, and 21px on the start screen at 1440x900 — the last
+> one on a desktop viewport. A "no scrolling" rule that produces unreachable content is not a
+> constraint the project can keep; the honest rule is that the **document** does not scroll and the
+> **panel** keeps its content reachable.
 
 #### Scenario: Four panels, one visible, no scrolling
 
@@ -677,9 +692,13 @@ The scrolling three-column dashboard layout and the footer of `stitch/code.html`
 - **THEN** exactly one element with class `panel active` exists
 - **AND** its id is one of the four above
 - **AND** the document does not scroll at viewport heights from `320px` to `1200px`
+- **AND** `body` computes `overflow: hidden` and the panel container computes `position: fixed`
+  with `inset: 0`
+- **AND** a panel whose content fits its viewport is not scrollable
 
-*Provenance: `[IMPL]` — `body { overflow: hidden }` at `frontend/index.html:70`, `.panel` at 82,
-the four `id`s at 313/332/344/361, and `show` at 753. `[DESIGN]` for the rejected layout.*
+*Provenance: `[IMPL]` — `body { overflow: hidden }` at `frontend/index.html:77`, `.panel` at 89, the
+four `id`s at 550/601/613/638, and `show` at 800. `[DESIGN]` for the rejected layout. `[AUTHORED]` for
+the internal-scrolling clause and for the rule that a fitting panel is not scrollable.*
 
 #### Scenario: Dead decorative markup is gone
 
@@ -1175,3 +1194,276 @@ and the effect.
 - **THEN** the only paths requested are `/`, `/categories`, and
   `/questions/category/{category_name}?limit=200`
 - **AND** exactly four elements with class `panel` exist and the document does not scroll
+
+### Requirement: The surrender control and its confirmation
+
+The presentation SHALL offer a **surrender control** on the wheel screen and on the question
+screen, and every surrender control SHALL be bound to **one named player** and SHALL always
+surrender that player.
+
+On the wheel screen, where both players are listed, each player SHALL have their own surrender
+control. On the question screen, where one turn is presented at a time, the control SHALL belong to
+the **active** player. Each control's accessible name SHALL identify the player it surrenders.
+
+The surrender control is a **destructive** action and SHALL read as one: it SHALL use the palette's
+existing failure accent `#FF2A6D` and SHALL NOT compete with the screen's primary control — the
+wheel screen's spin button and the question screen's answer options. It SHALL introduce no new
+colour, no new radius outside the `0.25rem`–`0.5rem` band, no drop shadow, and no external
+resource.
+
+The confirmation SHALL be a **dialog overlay**, not a fifth panel: the four panel ids
+`screen-start`, `screen-wheel`, `screen-question` and `screen-winner` SHALL remain exactly those, and
+the overlay SHALL reuse the existing `.crown-overlay` / `.crown-modal` pattern. The dialog SHALL have
+`role="dialog"`, `aria-modal="true"`, and an `aria-labelledby` pointing at a title that **names the
+player being surrendered**. It SHALL contain exactly two controls: a confirm control and a cancel
+control.
+
+Opening the dialog SHALL move focus into it; the **confirm control SHALL NOT** be the element that
+receives focus when the dialog opens. Escape and the cancel control SHALL dismiss it, and dismissal
+SHALL restore focus to the control that opened it. A dismissed dialog SHALL leave the match
+untouched.
+
+> `[AUTHORED]` Two decisions are recorded here rather than left to the implementation. (1) **The
+> dialog is an overlay, not a panel.** The living "Fixed single-screen shell" requirement fixes
+> exactly four panels, and `#crown-picker` and `#case-overlay` already establish the overlay pattern
+> — so the surrender dialog follows the house pattern rather than inventing a fifth container.
+> (2) **The confirm control is not focused on open.** A destructive action that grabs the keyboard
+> focus is one keystroke away from firing; the cancel control receives the focus instead, so the
+> shortest path out of the dialog is the safe one.
+
+#### Scenario: Both screens offer a surrender control bound to a named player
+
+- **GIVEN** a match in progress
+- **WHEN** the wheel screen and the question screen are inspected
+- **THEN** each carries at least one surrender control
+- **AND** every surrender control's accessible name names the player it surrenders
+- **AND** on the wheel screen there is one surrender control per player
+- **AND** on the question screen the surrender control names the active player
+
+*Provenance: `[AUTHORED]` — the shared-device decision in `proposal.md`. Measurable: the control's
+count per screen and the player named in each control's accessible name, read against the active
+player on the question screen.*
+
+#### Scenario: The confirmation is a dialog, and the shell still has four panels
+
+- **GIVEN** the surrender control pressed
+- **THEN** an element with `role="dialog"` and `aria-modal="true"` is shown
+- **AND** that element's `aria-labelledby` points at a title element that names the player
+- **AND** it contains exactly two controls: the confirm control and the cancel control
+- **AND** the document still has exactly four elements with class `panel`, with the four ids
+  `screen-start`, `screen-wheel`, `screen-question` and `screen-winner`
+- **AND** the dialog element does **not** carry the class `panel`
+
+*Provenance: `[PRESERVE]` — the living "Fixed single-screen shell" requirement fixes the four panel
+ids. `[AUTHORED]` — the dialog's attributes and its two controls. Measurable: the `role`, the
+`aria-modal`, the resolved `aria-labelledby` target's text, the control count, and the panel count.*
+
+#### Scenario: The dialog can be dismissed without changing the match
+
+- **GIVEN** the confirmation dialog open
+- **WHEN** it is dismissed with Escape, and again in a second match with the cancel control
+- **THEN** the dialog is hidden both times
+- **AND** focus returns to the surrender control that opened it
+- **AND** the match is unchanged both times: the same turn, the same crowns, the same pending
+  question
+
+*Provenance: `[AUTHORED]` — the double confirmation. Measurable: the dialog's hidden state, the
+focused element, and the match state before and after each dismissal.*
+
+#### Scenario: The confirm control does not take the focus
+
+- **GIVEN** the confirmation dialog opened from the surrender control
+- **WHEN** the focused element is read
+- **THEN** it is inside the dialog
+- **AND** it is **not** the confirm control
+
+*Provenance: `[AUTHORED]` — a destructive action must not be the keyboard's first stop. Measurable:
+the focused element's identity.*
+
+#### Scenario: The surrender control introduces no new visual token
+
+- **GIVEN** the surrender control and the dialog's confirm control
+- **WHEN** their computed colours, border radii and shadows are read
+- **THEN** the failure accent used is `#FF2A6D`, from the existing palette
+- **AND** every radius is within the `0.25rem`–`0.5rem` band
+- **AND** no drop shadow with a non-zero offset is introduced
+- **AND** no new external reference of any kind appears in the document
+
+*Provenance: `[PRESERVE]` — the living "Obsidian canvas and glass surface tokens",
+"Neon category palette" and "No external requests" requirements. Measurable: the computed values
+and the document's reference set.*
+
+### Requirement: Synthesised game audio
+
+The presentation SHALL produce sound for the wheel spin and for the three answer outcomes, and it
+SHALL produce that sound **without loading any audio asset**: no `.mp3`, `.wav`, `.ogg` or data-URI
+blob, no `<audio>` element, no audio library, and no new runtime dependency. The sound SHALL be
+synthesised in the browser with the Web Audio API.
+
+This is a direct consequence of the "No external requests" requirement, which forbids any `src`,
+`href`, `url()`, `@import` or `background-image` reference that is not absent or a fragment/data URI,
+and of `openspec/project.md`'s rule that the frontend has no bundling or compilation step.
+
+The audio context SHALL be created or resumed **inside a user gesture** — the spin control's click
+handler — so that the browser's autoplay policy never suspends it.
+
+The spin sound SHALL start when the spin starts and SHALL stop when the wheel settles. Its
+perceived rate SHALL decelerate along the same curve the wheel's rotation follows, so the sound and
+the wheel decelerate together. A second spin SHALL NOT leave a second live sound graph behind it, and
+no sound SHALL outlive the spin it belongs to.
+
+The three answer cues SHALL be **distinguishable from each other**: correct, incorrect and timed out
+SHALL each have their own character, matching the three visually distinct feedback states the
+presentation already defines.
+
+The game SHALL behave **exactly as it does without audio** when the Web Audio API is unavailable,
+when the audio context is blocked or suspended, or when the device is muted. No exception may escape
+into the game flow, and no gameplay outcome may depend on a sound having played.
+
+Sound SHALL NOT be gated on `prefers-reduced-motion`. That preference is about movement, and the
+wheel's movement is what it governs; there is no `prefers-reduced-sound` feature to ask about, and
+silencing the audio as well would remove feedback that has no visual equivalent.
+
+> `[AUTHORED]` The rate mapping SHALL be a **DOM-free pure function** so that it can be checked
+> without a browser. This is the one piece of the sound that is worth testing exactly, and it can
+> only be tested exactly if it does not touch the DOM.
+
+#### Scenario: The spin sounds and stops with the wheel
+
+- **GIVEN** the wheel screen
+- **WHEN** the spin control is pressed and the wheel settles
+- **THEN** an audio context exists and a sound graph is started inside the click handler
+- **AND** the graph is stopped within `200ms` of the wheel settling
+- **AND** a second spin leaves exactly one live graph
+
+*Provenance: `[IMPL]` — the spin is `spinWheel` (`frontend/index.html:1188`), driven by
+`$("spin").addEventListener("click", spinWheel)` (`:913`); the wheel's duration is `SPIN_MS = 4200`
+and its settle timeout `SPIN_SETTLE_MS` (`:686-688`). `[AUTHORED]` for the graph lifetime. Measurable:
+the number of live audio nodes and the graph's stop time relative to the settle.*
+
+#### Scenario: The sound decelerates with the wheel
+
+- **GIVEN** the spin's easing curve and its duration
+- **WHEN** the pure rate mapping is evaluated at `0%`, `25%`, `50%`, `75%` and `100%` of the spin
+- **THEN** the mapped interval between events increases monotonically across those samples
+- **AND** the mapped value at `0%` is smaller than the mapped value at `100%`
+
+*Provenance: `[DESIGN]` for the export's `duration-[4000ms] cubic-bezier` (`stitch/code.html:201`).
+Measurable: the mapping's output at the five samples, with the monotonicity check. The mapping is
+DOM-free and is unit-tested in Node.*
+
+#### Scenario: The game is unaffected when audio is unavailable
+
+- **GIVEN** a browser where `AudioContext` is undefined, or where the context cannot be created
+- **WHEN** a match is played through a spin, a correct answer, an incorrect answer and a timeout
+- **THEN** no exception escapes into the game flow
+- **AND** the wheel spins, the answer resolves and the turn changes exactly as they do with audio
+
+*Provenance: `[PRESERVE]` — the game must not depend on a sound having played. Measurable: the
+absence of an uncaught exception, and the game's normal progression.*
+
+#### Scenario: The presentation loads no audio asset
+
+- **GIVEN** the served document
+- **WHEN** every `src`, `href`, `url()`, `@import` and `background-image` reference is collected
+- **THEN** none of them points at an audio file
+- **AND** the network panel records no audio request over a full match
+- **AND** the document contains no `<audio>` element and no `new Audio(...)` call
+
+*Provenance: `[PRESERVE]` — the "No external requests" requirement. Measurable: the reference set and
+the network log. The absence of a request is the observable; a sound that was synthesised is
+invisible to the network panel by construction.*
+
+#### Scenario: The three answer cues are distinguishable
+
+- **GIVEN** three separate questions in one match
+- **WHEN** the first is answered correctly, the second incorrectly, and the third times out
+- **THEN** each outcome starts exactly one cue
+- **AND** the three cues differ from each other in their synthesis parameters, so no two are the
+  same sound
+
+*Provenance: `[AUTHORED]` — no agent in this fleet can hear, so the criterion is the difference
+between the three synthesis parameter sets rather than a judgement about the sounds. The three
+outcome paths are `resolveCorrect` (`frontend/index.html:1444`), `resolveFailure` (`:1469`) and
+`onTimeout` (`:1428`).*
+
+### Requirement: No content is unreachable on a phone
+
+The presentation SHALL remain **usable** at phone viewports: every control on every panel SHALL be
+reachable and operable, and no panel SHALL clip content that it cannot also scroll to.
+
+The following viewport sizes SHALL all be supported: `320x568`, `360x640`, `390x844`, `414x896`,
+`768x1024`, `844x390` (landscape phone), `1440x900` and `1920x1080`.
+
+Concretely, at each of those sizes:
+
+- the manual-authoring form on the start screen SHALL be reachable and every one of its controls
+  operable;
+- the question screen's four options, its feedback strip and its "next turn" control SHALL be
+  reachable;
+- the wheel and its spin control SHALL be fully visible, and no sector SHALL be cut off;
+- the question text SHALL render at `18px` or larger;
+- the seven wheel sectors SHALL remain visible and SHALL NOT overlap.
+
+The implementation SHALL add **no media query**. The stylesheet's declared breakpoints SHALL stay
+exactly `768px`, `1024px` and the wheel-only `640px` compact tier, and the fitting SHALL be done
+with fluid sizing — `clamp()`, `min()`, `vh`/`dvh` and flexbox — so that one rule covers every
+viewport instead of a new breakpoint per problem.
+
+The design's option-grid rule SHALL be preserved: below `768px` every answer option SHALL keep
+stacking in a single column with `0.75rem` between them, whether the question has four options or the
+two of a true/false question. Fitting a phone screen SHALL NOT be bought by turning the options into
+two narrow columns.
+
+> `[AUTHORED]` The viewport list is the set the project actually has to survive, taken from the
+> shortest and the most common phone sizes, the shortest common landscape size, a tablet, and two
+> desktop sizes. It is a closed list so that "usable on a phone" is a checkable claim rather than a
+> mood.
+>
+> `[AUTHORED]` The two implementation constraints are not stylistic preferences; each one closes a
+> door that the living spec already holds open. **No media query**: the living "Responsive behavior
+> at the design's breakpoints" requirement fixes the declared breakpoint set at `768px`, `1024px` and
+> the wheel-only `640px` tier, and a tester reads that scenario literally — a fourth breakpoint
+> fails it. **One column below `768px`**: the same requirement says the options stack vertically
+> below `768px`, and two narrow columns of long Spanish answers on a 320px phone is a worse game,
+> not a fitting one. The height is recovered from the vertical rhythm instead: the heading, the
+> card's padding, the option cards' padding and gaps, and the question text's box all become fluid.
+
+#### Scenario: Nothing is clipped beyond reach on the start screen
+
+- **GIVEN** the start screen at `320x568`
+- **WHEN** the deepest rendered descendant of the panel is compared against the viewport height
+- **THEN** either the deepest descendant's bottom is within the viewport, or the panel is
+  internally scrollable and its scroll height covers that descendant
+- **AND** the authoring form's submit control is reachable at `320x568`, `360x640`, `390x844`,
+  `844x390` and `1440x900`
+
+*Provenance: `[PRESERVE]` — `openspec/project.md`: "The frontend must remain usable at desktop and
+mobile viewport sizes". `[IMPL]` — the measured `355px` / `284px` / `21px` overflow on the shipped
+file, and the authoring form's height. Measurable: deepest-descendant bottom against
+`window.innerHeight`, and the panel's `scrollHeight` against `clientHeight`.*
+
+#### Scenario: Nothing is clipped beyond reach on the question screen
+
+- **GIVEN** a question on screen at `320x568` and at `844x390`
+- **WHEN** the rendered options, the feedback strip and the next-turn control are measured
+- **THEN** each of them is within the viewport or reachable by scrolling the panel
+- **AND** the question text's computed font size is at least `18px`
+- **AND** every rendered option is still in a single column below `768px`
+
+*Provenance: `[PRESERVE]` as above, plus the question-text floor from the "Type pairing" requirement
+and the option-grid rule from "Responsive behavior at the design's breakpoints". Measurable: the
+measured `150px` and `93px` overflows on the shipped file, and the options' column count.*
+
+#### Scenario: The wheel is fully visible in landscape
+
+- **GIVEN** the wheel screen at `844x390`
+- **WHEN** the wheel and the spin control are measured
+- **THEN** the wheel's box and the spin control are both fully within the viewport
+- **AND** no sector label is clipped
+- **AND** the wheel's size on a tall desktop viewport is unchanged from its pre-change size, so the
+  fitting is bought on short viewports only
+
+*Provenance: `[IMPL]` — the measured `47px` overflow and the `#wheel` box overflowing its own content
+by `24px` at `844x390` on the shipped file. `[PRESERVE]` — the `gameplay` capability's "Seven sectors
+do not overlap" requirement, which is checked at mobile sizes as well as desktop ones.*

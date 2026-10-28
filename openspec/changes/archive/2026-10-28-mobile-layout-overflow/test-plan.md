@@ -24,9 +24,9 @@ verification script under `scripts/`. No API, schema, or dependency change.
 | A panel that fits its viewport is not scrollable | `scrollHeight` against `clientHeight` on each panel | equal when the content fits |
 | No panel clips content it cannot scroll to | deepest rendered descendant's bottom against `window.innerHeight`, per panel, plus the panel's `scrollHeight` | overflow is **0**, or the panel's `scrollHeight` covers the deepest descendant |
 | The authoring form's controls are reachable | the form's submit control's bounding box against the viewport, and the panel's scroll reach | inside the viewport, or within the panel's scrollable range |
-| The question screen's options, feedback and next-turn control are reachable | bounding boxes of the four option buttons, the feedback strip and the next-turn control | inside the viewport, or within the panel's scrollable range |
+| The question screen's options, feedback and next-turn control are reachable | bounding boxes of the rendered option buttons, the feedback strip and the next-turn control | inside the viewport, or within the panel's scrollable range |
 | The question text renders at 18px or larger | computed `font-size` of the question text | `>= 18` |
-| The options stay in one column below `768px` | the four option buttons' bounding boxes at `390x844` | **1** column — four rows, same `x` |
+| The options stay in one column below `768px` | the rendered option buttons' bounding boxes at `390x844` | **1** column — one row per rendered option, same `x` |
 | The declared breakpoint set is unchanged | the stylesheet's `@media` conditions collected | exactly `768px`, `1024px`, `640px` — **no fourth** |
 | The wheel is fully visible at `844x390` | bounding boxes of the wheel and the spin button | fully inside the viewport |
 | The wheel's size is unchanged on a tall desktop | the wheel's box at `1440x900` | equal to the pre-change size |

@@ -219,7 +219,7 @@ const WHEEL_DETAIL = `(() => {
   const outside = labels.filter(l => l.x < wr.left - 0.5 || l.right > wr.right + 0.5 || l.y < wr.top - 0.5 || l.bottom > wr.bottom + 0.5).length;
   const spin = document.getElementById("spin").getBoundingClientRect();
   return {
-    wheel: { x: Math.round(wr.left), y: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height) },
+    wheel: { x: Math.round(wr.left), y: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height), right: Math.round(wr.right), bottom: Math.round(wr.bottom) },
     labelCount: labels.length,
     overlaps,
     outside,
@@ -232,14 +232,17 @@ const START_DETAIL = `(() => {
   if (details) details.open = true;
   const form = document.querySelector("#screen-start form");
   const submit = form ? form.querySelector('button[type="submit"], button:not([type])') : null;
-  const box = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) }; };
   const panel = document.getElementById("screen-start");
+  const scrollable = panel.scrollHeight > panel.clientHeight + 1;
+  if (submit && scrollable) submit.scrollIntoView({ block: "center", inline: "nearest" });
+  const box = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) }; };
   return {
     submit: box(submit),
     form: box(form),
     scrollH: panel.scrollHeight,
     clientH: panel.clientHeight,
-    scrollable: panel.scrollHeight > panel.clientHeight + 1,
+    scrollable,
+    scrollTop: Math.round(panel.scrollTop),
     innerH: window.innerHeight
   };
 })()`;
@@ -346,7 +349,19 @@ async function main() {
       const wheelDetail = await cdp.eval(WHEEL_DETAIL);
 
       await cdp.eval(`document.getElementById("spin").click()`);
-      await sleep(6500);
+      let questionReady = false;
+      for (let attempt = 0; attempt < 40 && !questionReady; attempt += 1) {
+        await sleep(500);
+        questionReady = await cdp.eval(`(() => {
+          const picker = document.getElementById("crown-picker");
+          if (picker && !picker.hidden) {
+            const card = document.querySelector("#crown-grid .crown-card:not(:disabled)");
+            if (card) card.click();
+          }
+          const screen = document.getElementById("screen-question");
+          return !!screen && screen.classList.contains("active") && document.querySelectorAll("#q-opts .opt").length > 0;
+        })()`);
+      }
       const question = await cdp.eval(MEASURE);
       const questionDetail = await cdp.eval(QUESTION_DETAIL);
 
@@ -390,14 +405,20 @@ async function main() {
 
       /* --- the question screen --- */
       check(
+        `${label}: the spin reaches a question with options`,
+        questionReady,
+        "the question screen did not become active with rendered options",
+      );
+      check(
         `${label}: the question text renders at 18px or larger`,
         questionDetail.fontSize >= 18,
         `font-size ${questionDetail.fontSize}px`,
       );
       check(
         `${label}: the options stack in one column below 768px`,
-        width >= 768 || questionDetail.optionRows >= 4,
-        `the four options occupy ${questionDetail.optionRows} rows`,
+        width >= 768 ||
+          (questionDetail.optionCount > 0 && questionDetail.optionRows >= questionDetail.optionCount),
+        `${questionDetail.optionCount} options occupy ${questionDetail.optionRows} rows`,
       );
       const reachable = (box) => box && box.bottom <= height + 1;
       check(

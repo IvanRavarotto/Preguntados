@@ -22,6 +22,7 @@
 *.ico binary
 *.woff binary
 *.woff2 binary
+*.pth binary
 
 # ---------------------------------------------------------------------
 # Archivos byte-exactos. -text significa "guarda y devuelve los bytes

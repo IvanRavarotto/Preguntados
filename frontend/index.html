@@ -1653,9 +1653,11 @@
     });
   }
 
-  /* Removing two wrong options from a two-option question would leave only the answer. */
+  /* A true/false question has only two options: removing wrong ones or buying a second attempt
+     would distort it. Only selecting the stored correct option still fits. */
   function jokerFitsQuestion(type) {
-    return type !== "eliminate-two" || $("q-opts").children.length === 4;
+    if ($("q-opts").children.length >= 4) return true;
+    return type === "select-correct" || type === "auto-correct" || type === "seleccionar-correcta";
   }
 
   function activateJoker(type) {

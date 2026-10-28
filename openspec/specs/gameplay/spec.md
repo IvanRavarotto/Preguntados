@@ -84,7 +84,7 @@ A question SHALL be marked used when presented and SHALL not be selected again i
 
 Each player SHALL start with two uses of each of exactly three joker types: `eliminar-dos`, `segundo-intento`, and `seleccionar-correcta`. A player SHALL be able to activate at most one joker for a question, and a used joker type SHALL decrement only that player's counter. Counters SHALL reset for both players on rematch. The crown sector SHALL not affect joker counters.
 
-`eliminar-dos` SHALL disable exactly two incorrect options. `segundo-intento` SHALL allow exactly one additional answer after the first incorrect answer without revealing the answer. On a final correct answer the turn SHALL remain; on a final incorrect answer or timeout the turn SHALL change. `seleccionar-correcta` SHALL select the stored correct option and resolve as a correct answer.
+`eliminar-dos` SHALL disable exactly two incorrect options. `segundo-intento` SHALL allow exactly one additional answer after the first incorrect answer without revealing the answer. On a final correct answer the turn SHALL remain; on a final incorrect answer or timeout the turn SHALL change. `seleccionar-correcta` SHALL select the stored correct option and resolve as a correct answer. On a true/false question with only two options, `eliminar-dos` and `segundo-intento` SHALL be unavailable; only `seleccionar-correcta` SHALL remain available.
 
 #### Scenario: Two uses per player and one joker per question
 
@@ -105,6 +105,15 @@ Each player SHALL start with two uses of each of exactly three joker types: `eli
 - **THEN** the question resolves as failed, ordinary progress resets, and the other player becomes active
 
 *Provenance: [AUTHORED].*
+
+#### Scenario: True/false questions keep only the correct-option joker
+
+- **GIVEN** a true/false question is active with two options
+- **WHEN** the joker controls are shown
+- **THEN** `eliminar-dos` and `segundo-intento` are disabled
+- **AND** `seleccionar-correcta` remains available while the active player has uses left
+
+*Provenance: [AUTHORED] from the two-option questions in the 5000-row dataset.*
 
 ### Requirement: Canonical 300-question dataset
 

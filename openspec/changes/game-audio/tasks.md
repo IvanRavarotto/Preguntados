@@ -5,14 +5,14 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
 
 ## 1. Pin the constraint and the mapping
 
-- [ ] 1.1 Add `openspec/changes/game-audio/checks/check_audio.mjs` — a headless-Chrome DevTools Protocol driver that opens the
+- [x] 1.1 Add `openspec/changes/game-audio/checks/check_audio.mjs` — a headless-Chrome DevTools Protocol driver that opens the
       served game, starts a match, spins, and asserts via the `Network.requestWillBeSent` event that
       **no** request for an audio resource is made over a full match, that the served document
       contains no `<audio>` element and no `new Audio(...)` call, and that the game completes a spin,
       a correct answer, an incorrect answer and a timeout with no uncaught exception. Locates Edge or
       Chrome automatically, honours `CHROME_PATH`, and exits with a distinct code and a clear message
       when no Chromium binary is found.
-- [ ] 1.2 Add the DOM-free rate mapping as a pure function, exported for Node, and add
+- [x] 1.2 Add the DOM-free rate mapping as a pure function, exported for Node, and add
       `openspec/changes/game-audio/checks/check_audio_mapping.mjs` — a Node script that asserts the mapping is monotonic across
       `0%`, `25%`, `50%`, `75%` and `100%` of the spin, that it is finite and positive at every
       sample, and that it ends no earlier than the spin's duration.
@@ -21,21 +21,23 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
 
 ## 2. Build the audio layer
 
-- [ ] 2.1 Add the audio layer in `frontend/index.html`: create or resume the `AudioContext` inside
+- [x] 2.1 Add the audio layer in `frontend/index.html`: create or resume the `AudioContext` inside
       the spin control's click handler, and expose a small surface for the two sound families.
-- [ ] 2.2 Implement the spin sound: a filtered noise bed plus a ratchet of clicks, both scheduled on
+- [x] 2.2 Implement the spin sound: a filtered noise bed plus a ratchet of clicks, both scheduled on
       the audio clock from the pure rate mapping, following the wheel's `SPIN_MS` and easing. The
       graph SHALL stop when the wheel settles, and a second spin SHALL tear the previous graph down
       rather than stack one.
-- [ ] 2.3 Implement the three answer cues, one per outcome, each with its own synthesis parameters
+- [x] 2.3 Implement the three answer cues, one per outcome, each with its own synthesis parameters
       so the three are distinguishable. Fire them from `resolveCorrect`, `resolveFailure` and
       `onTimeout`.
-- [ ] 2.4 Fail soft everywhere: if the Web Audio API is missing, or the context cannot be created or
+- [x] 2.4 Fail soft everywhere: if the Web Audio API is missing, or the context cannot be created or
       resumed, or a node throws, the game continues unchanged and no exception escapes.
 
 ## 3. Verify
 
-- [ ] 3.1 Run `openspec/changes/game-audio/checks/check_audio.mjs` and `openspec/changes/game-audio/checks/check_audio_mapping.mjs`; record the output.
+- [x] 3.1 Run `openspec/changes/game-audio/checks/check_audio.mjs` and `openspec/changes/game-audio/checks/check_audio_mapping.mjs`; record the output.
+
+  Recorded: `AUDIO_MAPPING_PASS` (samples 18.0, 99.6, 123.1, 128.5, 130.0 ms; 47 clicks, last 4105.3 ms, next 4235.2 ms) and `AUDIO_CHECK_PASS` (context created on the gesture, one graph during the spin, zero at settle, one after the second spin, one cue per outcome, no audio request, no exception).
 - [ ] 3.2 Record the negative controls: a copy of the file with the spin sound's teardown removed
       MUST leave a live graph after the wheel settles; a copy that plays a cue on the wrong outcome
       MUST fire two cues for one outcome; a copy that loads an audio file MUST make an audio request

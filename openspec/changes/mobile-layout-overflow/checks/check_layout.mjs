@@ -219,7 +219,7 @@ const WHEEL_DETAIL = `(() => {
   const outside = labels.filter(l => l.x < wr.left - 0.5 || l.right > wr.right + 0.5 || l.y < wr.top - 0.5 || l.bottom > wr.bottom + 0.5).length;
   const spin = document.getElementById("spin").getBoundingClientRect();
   return {
-    wheel: { x: Math.round(wr.left), y: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height) },
+    wheel: { x: Math.round(wr.left), y: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height), right: Math.round(wr.right), bottom: Math.round(wr.bottom) },
     labelCount: labels.length,
     overlaps,
     outside,
@@ -232,14 +232,17 @@ const START_DETAIL = `(() => {
   if (details) details.open = true;
   const form = document.querySelector("#screen-start form");
   const submit = form ? form.querySelector('button[type="submit"], button:not([type])') : null;
-  const box = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) }; };
   const panel = document.getElementById("screen-start");
+  const scrollable = panel.scrollHeight > panel.clientHeight + 1;
+  if (submit && scrollable) submit.scrollIntoView({ block: "center", inline: "nearest" });
+  const box = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) }; };
   return {
     submit: box(submit),
     form: box(form),
     scrollH: panel.scrollHeight,
     clientH: panel.clientHeight,
-    scrollable: panel.scrollHeight > panel.clientHeight + 1,
+    scrollable,
+    scrollTop: Math.round(panel.scrollTop),
     innerH: window.innerHeight
   };
 })()`;
@@ -346,7 +349,7 @@ async function main() {
       const wheelDetail = await cdp.eval(WHEEL_DETAIL);
 
       await cdp.eval(`document.getElementById("spin").click()`);
-      await sleep(6500);
+      await sleep(9000);
       const question = await cdp.eval(MEASURE);
       const questionDetail = await cdp.eval(QUESTION_DETAIL);
 

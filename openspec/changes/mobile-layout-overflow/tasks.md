@@ -5,7 +5,7 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
 
 ## 1. Make the measurement reproducible
 
-- [ ] 1.1 Add `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` — a headless-Chrome DevTools Protocol driver that opens the
+- [x] 1.1 Add `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` — a headless-Chrome DevTools Protocol driver that opens the
       served game at each of the eight viewports (`320x568`, `360x640`, `390x844`, `414x896`,
       `768x1024`, `844x390`, `1440x900`, `1920x1080`), forces each of the four panels active in
       turn, and for every rendered descendant compares the bounding box against the viewport. It
@@ -18,30 +18,32 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
 
 ## 2. Stop clipping content
 
-- [ ] 2.1 Give the panel a bounded internal overflow so that content exceeding the viewport stays
+- [x] 2.1 Give the panel a bounded internal overflow so that content exceeding the viewport stays
       reachable, while the document still never scrolls. Keep `body { overflow: hidden }` and the
       panel container's `position: fixed; inset: 0` exactly as they are. A panel that fits its
       viewport SHALL NOT become scrollable.
-- [ ] 2.2 Re-run `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` and record which findings remain.
+- [x] 2.2 Re-run `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` and record which findings remain.
 
 ## 3. Make the layouts fit rather than scroll
 
-- [ ] 3.1 Start screen: compact the manual-authoring form so it fits a `320x568` viewport without
+- [x] 3.1 Start screen: compact the manual-authoring form so it fits a `320x568` viewport without
       scrolling — the option rows, the category control and the submit control — without removing
       any control or changing the `question-authoring` behaviour.
-- [ ] 3.2 Question screen: recover the vertical budget with **fluid sizing** — `clamp()` on the
+- [x] 3.2 Question screen: recover the vertical budget with **fluid sizing** — `clamp()` on the
       heading, the card's padding, the option cards' padding and the gaps, and the question text's
       box — so the four options, the feedback strip and the next-turn control fit a `320x568`
       viewport. The question text SHALL still render at `18px` or larger. The design's stacking rule
       (one option per row below `768px`) SHALL NOT be changed, and **no media query SHALL be added**:
       the stylesheet's declared breakpoints stay exactly `768px`, `1024px` and the wheel-only `640px`
       tier.
-- [ ] 3.3 Wheel screen: make the wheel's size fluid in the viewport's **height** — the smaller of
+- [x] 3.3 Wheel screen: make the wheel's size fluid in the viewport's **height** — the smaller of
       the current size and a `vh` share — and tighten the scoreboard and the turn chip, so the whole
       wheel and the spin control fit `844x390`. The wheel's size on a tall desktop viewport SHALL NOT
       change. The seven sectors SHALL stay visible and SHALL NOT overlap, and no media query SHALL
       be added.
-- [ ] 3.4 Re-run `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` and record that every viewport in the list now passes.
+- [x] 3.4 Re-run `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs` and record that every viewport in the list now passes.
+
+  Recorded: `LAYOUT_CHECK_PASS` across `320x568`, `360x640`, `390x844`, `414x896`, `768x1024`, `844x390`, `1440x900` and `1920x1080`; the three width breakpoints are unchanged (`1024px`, `768px`, `640px`).
 
 ## 4. Negative controls and regression
 

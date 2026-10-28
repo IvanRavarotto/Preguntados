@@ -12,9 +12,11 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
       SHALL fail when a panel clips a descendant it cannot scroll to, and SHALL report the offending
       element. Locates Edge or Chrome automatically, honours `CHROME_PATH`, and exits with a distinct
       code and a clear message when no Chromium binary is found.
-- [ ] 1.2 Run it against the shipped file and record the failures it reports: the start screen at
+- [x] 1.2 Run it against the shipped file and record the failures it reports: the start screen at
       every phone size and at `1440x900`, the question screen at `320x568` and `844x390`, and the
       wheel screen at `844x390`.
+      Recorded on `629ae26`: 15 assertions failed across the eight viewports, covering exactly those
+      start, question and wheel cases.
 
 ## 2. Stop clipping content
 
@@ -51,8 +53,11 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
       restored MUST fail at `320x568`; a copy with the options forced back to one column at `320px`
       MUST fail; a copy with the panel's internal overflow removed MUST fail wherever the content
       exceeds the viewport. A check that comes back green on a mutated file has no teeth.
-- [ ] 4.2 Run the full check set: `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs`, `openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs`,
+- [x] 4.2 Run the full check set: `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs`, `openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs`,
       `poetry run pytest`, `poetry run ruff check .`, `poetry run ruff format --check .`,
       `poetry run mypy app`. All green.
+      Recorded 2026-10-28: `LAYOUT_CHECK_PASS`, `TIMER_BAR_CHECK_PASS`, `AUDIO_CHECK_PASS`,
+      `AUDIO_MAPPING_PASS`, `SURRENDER_CHECK_PASS`, 39 pytest tests with 100% coverage, ruff and mypy
+      clean. The timer check now lives under `openspec/changes/archive/2026-10-22-turn-timer-bar-drain/`.
 - [ ] 4.3 Record the measured evidence in this file: the before and after overflow table for the
       eight viewports, the negative-control failures, and the command output of each check.

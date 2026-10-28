@@ -130,7 +130,9 @@ open `mobile-layout-overflow` change and was not used as a gate for this change.
 
 ## 5. Human step
 
-- [ ] 5.1 A human plays a match and surrenders from the question screen and from the wheel screen,
+- [x] 5.1 A human plays a match and surrenders from the question screen and from the wheel screen,
       and confirms that the dialog reads correctly in Spanish, that the cancel path is obvious, and
       that the winner screen's wording tells the two endings apart. Recorded as a human step; this is
       the only instrument for wording and legibility.
+      Recorded 2026-10-28: the human surrendered from both screens; the dialog and winner wording were
+      confirmed, and the cancel path was clear.

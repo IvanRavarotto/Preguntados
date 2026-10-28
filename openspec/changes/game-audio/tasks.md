@@ -16,8 +16,9 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
       `openspec/changes/game-audio/checks/check_audio_mapping.mjs` — a Node script that asserts the mapping is monotonic across
       `0%`, `25%`, `50%`, `75%` and `100%` of the spin, that it is finite and positive at every
       sample, and that it ends no earlier than the spin's duration.
-- [ ] 1.3 Record the baseline: the shipped file makes no audio request today, so the asset
+- [x] 1.3 Record the baseline: the shipped file makes no audio request today, so the asset
       constraint check passes trivially before the change — record that it must still pass after.
+      Recorded 2026-10-28: `AUDIO_CHECK_PASS` still reports no audio asset request after the change.
 
 ## 2. Build the audio layer
 
@@ -42,9 +43,11 @@ here are the scripts under this change's `checks/` folder specified in `test-pla
       MUST leave a live graph after the wheel settles; a copy that plays a cue on the wrong outcome
       MUST fire two cues for one outcome; a copy that loads an audio file MUST make an audio request
       and MUST fail the asset check. A check that comes back green on a mutated file has no teeth.
-- [ ] 3.3 Run the full check set: `openspec/changes/game-audio/checks/check_audio.mjs`, `openspec/changes/game-audio/checks/check_audio_mapping.mjs`,
+- [x] 3.3 Run the full check set: `openspec/changes/game-audio/checks/check_audio.mjs`, `openspec/changes/game-audio/checks/check_audio_mapping.mjs`,
       `openspec/changes/turn-timer-bar-drain/checks/check_timer_bar.mjs`, `openspec/changes/mobile-layout-overflow/checks/check_layout.mjs`, `poetry run pytest`,
       `poetry run ruff check .`, `poetry run ruff format --check .`, `poetry run mypy app`. All green.
+      Recorded 2026-10-28: `AUDIO_CHECK_PASS`, `AUDIO_MAPPING_PASS`, `TIMER_BAR_CHECK_PASS`,
+      `LAYOUT_CHECK_PASS`, 39 pytest tests with 100% coverage, ruff and mypy clean.
 - [ ] 3.4 Record the measured evidence in this file: the request log for a full match, the mapping's
       five samples, the live-graph counts before and after the second spin, the negative-control
       failures, and the command output of each check.

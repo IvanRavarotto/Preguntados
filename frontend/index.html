@@ -590,6 +590,12 @@
     <details id="authoring" class="authoring">
       <summary>Agregar una pregunta</summary>
       <form id="authoring-form" class="authoring-form" novalidate>
+        <label class="auth-field" for="q-type">Tipo de pregunta
+          <select id="q-type">
+            <option value="multiple_choice" selected>Múltiple opción</option>
+            <option value="true_false">Verdadero / Falso</option>
+          </select>
+        </label>
         <label class="auth-field" for="q-question">Pregunta
           <textarea id="q-question" maxlength="280" placeholder="Escribí la pregunta" required></textarea>
         </label>
@@ -602,11 +608,11 @@
             <input type="radio" id="correct-b" name="correct-option" value="b" aria-label="La opción B es la correcta" required>
             <input type="text" id="q-option-b" maxlength="120" placeholder="Opción B" aria-label="Opción B" required>
           </div>
-          <div class="auth-option">
+          <div class="auth-option" id="option-row-c">
             <input type="radio" id="correct-c" name="correct-option" value="c" aria-label="La opción C es la correcta" required>
             <input type="text" id="q-option-c" maxlength="120" placeholder="Opción C" aria-label="Opción C" required>
           </div>
-          <div class="auth-option">
+          <div class="auth-option" id="option-row-d">
             <input type="radio" id="correct-d" name="correct-option" value="d" aria-label="La opción D es la correcta" required>
             <input type="text" id="q-option-d" maxlength="120" placeholder="Opción D" aria-label="Opción D" required>
           </div>
@@ -965,7 +971,32 @@
   function initAuthoring() {
     const form = $("authoring-form");
     if (!form) return;
+    $("q-type").addEventListener("change", syncAuthoringType);
+    syncAuthoringType();
     form.addEventListener("submit", submitAuthoring);
+  }
+
+  function syncAuthoringType() {
+    const trueFalse = $("q-type").value === "true_false";
+    const optionA = $("q-option-a");
+    const optionB = $("q-option-b");
+    const optionC = $("q-option-c");
+    const optionD = $("q-option-d");
+    $("option-row-c").hidden = trueFalse;
+    $("option-row-d").hidden = trueFalse;
+    optionA.readOnly = trueFalse;
+    optionB.readOnly = trueFalse;
+    if (trueFalse) {
+      optionA.value = "Verdadero";
+      optionB.value = "Falso";
+      optionC.value = "";
+      optionD.value = "";
+      const selected = document.querySelector('input[name="correct-option"]:checked');
+      if (selected && (selected.value === "c" || selected.value === "d")) selected.checked = false;
+    } else {
+      if (optionA.value === "Verdadero") optionA.value = "";
+      if (optionB.value === "Falso") optionB.value = "";
+    }
   }
 
   function setAuthoringStatus(el, message, ok) {
@@ -974,10 +1005,11 @@
     el.hidden = !message;
   }
 
-  function authoringMessage(status, detail) {
+  function authoringMessage(status, detail, type) {
+    const optionCount = type === "true_false" ? "dos" : "cuatro";
     const byCode = {
-      missing_fields: "Completá la pregunta y las cuatro opciones.",
-      options_not_distinct: "Las cuatro opciones deben ser distintas.",
+      missing_fields: `Completá la pregunta y las ${optionCount} opciones.`,
+      options_not_distinct: `Las ${optionCount} opciones deben ser distintas.`,
       answer_not_in_options: "La respuesta correcta debe ser una de las opciones.",
       duplicate_question: "Ya existe una pregunta igual."
     };
@@ -987,16 +1019,18 @@
   }
 
   function authoringPayload(form) {
+    const type = $("q-type").value;
     const optionIds = { a: "q-option-a", b: "q-option-b", c: "q-option-c", d: "q-option-d" };
     const options = {};
     Object.keys(optionIds).forEach(letter => { options[letter] = $(optionIds[letter]).value.trim(); });
     const selected = form.querySelector('input[name="correct-option"]:checked');
     return {
       question: $("q-question").value.trim(),
+      question_type: type,
       option_a: options.a,
       option_b: options.b,
-      option_c: options.c,
-      option_d: options.d,
+      option_c: type === "true_false" ? "" : options.c,
+      option_d: type === "true_false" ? "" : options.d,
       correct_answer: selected ? options[selected.value] : ""
     };
   }
@@ -1023,7 +1057,7 @@
     try {
       const saved = await postAuthoring(`${API}/questions`, payload);
       if (!saved.ok) {
-        setAuthoringStatus(status, authoringMessage(saved.status, saved.data.detail), false);
+        setAuthoringStatus(status, authoringMessage(saved.status, saved.data.detail, payload.question_type), false);
         return;
       }
       const category = categories.find(cat => cat.name === saved.data.category);
@@ -1031,6 +1065,7 @@
       const confidence = Math.round(saved.data.confidence_score * 100);
       setAuthoringStatus(status, `Pregunta agregada (#${saved.data.id}) en ${label} (${confidence}% de confianza).`, true);
       form.reset();
+      syncAuthoringType();
     } catch (error) {
       setAuthoringStatus(status, "No se pudo contactar al servidor. Verificá la conexión.", false);
     } finally {

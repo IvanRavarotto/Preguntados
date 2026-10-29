@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Branch | `feature/support-true-false-authoring` |
-| State | Working tree only; no commit, no push. `HEAD` remains `a4a1c86`. |
+| State | Committed as `3d0e5e0`; QA artifacts and the checked task list are added in the follow-up commit. |
 | Track | 1 (Light) |
 | Scope | Code-review fixes B1, B2, N1, N2, N3 plus the repeated quality and mutation gates |
 
@@ -94,8 +94,10 @@ E       assert 400 == 201
 The four gate commands above were re-run after both restorations: 64 passed, 100.00% coverage, Ruff
 lint and format clean, mypy clean.
 
-## Pending
+## QA pass
 
-The browser F-series checks and the task 3.3 device/viewport QA pass are **pending**. They were not run
-as part of this dev pass; Docker containers were deliberately left untouched. `tasks.md` item 3.3 stays
-unchecked for QA.
+`qa-report.md` records the PASS verdict: the four gates above were re-run; the API was exercised on a
+separate local server at `127.0.0.1:8001` against the Docker PostgreSQL; and
+`checks/check_authoring_form.mjs` printed `AUTHORING_CHECK_PASS` across the form states, payloads,
+error copy, media queries, four viewports, and the two-option game render. Test rows were deleted
+afterwards, leaving the dataset at 5000 questions. The live Docker demo on port 8000 was not touched.

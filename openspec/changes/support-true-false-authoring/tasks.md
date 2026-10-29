@@ -72,9 +72,9 @@ task that introduces the behavior, not to a final task.
         the C/D-ignored test;
       - removing the `true_false` branch **should** redden the valid true/false persistence test.
       Restore both mutations and record the observed failures in the PR body.
-- [ ] 3.3 Browser/QA pass at `320x568`, `360x640`, `390x844`, `844x390`, and `1440x900`, with the
+- [x] 3.3 Browser/QA pass at `320x568`, `360x640`, `390x844`, `844x390`, and `1440x900`, with the
       authoring form open: submit one true/false question and one multiple-choice question, confirm
       each succeeds, confirm the true/false question is served in its category with two options and
       the game renders two options, and confirm every control is reachable with no horizontal
       overflow. Confirm the stylesheet's media queries are still exactly `768px`, `1024px`, and
-      `640px`.
+      `640px`. Evidence: `qa-report.md` and `checks/check_authoring_form.mjs` (`AUTHORING_CHECK_PASS`).

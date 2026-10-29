@@ -1,3 +1,5 @@
+from typing import Literal, cast
+
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -12,6 +14,7 @@ class QuestionCreate(BaseModel):
     option_c: str = ""
     option_d: str = ""
     correct_answer: str = ""
+    question_type: Literal["multiple_choice", "true_false"] = "multiple_choice"
 
 
 class QuestionValidationError(ValueError):
@@ -50,19 +53,27 @@ def question_exists(db: Session, question_text: str) -> bool:
     return any(normalize_question_text(row[0]) == target for row in existing_texts)
 
 
-def validate_question(payload: QuestionCreate, db: Session) -> dict[str, str]:
+def validate_question(payload: QuestionCreate, db: Session) -> dict[str, str | None]:
     """Validate and normalize a question submission without persisting it.
 
     The correct answer is matched by exact equality against the trimmed options,
-    which is the same representation stored on the record.
+    which is the same representation stored on the record. A true/false question
+    uses only options A and B; submitted options C and D are ignored and returned
+    as ``None``.
     """
     fields = _collect_fields(payload)
+    option_keys = (
+        ("option_a", "option_b")
+        if payload.question_type == "true_false"
+        else ("option_a", "option_b", "option_c", "option_d")
+    )
 
-    if any(not value for value in fields.values()):
+    required = ("question", "correct_answer", *option_keys)
+    if any(not fields[key] for key in required):
         raise QuestionValidationError("missing_fields")
 
-    options = [fields["option_a"], fields["option_b"], fields["option_c"], fields["option_d"]]
-    if len(set(options)) != 4:
+    options = [fields[key] for key in option_keys]
+    if len(set(options)) != len(options):
         raise QuestionValidationError("options_not_distinct")
 
     if fields["correct_answer"] not in options:
@@ -71,7 +82,11 @@ def validate_question(payload: QuestionCreate, db: Session) -> dict[str, str]:
     if question_exists(db, fields["question"]):
         raise QuestionValidationError("duplicate_question", status_code=409)
 
-    return fields
+    result: dict[str, str | None] = dict(fields)
+    if payload.question_type == "true_false":
+        result["option_c"] = None
+        result["option_d"] = None
+    return result
 
 
 def create_question(
@@ -82,9 +97,10 @@ def create_question(
 ) -> tuple[Question, Categorization]:
     """Validate the question, let the network pick its category, persist both, and return them."""
     fields = validate_question(payload, db)
-    result = classifier.classify(fields["question"])
+    question_text = cast(str, fields["question"])
+    result = classifier.classify(question_text)
     question = Question(
-        question=fields["question"],
+        question=question_text,
         option_a=fields["option_a"],
         option_b=fields["option_b"],
         option_c=fields["option_c"],

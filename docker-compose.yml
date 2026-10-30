@@ -21,6 +21,8 @@ services:
       target: runtime
     environment:
       DATABASE_URL: postgresql+psycopg2://admin:admin123@db:5432/questions_db
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
     ports:
       - "8000:8000"
     depends_on:

@@ -28,7 +28,7 @@ category, with no external AI service in the loop.
   `POST /questions/validate` route, and the `transformers`, `sentence-transformers`,
   `pydantic-ai-slim`, `requests`, `tqdm` and `pyarrow` dependencies.
 - **Added**: `app/neural_classifier.py` (the `MLPClassifier` network and a `QuestionClassifier` that
-  rebuilds the training-time TF-IDF vectorizer and loads the weights), `app/load_dataset.py` (loads the
+  loads the training-time TF-IDF vectorizer from `app/vectorizador.joblib` and the weights), `app/load_dataset.py` (loads the
   CSV and stores the network's category for each question), and `POST /classify`.
 - **Modified**: `POST /questions` no longer takes a category; the network assigns it and the response
   returns it with its probability. `option_c`/`option_d` become nullable because 1950 questions are
@@ -41,4 +41,3 @@ category, with no external AI service in the loop.
 
 - Retraining the network or changing its architecture; the shipped weights are used as they are.
 - Correcting the dataset rows the network disagrees with (15 of 5000).
-- Persisting the fitted vectorizer as an artifact; it is rebuilt deterministically at start-up.

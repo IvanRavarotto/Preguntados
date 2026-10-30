@@ -1,16 +1,22 @@
+import joblib
+import pandas as pd
 import pytest
 import torch
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 from app.categories import category_name_for_label, get_category_names
-from app.load_dataset import read_dataset
+from app.load_dataset import DATASET_PATH, read_dataset
 from app.neural_classifier import (
-    RANDOM_STATE,
-    TEST_SIZE,
+    CLASS_NAMES,
     MLPClassifier,
     QuestionClassifier,
     get_classifier,
 )
+
+# Partición con la que se entrenaron modelo.pth y vectorizador.joblib.
+TEST_SIZE = 0.2
+RANDOM_STATE = 42
 
 
 def test_classify_endpoint_returns_category_and_probabilities(client):
@@ -68,6 +74,20 @@ def test_weights_that_do_not_match_the_vocabulary_are_rejected(tmp_path):
 
     with pytest.raises(ValueError, match="10 términos"):
         QuestionClassifier(weights_path=weights)
+
+
+def test_a_vectorizer_file_with_another_object_is_rejected(tmp_path):
+    vectorizer = tmp_path / "otro.joblib"
+    joblib.dump({"no": "es un vectorizador"}, vectorizer)
+
+    with pytest.raises(TypeError, match="otro.joblib"):
+        QuestionClassifier(vectorizer_path=vectorizer)
+
+
+def test_class_order_matches_the_training_label_encoder():
+    labels = LabelEncoder().fit(pd.read_csv(DATASET_PATH)["category"]).classes_
+
+    assert [category_name_for_label(label) for label in labels] == CLASS_NAMES
 
 
 def test_dataset_labels_map_to_api_category_names():

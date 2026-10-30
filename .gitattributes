@@ -23,6 +23,7 @@
 *.woff binary
 *.woff2 binary
 *.pth binary
+*.joblib binary
 
 # ---------------------------------------------------------------------
 # Archivos byte-exactos. -text significa "guarda y devuelve los bytes

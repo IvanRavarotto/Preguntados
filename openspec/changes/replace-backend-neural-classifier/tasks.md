@@ -2,6 +2,8 @@
 
 ## 1. Model and dataset
 
+- [x] 1.0 Load the exported vectorizer from `app/vectorizador.joblib`, re-exported with scikit-learn
+      1.9.1 by `scripts/export_vectorizer.py` and verified identical to the original 1.6.1 export.
 - [x] 1.1 Rebuild the training-time TF-IDF vectorizer from `app/trivia_latam_argentina.csv` (80/20
       stratified split, seed 42, `max_features=5000`, English stop words) and confirm its vocabulary
       matches the 3360 inputs of `app/modelo.pth`.

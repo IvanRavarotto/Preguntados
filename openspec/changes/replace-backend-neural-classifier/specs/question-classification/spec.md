@@ -7,7 +7,7 @@
 The system SHALL assign every question one of the six categories — `arte`, `ciencia`, `deportes`,
 `entretenimiento`, `geografia`, `historia` — using the `MLPClassifier` network whose weights are in
 `app/modelo.pth`, applied to the TF-IDF vector of the question text. The vectorizer SHALL be the one the
-weights were trained with, and the system SHALL refuse to start classifying when the weights' input size
+weights were trained with, loaded from `app/vectorizador.joblib`, and the system SHALL refuse to start classifying when the weights' input size
 does not match the vectorizer's vocabulary.
 
 #### Scenario: Classifying a question

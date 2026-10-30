@@ -2,32 +2,30 @@
 Clasificador de preguntas basado en una red neuronal multicapa (MLP).
 
 La red se entrenó sobre vectores TF-IDF de las preguntas de
-``trivia_latam_argentina.csv`` y sus pesos están en ``modelo.pth``. El archivo
-de pesos no incluye el vectorizador, así que se reconstruye exactamente igual
-que en el entrenamiento: la misma partición 80/20 estratificada con semilla 42
-y el mismo ``TfidfVectorizer`` ajustado solo sobre la parte de entrenamiento.
+``trivia_latam_argentina.csv``. Sus pesos están en ``modelo.pth`` y el
+vectorizador ajustado en esa misma preparación, en ``vectorizador.joblib``:
+son una pareja, porque cada columna de la entrada de la red corresponde a una
+palabra concreta del vocabulario de ese vectorizador.
 """
 
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-import pandas as pd
+import joblib
 import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from torch import nn
 
-from app.categories import category_name_for_label
+from app.categories import get_category_names
 
 APP_DIR = Path(__file__).resolve().parent
-DATASET_PATH = APP_DIR / "trivia_latam_argentina.csv"
 WEIGHTS_PATH = APP_DIR / "modelo.pth"
+VECTORIZER_PATH = APP_DIR / "vectorizador.joblib"
 
-TEST_SIZE = 0.2
-RANDOM_STATE = 42
-MAX_FEATURES = 5000
+# El LabelEncoder del entrenamiento ordena las etiquetas alfabéticamente, y
+# quitar las tildes ("Geografía" -> "geografia") no altera ese orden.
+CLASS_NAMES = sorted(get_category_names())
 
 
 class MLPClassifier(nn.Module):
@@ -59,23 +57,12 @@ class ClassificationResult:
 
 
 class QuestionClassifier:
-    """Carga los pesos entrenados y clasifica textos de preguntas en una categoría."""
+    """Carga el vectorizador y los pesos entrenados y clasifica textos de preguntas."""
 
-    def __init__(self, dataset_path: Path = DATASET_PATH, weights_path: Path = WEIGHTS_PATH):
-        dataset = pd.read_csv(dataset_path)
-        label_encoder = LabelEncoder()
-        labels = label_encoder.fit_transform(dataset["category"])
-        train_texts, _, _, _ = train_test_split(
-            dataset["question"].values,
-            labels,
-            test_size=TEST_SIZE,
-            random_state=RANDOM_STATE,
-            stratify=labels,
-        )
-
-        self.vectorizer = TfidfVectorizer(max_features=MAX_FEATURES, stop_words="english")
-        self.vectorizer.fit(train_texts)
-        self.category_names = [category_name_for_label(label) for label in label_encoder.classes_]
+    def __init__(self, vectorizer_path: Path = VECTORIZER_PATH, weights_path: Path = WEIGHTS_PATH):
+        self.vectorizer = joblib.load(vectorizer_path)
+        if not isinstance(self.vectorizer, TfidfVectorizer):
+            raise TypeError(f"{vectorizer_path.name} no contiene un TfidfVectorizer")
 
         state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
         input_dim = state_dict["network.0.weight"].shape[1]
@@ -83,9 +70,10 @@ class QuestionClassifier:
         if input_dim != vocabulary_size:
             raise ValueError(
                 f"Los pesos esperan {input_dim} términos TF-IDF y el vectorizador "
-                f"reconstruido tiene {vocabulary_size}"
+                f"tiene {vocabulary_size}"
             )
 
+        self.category_names = CLASS_NAMES
         self.model = MLPClassifier(input_dim=input_dim, num_classes=len(self.category_names))
         self.model.load_state_dict(state_dict)
         self.model.eval()

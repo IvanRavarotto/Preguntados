@@ -243,6 +243,15 @@ PENDIENTE
 [ ] Antes de abrir un PR, renombrar la rama a
     feature/replace-backend-neural-classifier.
 
+ACTUALIZACION 2026-10-29
+[X] La API ya no reconstruye el vectorizador: carga app/vectorizador.joblib.
+    El archivo exportado desde el notebook (scikit-learn 1.6.1) se regenero
+    con 1.9.1 (scripts/export_vectorizer.py) y es identico: mismo
+    vocabulario, mismos IDF, mismos vectores. Mismos resultados: 4985/5000.
+[X] modelo.pth y vectorizador.joblib son una pareja: si se reentrena,
+    guardar los dos en la misma ejecucion. El CSV ya no afecta la red.
+[X] 40 tests OK, cobertura 100%, ruff y mypy OK (en Docker).
+
 COMANDOS
   docker compose up -d --build            (db + api en http://localhost:8000)
   docker compose --profile test run --rm tests

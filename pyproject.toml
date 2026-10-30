@@ -13,9 +13,10 @@ dependencies = [
     "psycopg2-binary (>=2.9.13,<3.0.0)",
     "pandas (>=3.0.6,<4.0.0)",
     "torch (>=2.14.0,<3.0.0)",
-    # El vectorizador TF-IDF se reconstruye al arrancar: otra versión menor podría
-    # tokenizar distinto y desalinear la entrada de la red.
-    "scikit-learn (>=1.9.1,<1.10.0)"
+    # app/vectorizador.joblib se guardó con scikit-learn 1.9.1: un objeto serializado
+    # solo es fiable con la misma versión menor que lo escribió.
+    "scikit-learn (>=1.9.1,<1.10.0)",
+    "joblib (>=1.6.0,<2.0.0)"
 ]
 
 # La red solo hace inferencia en CPU; los wheels CPU evitan descargar CUDA en la imagen.

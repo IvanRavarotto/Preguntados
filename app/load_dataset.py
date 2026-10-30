@@ -21,8 +21,9 @@ from sqlalchemy.orm import Session
 from app.categories import category_name_for_label
 from app.database import Base, SessionLocal, engine
 from app.models import Categorization, Question
-from app.neural_classifier import DATASET_PATH, QuestionClassifier, get_classifier
+from app.neural_classifier import QuestionClassifier, get_classifier
 
+DATASET_PATH = Path(__file__).resolve().parent / "trivia_latam_argentina.csv"
 SOURCE_NAME = DATASET_PATH.name
 VALID_OPTION_COUNTS = {2, 4}
 

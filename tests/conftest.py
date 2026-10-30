@@ -8,6 +8,8 @@ dataset and weights shipped in ``app/``.
 
 from __future__ import annotations
 
+import ipaddress
+import socket
 from collections.abc import Iterator
 
 import pytest
@@ -16,9 +18,123 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app import main
+from app import ai_validation, main
 from app.database import Base, get_db
 from app.models import Categorization, Question
+
+OUTBOUND_NETWORK_GUARD = "outbound network is blocked in tests"
+
+
+class OutboundNetworkBlocked(BaseException):
+    """Raised by the test egress guard.
+
+    It derives from ``BaseException`` so application error mapping cannot turn a
+    test that reached the network into a normal ``502`` response.
+    """
+
+
+def _is_loopback_host(host) -> bool:
+    if not isinstance(host, str):
+        return False
+    if host == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+def _is_loopback(address) -> bool:
+    if not isinstance(address, tuple) or len(address) < 2:
+        return False
+    return _is_loopback_host(address[0])
+
+
+@pytest.fixture(scope="session", autouse=True)
+def block_outbound_network() -> Iterator[None]:
+    """Fail any test that opens an outbound socket.
+
+    The validation suite fakes the provider call; a real connection would mean
+    the fake is not in place. Loopback stays open because the Windows asyncio
+    event loop used by the in-process TestClient creates its self-pipe with a
+    local socketpair.
+    """
+    original_connect = socket.socket.connect
+    original_connect_ex = socket.socket.connect_ex
+    original_create_connection = socket.create_connection
+    original_getaddrinfo = socket.getaddrinfo
+
+    def _guard_method(original, message: str):
+        def _connect(sock, address):
+            if not _is_loopback(address):
+                raise OutboundNetworkBlocked(message)
+            return original(sock, address)
+
+        return _connect
+
+    def _guard_create_connection(original, message: str):
+        def _create(address, *args, **kwargs):
+            if not _is_loopback(address):
+                raise OutboundNetworkBlocked(message)
+            return original(address, *args, **kwargs)
+
+        return _create
+
+    socket.socket.connect = _guard_method(
+        original_connect, f"{OUTBOUND_NETWORK_GUARD}: socket.connect"
+    )
+    socket.socket.connect_ex = _guard_method(
+        original_connect_ex, f"{OUTBOUND_NETWORK_GUARD}: socket.connect_ex"
+    )
+    socket.create_connection = _guard_create_connection(
+        original_create_connection, f"{OUTBOUND_NETWORK_GUARD}: socket.create_connection"
+    )
+
+    def _guarded_getaddrinfo(host, port, *args, **kwargs):
+        if not _is_loopback_host(host):
+            raise OutboundNetworkBlocked(f"{OUTBOUND_NETWORK_GUARD}: socket.getaddrinfo")
+        return original_getaddrinfo(host, port, *args, **kwargs)
+
+    socket.getaddrinfo = _guarded_getaddrinfo
+    try:
+        yield
+    finally:
+        socket.socket.connect = original_connect
+        socket.socket.connect_ex = original_connect_ex
+        socket.create_connection = original_create_connection
+        socket.getaddrinfo = original_getaddrinfo
+
+
+@pytest.fixture(autouse=True)
+def ai_env(monkeypatch) -> None:
+    """Keep the developer's real key out of the suite and supply a dummy one."""
+    monkeypatch.setattr(ai_validation, "_load_env", lambda: None)
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+
+
+@pytest.fixture(autouse=True)
+def no_real_ai_provider(monkeypatch) -> None:
+    """Fail loudly when a test reaches the provider without installing a fake."""
+
+    def _fail(*args, **kwargs):
+        raise AssertionError("the AI provider must be faked in tests")
+
+    monkeypatch.setattr(ai_validation, "_invoke_agent", _fail)
+
+
+@pytest.fixture
+def fake_verdict(monkeypatch):
+    """Install a provider fake that returns a chosen status and records prompts."""
+
+    def _set(status: str, reasons: list[str] | None = None, calls: list | None = None) -> None:
+        def _invoke(agent, prompt):
+            if calls is not None:
+                calls.append(prompt)
+            return ai_validation.SubmitVerdict(status=status, reasons=reasons or [])
+
+        monkeypatch.setattr(ai_validation, "_invoke_agent", _invoke)
+
+    return _set
 
 
 @pytest.fixture

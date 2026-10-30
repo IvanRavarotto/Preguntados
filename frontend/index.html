@@ -1041,20 +1041,46 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    const data = await response.json().catch(() => ({}));
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new Error("invalid_json_response");
+    }
     return { ok: response.ok, status: response.status, data };
   }
 
-  /* The server's neural network decides the category when the question is saved. */
+  /* The AI verdict decides whether to save; the server's network assigns the category on save. */
   async function submitAuthoring(event) {
     event.preventDefault();
     const form = $("authoring-form");
     const status = $("authoring-status");
     const button = form.querySelector(".auth-submit");
     const payload = authoringPayload(form);
-    setAuthoringStatus(status, "Guardando y categorizando…", true);
+    setAuthoringStatus(status, "Verificando con IA…", true);
     button.disabled = true;
     try {
+      const validation = await postAuthoring(`${API}/questions/validate`, payload);
+      if (validation.ok && validation.data.status === "implausible") {
+        const reasons = (validation.data.reasons || []).join(" ");
+        setAuthoringStatus(status, `La IA marcó la pregunta como implausible: ${reasons}`, false);
+        return;
+      }
+      if (!validation.ok && validation.status !== 502 && validation.status !== 503) {
+        setAuthoringStatus(status, authoringMessage(validation.status, validation.data.detail, payload.question_type), false);
+        return;
+      }
+      if (validation.ok && validation.data.status !== "valid" && validation.data.status !== "uncertain") {
+        setAuthoringStatus(status, authoringMessage(validation.status, validation.data.detail, payload.question_type), false);
+        return;
+      }
+      let note = "";
+      if (validation.ok && validation.data.status === "uncertain") {
+        const reasons = (validation.data.reasons || []).join(" ");
+        note = ` La IA no pudo confirmarla. Motivos: ${reasons}`;
+      } else if (!validation.ok) {
+        note = " No se pudo verificar con IA; se guardó igual.";
+      }
       const saved = await postAuthoring(`${API}/questions`, payload);
       if (!saved.ok) {
         setAuthoringStatus(status, authoringMessage(saved.status, saved.data.detail, payload.question_type), false);
@@ -1063,7 +1089,7 @@
       const category = categories.find(cat => cat.name === saved.data.category);
       const label = category ? category.label : saved.data.category;
       const confidence = Math.round(saved.data.confidence_score * 100);
-      setAuthoringStatus(status, `Pregunta agregada (#${saved.data.id}) en ${label} (${confidence}% de confianza).`, true);
+      setAuthoringStatus(status, `Pregunta agregada (#${saved.data.id}) en ${label} (${confidence}% de confianza).${note}`, true);
       form.reset();
       syncAuthoringType();
     } catch (error) {

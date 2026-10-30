@@ -4,6 +4,8 @@
 - **Date**: 2026-10-26
 - **Change**: `replace-backend-neural-classifier`
 - **Supersedes**: ADR-002
+- **Superseded in part by**: ADR-005, for the removal of Gemini on the authoring path only. The
+  categorization decision in this record stands.
 
 ## Context
 

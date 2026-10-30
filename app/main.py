@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -6,11 +7,17 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.ai_validation import AIValidationError, validate_question_content
 from app.categories import CATEGORIES
 from app.database import engine, get_db
 from app.models import Base, Categorization, Question
 from app.neural_classifier import QuestionClassifier, get_classifier
-from app.question_authoring import QuestionCreate, QuestionValidationError, create_question
+from app.question_authoring import (
+    QuestionCreate,
+    QuestionValidationError,
+    create_question,
+    validate_question,
+)
 
 app = FastAPI(title="Questions API", version="2.0.0")
 
@@ -68,6 +75,32 @@ def classify_question(
         "category": result.category_name,
         "confidence_score": result.confidence_score,
         "scores": result.all_scores,
+    }
+
+
+@app.post("/questions/validate")
+def validate_authored_question(payload: QuestionCreate, db: Session = Depends(get_db)):
+    try:
+        fields = validate_question(payload, db)
+        option_keys = (
+            ("option_a", "option_b")
+            if payload.question_type == "true_false"
+            else ("option_a", "option_b", "option_c", "option_d")
+        )
+        verdict = validate_question_content(
+            question_type=payload.question_type,
+            question=cast(str, fields["question"]),
+            options=[cast(str, fields[key]) for key in option_keys],
+            correct_answer=cast(str, fields["correct_answer"]),
+        )
+    except QuestionValidationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+    except AIValidationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+    return {
+        "plausible": verdict.status == "valid",
+        "status": verdict.status,
+        "reasons": verdict.reasons,
     }
 
 

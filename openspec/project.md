@@ -13,7 +13,7 @@ The initial product is a local demonstration, not an authenticated or persistent
 | Language and version | Python 3.14.7 for the API and data tools; browser JavaScript is ES2020-compatible and is checked with Node.js 24 |
 | Pinned by | `pyproject.toml` and `poetry.lock`; PostgreSQL is pinned to `postgres:15` in `docker-compose.yml` |
 | One command to build | `docker compose build` (API image from `Dockerfile`; locally, `poetry install` also works). The frontend has no bundling or compilation step |
-| One command to test | `docker compose --profile test run --rm tests` (or `poetry run pytest`) — a hermetic suite over the HTTP contract, run against an in-memory SQLite database with the real neural classifier |
+| One command to test | `docker compose --profile test run --rm tests` (or `poetry run pytest`) — a hermetic suite over the HTTP contract, run against an in-memory SQLite database with the real neural classifier and a faked Gemini provider call |
 | One command to lint and format | `poetry run ruff check .` and `poetry run ruff format --check .` (Ruff, configured in `pyproject.toml`) |
 | One command to type-check | `poetry run mypy app` (mypy, configured in `pyproject.toml`) |
 | Coverage bar | `poetry run pytest --cov=app --cov-fail-under=80` — 80% of statements across every module in `app/` (the `tests` Compose service runs exactly this) |
@@ -27,9 +27,10 @@ these commands, or explicitly escalate the gap before implementation.
 - **Web / API**: FastAPI `>=0.141.1,<0.142.0` owns HTTP routing, request validation, JSON serialization, and the root static-page response. Uvicorn `>=0.53.0,<0.54.0` runs the ASGI application on port `8000`.
 - **Data access**: SQLAlchemy `>=2.1.0,<3.0.0` owns ORM models and sessions; `psycopg2-binary` `>=2.9.13,<3.0.0` is the PostgreSQL driver. The API owns database reads and startup table creation.
 - **Question classification**: PyTorch `>=2.14.0,<3.0.0` (CPU-only wheel from the `pytorch-cpu` Poetry source) runs `MLPClassifier(nn.Module)` in `app.neural_classifier`, with the trained weights in `app/modelo.pth`. scikit-learn `>=1.9.1,<1.10.0` rebuilds the training-time TF-IDF vectorizer from `app/trivia_latam_argentina.csv` at start-up; it is pinned to the minor version the weights were trained with. The network assigns the category of every loaded and every authored question. See `docs/adr/ADR-004-mlp-question-classifier.md`.
+- **Question validation**: `pydantic-ai-slim[google]` `>=2.56.0,<3.0.0` (pulling `google-genai`) calls Google Gemini through `GoogleModel` and `GoogleProvider` in `app.ai_validation`. `POST /questions/validate` uses it to judge whether an authored question is well formed, whether its options and distractors are relevant and plausible, and whether the marked answer is correct. The key is `GEMINI_API_KEY`; the model is `GEMINI_MODEL` with a fallback chain. The model returns a verdict only; it does not categorize, persist, or rewrite options. See `docs/adr/ADR-005-restore-gemini-semantic-validation.md`.
 - **Background work**: There is no server-side worker or scheduler. `app.load_dataset` is the one-off loader; the API container runs it with `--if-missing` before Uvicorn starts.
 - **Frontend**: `frontend/index.html` is a static HTML document with embedded CSS and vanilla JavaScript. It has no framework, bundler, or generated asset pipeline. The frontend owns the wheel animation, player names, turn indicator, 20-second timer, shuffled options, score, winner screen, and rematch flow.
-- **Testing**: pytest `>=9.1.1,<10.0.0` and `pytest-cov` back `tests/`, which drives the FastAPI app through `TestClient` against an isolated in-memory SQLite database and uses the real classifier, so the suite needs no network and no API key. `httpx` provides the test-client transport, `ruff` the lint/format gate, and `mypy` the type-check gate — all dev-only dependencies. Pandas reads the dataset CSV for the loader and the classifier, not for the game UI.
+- **Testing**: pytest `>=9.1.1,<10.0.0` and `pytest-cov` back `tests/`, which drives the FastAPI app through `TestClient` against an isolated in-memory SQLite database and uses the real classifier, so the suite needs no network and no API key. The Gemini provider call is faked below the key check and the model fallback loop, so the missing-key and provider-failure paths still run as real code while no test reaches Google. `httpx` provides the test-client transport, `ruff` the lint/format gate, and `mypy` the type-check gate — all dev-only dependencies. Pandas reads the dataset CSV for the loader and the classifier, not for the game UI.
 
 The dataset is `app/trivia_latam_argentina.csv`: 5000 questions, about 833 per category, 3050 with four options and 1950 true/false questions with two (`option_c` and `option_d` are `NULL`). Every question has one automatic categorization produced by the network. The answer is stored as the correct option text.
 
@@ -53,6 +54,7 @@ The API reads its connection URL from `DATABASE_URL` (Compose sets it to the `db
 - The canonical existing route is plural: `GET /questions/{question_id}`. The singular `/question/{id}` path in the initial request is not the route currently implemented and must not be introduced without an approved API change.
 - The current frontend obtains a category batch from `GET /questions/category/{category_name}?limit=200`; it also uses `GET /categories` and `GET /categories/stats`.
 - `POST /questions` creates an authored question (text, four options, correct answer); the network assigns its category and the response is `{id, category, confidence_score}`. `POST /classify` returns the network's `category`, `confidence_score` and per-category `scores` for a `question` without storing it.
+- `POST /questions/validate` takes the same body as `POST /questions`, applies the same structural rules (`missing_fields`, `options_not_distinct`, `answer_not_in_options`, `duplicate_question`), and returns `{plausible, status, reasons}` with `status` `valid`, `implausible`, or `uncertain`. It persists nothing and assigns no category. A missing key is `503` `gemini_api_key_missing`; a failed provider is `502` `ai_provider_error`. The authoring form validates first and saves through `POST /questions`.
 - The API root `GET /` serves the game. Interactive API documentation is available at `GET /docs`.
 
 Verified response from `GET http://localhost:8000/questions/category/geografia?limit=1`:
@@ -85,9 +87,9 @@ Authentication, remote multiplayer, accounts, and durable score history are outs
 
 ## Secrets
 
-- **Where they live**: Development database credentials are defined by the local Docker Compose configuration and are currently consumed by the local SQLAlchemy connection. The application uses no other secret; the neural network runs locally.
-- **How a process obtains one**: Docker Compose supplies the local PostgreSQL configuration to the database container. The API container receives `DATABASE_URL` from Compose; production deployment must replace this local/static configuration with environment-backed secret injection or a managed secret store.
-- **Never**: production credentials, tokens, or private model credentials in source, logs, errors, test fixtures, manifests, or build artifacts. Local development credentials must never be reused outside this machine.
+- **Where they live**: Development database credentials are defined by the local Docker Compose configuration and are currently consumed by the local SQLAlchemy connection. `GEMINI_API_KEY` is held in the local `.env` (git-ignored) or the process environment and is consumed by `app.ai_validation`; `GEMINI_MODEL` is optional configuration, not a secret. The neural network runs locally and needs no credential.
+- **How a process obtains one**: Docker Compose supplies the local PostgreSQL configuration to the database container and passes `GEMINI_API_KEY` and `GEMINI_MODEL` to the `api` container from the shell environment or the Compose `.env`. The API container receives `DATABASE_URL` from Compose; production deployment must replace this local/static configuration with environment-backed secret injection or a managed secret store. The `.env` loader in `app.ai_validation` fills only variables that are not already set and never overrides the real environment.
+- **Never**: production credentials, tokens, private model credentials, or the Gemini key in source, logs, errors, responses, test fixtures, manifests, or build artifacts. The key is never returned by an endpoint and never written to a log line. Local development credentials must never be reused outside this machine.
 
 The current local credential arrangement is a development-only exception and must be recorded as an ADR before any deployment beyond the classroom/local setup.
 
@@ -96,7 +98,8 @@ The current local credential arrangement is a development-only exception and mus
 | Service | Owns | Talks to | Over |
 |---|---|---|---|
 | Browser game (`frontend/index.html`) | Player names, wheel, turns, timer, options, score, winner and rematch state | FastAPI API | HTTP to `localhost:8000` |
-| FastAPI application (`app/main.py`, Docker service `api`) | Routes, request validation, JSON responses, static frontend delivery, startup table creation, question classification with the MLP network | PostgreSQL through SQLAlchemy | HTTP/JSON on port `8000`; SQL on port `5432` |
+| FastAPI application (`app/main.py`, Docker service `api`) | Routes, request validation, JSON responses, static frontend delivery, startup table creation, question classification with the MLP network, semantic validation through Gemini for authored questions | PostgreSQL through SQLAlchemy; Google Gemini for `POST /questions/validate` | HTTP/JSON on port `8000`; SQL on port `5432`; HTTPS to Gemini, outbound only |
+| Google Gemini API (`generativelanguage.googleapis.com`) | Returns a `valid` / `implausible` / `uncertain` verdict over question clarity, option relevance, distractor quality, and marked-answer correctness | `app.ai_validation` inside the FastAPI process | HTTPS through `google-genai`; API key in the request, never in a response |
 | PostgreSQL 15 (`questions_db`) | Questions, options, answers, source metadata, and categorization records | Docker volume `postgres_data` | PostgreSQL protocol on `localhost:5432` |
 | Dataset loader (`app.load_dataset`) | Loading `app/trivia_latam_argentina.csv` and storing the network's categories | PostgreSQL | Run by the `api` container at start-up, or `docker compose exec api python -m app.load_dataset`; not a web service |
 
@@ -111,6 +114,7 @@ The current local credential arrangement is a development-only exception and mus
 ## Observability
 
 - **Log shape**: The loader summary, Uvicorn access logs and application errors go to the `api` container's console (`docker compose logs api`).
+- **AI validation failures**: A missing key or an exhausted provider fallback appears as `503 gemini_api_key_missing` or `502 ai_provider_error` in the response and in the Uvicorn access log. Neither the key nor the prompt is logged.
 - **Metrics**: No operational metrics collector is configured. `GET /categories/stats` exposes product/data counts only and must not be treated as infrastructure monitoring.
 - **Correlation id**: None. A request or game-session correlation id must be added before structured logging or multi-user deployment is introduced.
 
@@ -132,6 +136,7 @@ The current local credential arrangement is a development-only exception and mus
 - Automated test, lint, format, and type-check commands and an 80% coverage bar are provided by the `quality-toolchain` capability; the offline data tools are excluded from coverage by design.
 - The current local database connection is development-oriented and must be replaced with environment-backed configuration before production use.
 - The current API route is `/questions/{id}`, not the initially suggested singular `/question/{id}` route.
+- Question authoring depends on Google Gemini for its semantic check. An `implausible` verdict blocks the save and shows the reasons; an `uncertain` verdict saves with a note. Without `GEMINI_API_KEY`, or when the provider is unavailable, the form still saves and shows that the question could not be verified. The game itself never calls Gemini.
 
 ## Recorded exceptions
 
@@ -141,3 +146,4 @@ The current local credential arrangement is a development-only exception and mus
 | No authentication, persistence, or remote multiplayer | Initial MVP scope | Must be recorded if the scope changes |
 | Automated lint, type-check, behavioral-test, and coverage toolchain added as dev-only dependencies | Approved by the `add-quality-toolchain` change | `docs/adr/ADR-003-pytest-ruff-mypy-toolchain.md` |
 | Existing plural API route differs from the initially suggested singular route | Preserve the verified existing route; adding an alias requires a change proposal | Must be recorded before an API contract change |
+| External LLM on the authoring request path (`pydantic-ai-slim[google]`, `GEMINI_API_KEY`, egress to Google) | Approved by the `restore-gemini-question-validation` change, with the save allowed when the provider is unavailable | `docs/adr/ADR-005-restore-gemini-semantic-validation.md` |

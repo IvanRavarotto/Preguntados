@@ -1,9 +1,13 @@
 # Deploy the full game
 
-This deploys the complete app: the FastAPI API, PostgreSQL, the 5000-question dataset and the
-PyTorch MLP classifier. The frontend is served by the same FastAPI process, so there is **no CORS
-setup**. The container entrypoint runs `python -m app.load_dataset --if-missing` before starting
-uvicorn, so the first boot fills the database and later boots reuse it.
+This deploys the complete app: the FastAPI API, PostgreSQL, the 5000-question dataset, the PyTorch
+MLP classifier and the Gemini semantic check for authored questions. The frontend is served by the
+same FastAPI process, so there is **no CORS setup**. The container entrypoint runs
+`python -m app.load_dataset --if-missing` before starting uvicorn, so the first boot fills the
+database and later boots reuse it.
+
+`GEMINI_API_KEY` enables the authoring check. Without it, or if Gemini is unreachable, the form still
+saves the question and shows that it could not be verified; the game never calls Gemini.
 
 Repository: `https://github.com/IvanRavarotto/Preguntados` (branch `main`).
 
@@ -13,9 +17,11 @@ The repository includes `render.yaml`, which provisions the web service and a Po
 
 1. In Render: **New +** -> **Blueprint**.
 2. Connect the `Preguntados` repository and apply the blueprint.
-3. Render creates `preguntados-db` and the `preguntados` web service, injects `DATABASE_URL`, and
+3. When Render prompts for the secret, enter `GEMINI_API_KEY`. The blueprint marks it `sync: false`,
+   so the value is never stored in the repository.
+4. Render creates `preguntados-db` and the `preguntados` web service, injects `DATABASE_URL`, and
    runs the Dockerfile.
-4. Open the web service URL when the deploy finishes. The first boot loads the 5000 questions.
+5. Open the web service URL when the deploy finishes. The first boot loads the 5000 questions.
 
 Free-plan caveats:
 
@@ -32,8 +38,9 @@ Free-plan caveats:
 2. Add **PostgreSQL** to the project.
 3. In the web service, add a variable `DATABASE_URL` with the value
    `${{Postgres.DATABASE_URL}}` (Railway's reference syntax).
-4. **Settings** -> **Networking** -> **Generate Domain**.
-5. Deploy. The first boot loads the dataset.
+4. Add `GEMINI_API_KEY` as a service variable.
+5. **Settings** -> **Networking** -> **Generate Domain**.
+6. Deploy. The first boot loads the dataset.
 
 Railway gives more memory than Render's free plan; 1 GB is a comfortable target.
 
@@ -44,6 +51,7 @@ fly auth login
 fly launch --dockerfile Dockerfile --name preguntados --region gru
 fly postgres create --name preguntados-db --region gru
 fly postgres attach preguntados-db -a preguntados
+fly secrets set GEMINI_API_KEY=<your-key> -a preguntados
 fly scale memory 1024
 fly deploy
 ```
@@ -62,7 +70,7 @@ This is the easiest way to get 16 GB of RAM for free, at the cost of using two s
 
 1. Create a free PostgreSQL at Neon and copy its connection string.
 2. Create a **Docker** Space on Hugging Face and push this repository to the Space remote.
-3. In the Space settings, add `DATABASE_URL` (Neon) and `PORT=7860`.
+3. In the Space settings, add `DATABASE_URL` (Neon), `GEMINI_API_KEY` and `PORT=7860`.
 4. Hugging Face may require the container to run as a non-root user; if it rejects the image, add a
    `USER 1000` stage and make `/srv` writable by that user.
 
@@ -79,19 +87,27 @@ frontend served statically; that is a separate deployment and drops live authori
 |---|---|---|
 | `DATABASE_URL` | in production | `postgresql://user:pass@host:5432/db`; `postgres://` is also accepted and normalized. |
 | `PORT` | no | The container defaults to `8000`; platforms that inject `PORT` are honoured. |
+| `GEMINI_API_KEY` | for the semantic check | Enables `POST /questions/validate`. Without it the form saves with an unverified note and the endpoint answers `503 gemini_api_key_missing`. Never commit it. |
+| `GEMINI_MODEL` | no | Overrides the model chain; the app defaults to `gemini-3.5-flash`, then the fallbacks. |
 
 ## Post-deploy checklist
 
 - `GET /` serves the game.
 - `GET /categories/stats` returns `"total_questions": 5000`.
 - `POST /classify` with a question returns a category and confidence.
+- `POST /questions/validate` with a valid question returns `200` with `status: "valid"`; without a
+  configured key it returns `503 gemini_api_key_missing` and the form still saves with a note.
 - A turn can be played: spin, answer, use a joker, surrender, rematch.
-- The authoring form saves a new question and shows the predicted category.
+- The authoring form saves a new question and shows the predicted category; a true/false question
+  stores `option_c`/`option_d` as `null`.
 
 ## Public-demo notes
 
 - The authoring form is open. On a public URL, anyone can add questions. If that is not desired,
   hide `<details id="authoring">` for the demo or add an environment flag.
+- Authored questions are checked by Gemini when `GEMINI_API_KEY` is set. An `implausible` verdict
+  blocks the save; `uncertain` or an unavailable provider saves with a visible note. The game itself
+  never calls Gemini.
 - The database is shared by every player. It survives restarts on a managed database, but deleting
   the database recreates it on the next boot.
 - `load_dataset` is a CLI command, not an HTTP endpoint; it is not exposed to visitors.

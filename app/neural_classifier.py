@@ -1,11 +1,5 @@
 """
 Clasificador de preguntas basado en una red neuronal multicapa (MLP).
-
-La red se entrenó sobre vectores TF-IDF de las preguntas de
-``trivia_latam_argentina.csv``. Sus pesos están en ``modelo.pth`` y el
-vectorizador ajustado en esa misma preparación, en ``vectorizador.joblib``:
-son una pareja, porque cada columna de la entrada de la red corresponde a una
-palabra concreta del vocabulario de ese vectorizador.
 """
 
 from dataclasses import dataclass

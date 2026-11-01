@@ -90,7 +90,6 @@ def create_question(
         option_c=fields["option_c"],
         option_d=fields["option_d"],
         answer=fields["correct_answer"],
-        category=result.category_name,
         source=source,
     )
     categorization = Categorization(

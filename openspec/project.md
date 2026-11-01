@@ -51,28 +51,33 @@ The API reads its connection URL from `DATABASE_URL` (Compose sets it to the `db
 - A correct answer advances progress toward claiming a crown; collecting six crowns wins. An incorrect answer or timeout adds zero points and may change turn. The exact crown and joker rules are defined by the `gameplay` capability.
 - A question is not reused within a category during the current match. A rematch returns to the player-name screen and clears the current game state.
 - The canonical existing route is plural: `GET /questions/{question_id}`. The singular `/question/{id}` path in the initial request is not the route currently implemented and must not be introduced without an approved API change.
-- The current frontend obtains a category batch from `GET /questions/category/{category_name}?limit=200`; it also uses `GET /categories` and `GET /categories/stats`.
+- The frontend obtains a category batch from `GET /questions/category/{category_name}?limit=200`, a random sample of that category, and requests a new batch when the current one is used up. It also uses `GET /categories`; `GET /categories/stats` is available but not called by the frontend.
+- No route that returns questions includes the correct answer. The frontend resolves every play on the server: `POST /questions/{id}/answer` (`{answer, reveal}` → `{correct, correct_answer}`; `reveal: false` for the first attempt of `segundo-intento`, `answer: null` for a timeout), `POST /questions/{id}/reveal` (timeout and `seleccionar-correcta`) and `POST /questions/{id}/eliminate` (`eliminar-dos`, `409` on true/false questions).
+- `skip` must be `0` or more and `limit` between `1` and `1000` (otherwise `422`); unknown question ids and categories answer `404`.
 - `POST /questions` creates an authored question (text, four options, correct answer); the network assigns its category and the response is `{id, category, confidence_score}`. `POST /classify` returns the network's `category`, `confidence_score` and per-category `scores` for a `question` without storing it.
 - The API root `GET /` serves the game. Interactive API documentation is available at `GET /docs`.
 
-Verified response from `GET http://localhost:8000/questions/category/geografia?limit=1`:
+Verified response from `GET http://localhost:8000/questions/6`, the single shape every question route returns:
 
 ```json
-[{
+{
   "id": 6,
   "question": "¿Cuál es la capital de Cuba?",
   "option_a": "Bogotá",
   "option_b": "Caracas",
   "option_c": "La Habana",
   "option_d": "Santiago",
-  "answer": "La Habana",
   "category": "geografia",
   "confidence_score": 0.9999750852584839,
-  "is_automatic": true
-}]
+  "is_automatic": true,
+  "dataset_category": "geografia",
+  "source": "trivia_latam_argentina.csv"
+}
 ```
 
-`Question.category` holds the dataset's own label and `Categorization.category_name` the network's; the game uses the network's. They differ for 15 of the 5000 questions, so clients must not assume they are interchangeable.
+`category` is always the network's category, the one the game plays; `dataset_category` is the dataset's own label (`null` for questions added from the form). They differ for 15 of the 5000 questions. In the database the dataset label stays in the `questions.category` column, mapped to `Question.dataset_category`.
+
+The server still keeps no match state, so it cannot tell whether a reveal or an elimination was earned; a player with the developer tools can call those routes directly. Closing that requires server-side game sessions, which are outside the current scope.
 
 ## Identity and authorization
 

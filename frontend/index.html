@@ -782,6 +782,8 @@
   let pendingChallengeCategory = null;
   let currentQuestion = null;
   let answered = false;
+  let checking = false;
+  let timeoutPending = false;
   let secondChanceActive = false;
   let timerId = null;
   let tickId = null;
@@ -1009,6 +1011,8 @@
     pendingChallengeCategory = null;
     currentQuestion = null;
     answered = false;
+    checking = false;
+    timeoutPending = false;
     secondChanceActive = false;
     catCache = {};
     usedQuestionIds = {};
@@ -1188,16 +1192,24 @@
     return q;
   }
 
+  async function fetchCategoryBatch(name) {
+    try {
+      const r = await fetch(`${API}/questions/category/${name}?limit=200`);
+      const batch = r.ok ? await r.json() : [];
+      return Array.isArray(batch) ? batch : [];
+    } catch (e) { return []; }
+  }
+
   async function pickQuestionAsync(flow) {
     const name = currentCat.name;
     currentFlow = flow;
-    if (!catCache[name]) {
-      try {
-        const r = await fetch(`${API}/questions/category/${name}?limit=200`);
-        catCache[name] = await r.json();
-      } catch (e) { catCache[name] = []; }
+    let q = quiz(name);
+    if (!q) {
+      /* Each batch is a random sample of the category, so a fresh one brings questions
+         this match has not used yet. */
+      catCache[name] = await fetchCategoryBatch(name);
+      q = quiz(name);
     }
-    const q = quiz(name);
     if (!q) {
       showFlowError(`No quedan preguntas sin usar en ${currentCat.label}.`);
       return;
@@ -1307,6 +1319,8 @@
 
   function renderQuestion(q) {
     answered = false;
+    checking = false;
+    timeoutPending = false;
     secondChanceActive = false;
     joker = { usedOnCurrentQuestion: [] };
     const accent = currentCat ? currentCat.accent : NEUTRAL_ACCENT;
@@ -1357,33 +1371,72 @@
     const buttons = [...$("q-opts").children];
     buttons.forEach(b => {
       b.disabled = true;
-      if (b.querySelector("span:last-child").textContent === q.answer) b.classList.add("right");
+      if (optionText(b) === q.answer) b.classList.add("right");
     });
     return buttons;
   }
 
-  function pickAnswer(btn, text, q) {
-    if (answered) return;
-    const ok = text === q.answer;
-    if (!ok && secondChanceActive) {
+  /* The question arrives without its answer; the server checks every play. While a request is
+     in flight nothing else may resolve the question, and a timeout that fires meanwhile is
+     replayed once the request settles. */
+  async function askServer(q, action, body) {
+    checking = true;
+    try {
+      const response = await fetch(`${API}/questions/${q.id}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {})
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      showFlowError("No se pudo verificar la jugada con el servidor. Volvé a la ruleta e intentá de nuevo.");
+      return null;
+    } finally {
+      checking = false;
+      if (timeoutPending) {
+        timeoutPending = false;
+        setTimeout(() => onTimeout(q), 0);
+      }
+    }
+  }
+
+  function optionText(button) {
+    return button.querySelector("span:last-child").textContent;
+  }
+
+  async function pickAnswer(btn, text, q) {
+    if (answered || checking) return;
+    const secondChanceArmed = !secondChanceActive && joker.usedOnCurrentQuestion.includes("second-chance");
+    const verdict = await askServer(q, "answer", { answer: text, reveal: !secondChanceArmed });
+    if (!verdict || answered) return;
+    if (verdict.correct_answer) q.answer = verdict.correct_answer;
+    if (!verdict.correct && secondChanceActive) {
       finishQuestion(q);
       btn.classList.add("wrong");
       resolveFailure(q, "ko");
       return;
     }
-    if (!ok && !secondChanceActive && joker.usedOnCurrentQuestion.includes("second-chance")) {
+    if (!verdict.correct && secondChanceArmed) {
       secondChanceActive = true;
       btn.disabled = true;
       btn.classList.add("wrong");
       showFeedbackMessage("Segundo intento disponible: elige otra opción.");
       return;
     }
-    ok ? resolveCorrect(q) : resolveFailure(q, "ko", btn);
+    verdict.correct ? resolveCorrect(q) : resolveFailure(q, "ko", btn);
   }
 
-  function onTimeout(q) {
-    if (answered) return;
+  async function onTimeout(q) {
+    if (answered || q !== currentQuestion) return;
+    if (checking) {
+      timeoutPending = true;
+      return;
+    }
     $("tbar").style.setProperty("--time-color", TIMER_URGENT_COLOR);
+    const revealed = await askServer(q, "reveal");
+    if (!revealed || answered) return;
+    q.answer = revealed.correct_answer;
     resolveFailure(q, "timeout");
   }
 
@@ -1449,7 +1502,7 @@
   }
 
   function activateJoker(type) {
-    if (!currentQuestion || answered || !player()) return;
+    if (!currentQuestion || answered || checking || !player()) return;
     if (currentFlow === "crown-challenge") return;
     if (!jokerFitsQuestion(type)) return;
     if (joker && joker.available) {
@@ -1469,14 +1522,30 @@
       joker.usedCount = (joker.usedCount || 0) + 1;
     }
     if (type === "eliminate-two") {
-      const incorrect = [...$("q-opts").children].filter(button => button.querySelector("span:last-child").textContent !== currentQuestion.answer);
-      incorrect.slice(0, 2).forEach(button => { button.disabled = true; button.classList.add("eliminated"); });
-      showFeedbackMessage("Dos opciones incorrectas fueron eliminadas.");
+      eliminateTwo(currentQuestion);
     } else if (type === "second-chance") {
       showFeedbackMessage("Segundo intento activado: el primer fallo no cambia el turno.");
     } else {
-      resolveCorrect(currentQuestion);
+      selectCorrect(currentQuestion);
     }
+    updateJokerControls();
+  }
+
+  async function eliminateTwo(q) {
+    const result = await askServer(q, "eliminate");
+    if (!result || answered) return;
+    const eliminated = new Set(result.eliminated);
+    [...$("q-opts").children]
+      .filter(button => eliminated.has(optionText(button)))
+      .forEach(button => { button.disabled = true; button.classList.add("eliminated"); });
+    showFeedbackMessage("Dos opciones incorrectas fueron eliminadas.");
+  }
+
+  async function selectCorrect(q) {
+    const revealed = await askServer(q, "reveal");
+    if (!revealed || answered) return;
+    q.answer = revealed.correct_answer;
+    resolveCorrect(q);
     updateJokerControls();
   }
   /* Three named states, so a player can tell a timeout from a wrong answer by the

@@ -257,3 +257,30 @@ COMANDOS
   docker compose --profile test run --rm tests
   docker compose exec api python -m app.load_dataset   (recarga completa)
   docker compose exec db psql -U admin -d questions_db -c "select q.category, c.category_name, q.question from questions q join categorizations c on c.question_id = q.id where q.category <> c.category_name;"
+
+================================================================================
+SESION 2026-11-01 - CONTRATO API/FRONT CORREGIDO (cambio harden-question-api)
+================================================================================
+Rama: docs/session-2026-10-22 (commit local, NO subido a GitHub).
+Los cuatro hallazgos del informe se reprodujeron contra el contenedor y se
+corrigieron:
+[X] Catalogo: /questions/category/{name} devuelve una muestra al azar; el
+    front pide otro lote cuando agota el actual. En 10 lotes aparecen 775 de
+    las 831 preguntas de arte (antes, siempre las mismas 200).
+[X] Respuesta: ninguna ruta de preguntas incluye "answer". El front corrige
+    con POST /questions/{id}/answer, y usa /reveal (tiempo agotado y
+    "Seleccionar correcta") y /eliminate ("Eliminar dos"). El primer intento
+    de "Segundo intento" va con reveal:false y no expone la respuesta.
+[X] Validacion: limit/skip fuera de rango -> 422; id o categoria
+    inexistentes -> 404.
+[X] category: siempre es la de la red; la etiqueta del CSV es
+    dataset_category (null en preguntas del formulario).
+[X] scripts/smoke-demo.ps1 actualizado al contrato nuevo (12/12 PASS).
+[X] 66 tests OK, cobertura 100%, ruff y mypy OK. Partida probada en el
+    navegador: respuesta correcta e incorrecta, los tres comodines, tiempo
+    agotado y recarga de lotes.
+
+LIMITE CONOCIDO
+[ ] El servidor no guarda estado de partida: desde las herramientas del
+    navegador se puede llamar /reveal sin haberlo ganado. Cerrarlo requiere
+    sesiones de juego en el servidor (fuera del alcance actual).

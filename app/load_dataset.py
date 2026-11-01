@@ -3,7 +3,7 @@ Carga el dataset propio (trivia_latam_argentina.csv) en la base de datos.
 
 Cada pregunta se guarda con sus opciones y su respuesta, y la red neuronal le
 asigna la categoría con la que se sirve en el juego. La categoría original del
-CSV queda en ``Question.category`` para poder comparar contra la de la red.
+CSV queda en ``Question.dataset_category`` para poder comparar contra la de la red.
 
 Uso:
     python -m app.load_dataset              # recarga todo desde cero
@@ -62,7 +62,7 @@ def store_dataset(db: Session, rows: list[dict], classifier: QuestionClassifier)
             option_c=options[2],
             option_d=options[3],
             answer=row["answer"],
-            category=row["category"],
+            dataset_category=row["category"],
             source=SOURCE_NAME,
         )
         db.add(question)

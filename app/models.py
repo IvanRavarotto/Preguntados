@@ -16,8 +16,15 @@ class Question(Base):
     option_c = Column(Text, nullable=True)
     option_d = Column(Text, nullable=True)
     answer = Column(Text, nullable=False)
-    category = Column(String(100), nullable=True)
+    # Etiqueta original del dataset; la categoría con la que se juega está en Categorization.
+    # La columna conserva su nombre para no migrar bases ya cargadas.
+    dataset_category = Column("category", String(100), nullable=True)
     source = Column(String(255), nullable=True)
+
+    def options(self) -> list[str]:
+        """Opciones presentes, en orden: dos en verdadero o falso, cuatro en el resto."""
+        candidates = (getattr(self, f"option_{letter}") for letter in "abcd")
+        return [option for option in candidates if option is not None]
 
 
 class Categorization(Base):

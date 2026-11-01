@@ -33,6 +33,8 @@ def test_created_question_is_served_in_its_predicted_category(client):
     rows = client.get(f"/questions/category/{created['category']}").json()
 
     assert [row["id"] for row in rows] == [created["id"]]
+    assert rows[0]["dataset_category"] is None
+    assert rows[0]["source"] == "user_input"
 
 
 def test_create_question_ignores_a_client_supplied_category(client):

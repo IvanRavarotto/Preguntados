@@ -74,7 +74,9 @@ def _make_question(
     options: tuple[str, str, str | None, str | None] = ("A", "B", "C", "D"),
     automatic: bool = True,
     categorize: bool = True,
+    dataset_category: str | None = None,
 ) -> Question:
+    """Insert a question; the network's category is ``category``, the CSV label defaults to it."""
     record = Question(
         question=question,
         option_a=options[0],
@@ -82,7 +84,7 @@ def _make_question(
         option_c=options[2],
         option_d=options[3],
         answer=answer,
-        category=category if categorize else None,
+        dataset_category=dataset_category or category,
         source="test",
     )
     db.add(record)

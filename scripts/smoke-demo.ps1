@@ -2,12 +2,12 @@
   smoke-demo.ps1 - Verificacion previa a la presentacion.
 
   Comprueba, en pocos segundos, que el entorno de la demo responde:
-  base de datos, API, categorias, entrega de preguntas y el endpoint de
-  validacion con IA. No modifica datos.
+  base de datos, API, categorias, entrega de preguntas sin la respuesta,
+  correccion en el servidor y clasificacion con la red neuronal. No modifica datos.
 
   Uso:
     powershell -ExecutionPolicy Bypass -File scripts\smoke-demo.ps1
-    powershell -ExecutionPolicy Bypass -File scripts\smoke-demo.ps1 -Launch   # levanta Docker y la API si no estan
+    powershell -ExecutionPolicy Bypass -File scripts\smoke-demo.ps1 -Launch   # levanta Docker y los contenedores si no estan
 
   Salida: [PASS] / [FAIL] / [WARN] por chequeo, un resumen y exit code 0 si no hay FAIL.
 #>
@@ -53,22 +53,11 @@ function Start-Environment {
   }
   if (Test-DockerDaemon) { Write-Pass "Docker daemon disponible" } else { Write-Fail "Docker daemon no respondio a tiempo"; return }
 
-  Write-Host "Levantando PostgreSQL (docker compose up -d)..."
-  docker compose up -d | Out-Null
-
-  if (-not (Test-Port8000)) {
-    Write-Host "Iniciando uvicorn..."
-    $repoRoot = Split-Path -Parent $PSScriptRoot
-    $logDir = Join-Path $repoRoot ".check-temp"
-    if (-not (Test-Path -LiteralPath $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
-    Start-Process -FilePath "poetry" `
-      -ArgumentList "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000" `
-      -WorkingDirectory $repoRoot -WindowStyle Hidden `
-      -RedirectStandardOutput (Join-Path $logDir "uvicorn.out.log") `
-      -RedirectStandardError (Join-Path $logDir "uvicorn.err.log") | Out-Null
-    $deadline = (Get-Date).AddSeconds(60)
-    while ((Get-Date) -lt $deadline -and -not (Test-Port8000)) { Start-Sleep -Seconds 2 }
-  }
+  Write-Host "Levantando base y API (docker compose up -d --build)..."
+  $repoRoot = Split-Path -Parent $PSScriptRoot
+  docker compose --project-directory $repoRoot up -d --build | Out-Null
+  $deadline = (Get-Date).AddSeconds(120)
+  while ((Get-Date) -lt $deadline -and -not (Test-Port8000)) { Start-Sleep -Seconds 2 }
   if (Test-Port8000) { Write-Pass "Puerto 8000 escuchando" } else { Write-Fail "La API no abrio el puerto 8000" }
 }
 
@@ -82,7 +71,7 @@ Write-Step "Entorno"
 if ($Launch) { Start-Environment }
 
 if (Test-DockerDaemon) { Write-Pass "Docker daemon disponible" } else { Write-Warn2 "Docker daemon no disponible (la base de datos no respondera)" }
-if (Test-Port8000) { Write-Pass "API escuchando en el puerto 8000" } else { Write-Fail "La API no escucha en el puerto 8000. Corre el script con -Launch o levanta uvicorn." }
+if (Test-Port8000) { Write-Pass "API escuchando en el puerto 8000" } else { Write-Fail "La API no escucha en el puerto 8000. Corre el script con -Launch o 'docker compose up -d'." }
 
 # --- 1. Pagina del juego ------------------------------------------------
 Write-Step "Pagina del juego"
@@ -104,10 +93,7 @@ try {
   if ($stats.total_questions -gt 0) {
     Write-Pass "Categorias cargadas: total=$($stats.total_questions), categorizadas=$($stats.categorized)"
   } else {
-    Write-Fail "La base no tiene preguntas. Corre 'poetry run python -m app.load_data'."
-  }
-  if ($stats.uncategorized -gt 0) {
-    Write-Warn2 "$($stats.uncategorized) preguntas sin categorizar (no rompe el juego, pero conviene categorizar)"
+    Write-Fail "La base no tiene preguntas. Corre 'docker compose exec api python -m app.load_dataset'."
   }
 } catch {
   Write-Fail "GET /categories/stats no respondio: $($_.Exception.Message)"
@@ -116,41 +102,59 @@ try {
 # --- 3. Una pregunta por categoria -------------------------------------
 Write-Step "Entrega de preguntas por categoria"
 $categories = @("arte", "ciencia", "deportes", "entretenimiento", "geografia", "historia")
+$sampleQuestion = $null
 foreach ($name in $categories) {
   try {
     $batch = Get-Json "$BaseUrl/questions/category/$name`?limit=200"
-    if ($batch.Count -ge 1) {
-      Write-Pass "$name`: $($batch.Count) preguntas disponibles"
-    } else {
+    if ($batch.Count -lt 1) {
       Write-Fail "$name`: la API no devolvio preguntas para la ruleta"
+    } elseif ($batch[0].PSObject.Properties.Name -contains "answer") {
+      Write-Fail "$name`: el lote incluye la respuesta correcta"
+    } else {
+      Write-Pass "$name`: $($batch.Count) preguntas disponibles, sin la respuesta"
+      if (-not $sampleQuestion) { $sampleQuestion = $batch[0] }
     }
   } catch {
     Write-Fail "$name`: la peticion fallo: $($_.Exception.Message)"
   }
 }
 
-# --- 4. Validacion con IA ----------------------------------------------
-Write-Step "Validacion con IA (formulario 'Agregar una pregunta')"
-$sample = '{"category":"ciencia","question":"Cual es el planeta mas grande del sistema solar?","option_a":"Saturno","option_b":"Jupiter","option_c":"Neptuno","option_d":"Marte","correct_answer":"Jupiter"}'
+function Post-Json($url, $json) {
+  $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+  $response = Invoke-WebRequest -Uri $url -Method POST -Body $bytes -ContentType "application/json; charset=utf-8" -UseBasicParsing -TimeoutSec 10
+  return [System.Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray()) | ConvertFrom-Json
+}
+
+# --- 4. Correccion en el servidor ---------------------------------------
+Write-Step "Correccion en el servidor"
+if ($sampleQuestion) {
+  try {
+    $revealed = Post-Json "$BaseUrl/questions/$($sampleQuestion.id)/reveal" '{}'
+    $answerJson = @{ answer = $revealed.correct_answer; reveal = $true } | ConvertTo-Json -Compress
+    $verdict = Post-Json "$BaseUrl/questions/$($sampleQuestion.id)/answer" $answerJson
+    if ($verdict.correct -eq $true) {
+      Write-Pass "POST /questions/{id}/answer corrige en el servidor"
+    } else {
+      Write-Fail "La API no reconocio la respuesta correcta de la pregunta $($sampleQuestion.id)"
+    }
+  } catch {
+    Write-Fail "La correccion fallo: $($_.Exception.Message)"
+  }
+} else {
+  Write-Fail "No hubo una pregunta para probar la correccion"
+}
+
+# --- 5. Clasificacion con la red neuronal -------------------------------
+Write-Step "Clasificacion con la red neuronal"
 try {
-  $bytes = [System.Text.Encoding]::UTF8.GetBytes($sample)
-  $response = Invoke-WebRequest -Uri "$BaseUrl/questions/validate" -Method POST -Body $bytes -ContentType "application/json; charset=utf-8" -UseBasicParsing -TimeoutSec 120
-  $verdict = $response.Content | ConvertFrom-Json
-  if ($verdict.plausible -eq $true) {
-    Write-Pass "La IA responde y valido la pregunta de prueba"
+  $classified = Post-Json "$BaseUrl/classify" '{"question":"Que planeta es conocido como el planeta rojo?"}'
+  if ($classified.category -eq "ciencia") {
+    Write-Pass "POST /classify responde ciencia ($([math]::Round($classified.confidence_score * 100))% de confianza)"
   } else {
-    Write-Warn2 "La IA respondio pero marco la pregunta como implausible (status=$($verdict.status)). Revisar en la demo."
+    Write-Warn2 "POST /classify respondio $($classified.category) para una pregunta de ciencia"
   }
 } catch {
-  $statusCode = $null
-  if ($_.Exception.Response) { $statusCode = [int]$_.Exception.Response.StatusCode }
-  if ($statusCode -eq 502 -or $statusCode -eq 503) {
-    Write-Warn2 "La IA no esta disponible (HTTP $statusCode). El formulario sigue guardando sin verificar: la demo no se rompe."
-  } elseif ($null -eq $statusCode) {
-    Write-Warn2 "La IA no respondio a tiempo. El proveedor gratuito demora a veces; el formulario igual guarda sin verificar, la demo no se rompe."
-  } else {
-    Write-Fail "POST /questions/validate fallo: $($_.Exception.Message)"
-  }
+  Write-Fail "POST /classify fallo: $($_.Exception.Message)"
 }
 
 # --- Resumen ------------------------------------------------------------
@@ -160,9 +164,9 @@ Write-Host ("PASS: {0}   WARN: {1}   FAIL: {2}" -f $script:PassCount, $script:Wa
 Write-Host "`nChecklist rapido para la presentacion:" -ForegroundColor Cyan
 Write-Host "  - El juego es de dos personas en el MISMO navegador y dispositivo."
 Write-Host "  - Recargar la pagina (F5) borra la partida en curso: hacelo solo entre demos."
-Write-Host "  - Sin internet el juego sigue andando; 'Agregar una pregunta' guarda sin verificar con IA."
+Write-Host "  - Sin internet el juego sigue andando: la red neuronal corre dentro de la API."
 Write-Host "  - Proba la vista en el tamano de pantalla que vas a usar (notebook / celular)."
-Write-Host "  - Deja abierto http://localhost:8000 y no cierres las ventanas de Docker ni de uvicorn."
+Write-Host "  - Deja abierto http://localhost:8000 y no cierres Docker Desktop."
 
 if ($script:FailCount -gt 0) {
   Write-Host "`nResultado: HAY FALLOS. Resolvelos antes de presentar." -ForegroundColor Red

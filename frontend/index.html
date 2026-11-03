@@ -374,6 +374,11 @@
   .feedback.ko { background: rgba(255, 42, 109, 0.2); border-color: var(--fail); }
   .feedback.timeout { background: rgba(255, 208, 0, 0.2); border-color: var(--timeout-border); }
   .next-btn { margin-top: clamp(0.4rem, min(3vw, 1.5vh), 1rem); padding: clamp(0.3rem, min(2.5vw, 1.2vh), 0.75rem) clamp(1.25rem, 6vw, 1.75rem); font-size: clamp(0.9rem, min(4vw, 3vh), 1.125rem); }
+  .turn-notice { margin-top: clamp(0.4rem, min(3vw, 1.5vh), 0.875rem); padding: clamp(0.4rem, min(2.5vw, 1.2vh), 0.75rem) clamp(0.75rem, 3.5vw, 1rem); border: 1px solid var(--stroke); border-radius: var(--r-sm); background: var(--surface-low); display: flex; flex-direction: column; gap: clamp(0.35rem, min(2vw, 1vh), 0.5rem); }
+  .turn-notice[hidden] { display: none !important; }
+  .turn-notice-text { font-size: clamp(0.875rem, 3.5vw, 0.9375rem); font-weight: 700; color: var(--text); text-align: center; }
+  .turn-notice-timer { width: 100%; height: 0.25rem; border-radius: var(--r-sm); background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+  .turn-notice-bar { height: 100%; width: 100%; border-radius: var(--r-sm); background: var(--tn-accent, var(--accent)); }
   .joker-panel { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: clamp(0.4rem, min(3vw, 1.5vh), 1rem); }
   .joker-btn { flex: 1 1 30%; min-width: 8rem; padding: clamp(0.25rem, min(2vw, 1.1vh), 0.625rem) clamp(0.375rem, 2vw, 0.5rem); font-size: clamp(0.6875rem, 3vw, 0.75rem); }
   .joker-btn[data-used="true"] { opacity: 0.45; }
@@ -658,6 +663,12 @@
         <button class="btn joker-btn" data-joker="auto-correct">Autocorrección</button>
       </div>
       <div class="feedback" id="q-feedback" aria-live="polite" hidden></div>
+      <div id="turn-notice" class="turn-notice" hidden>
+        <p id="turn-notice-text" class="turn-notice-text" role="status"></p>
+        <div id="turn-notice-timer" class="turn-notice-timer" role="progressbar" aria-label="Tiempo para el próximo turno" aria-valuemin="0" aria-valuemax="5" aria-valuenow="5">
+          <div id="turn-notice-bar" class="turn-notice-bar"></div>
+        </div>
+      </div>
       <button class="btn next-btn" id="q-next" hidden>Siguiente turno</button>
     </div>
   </section>
@@ -722,6 +733,8 @@
   const TIMER_URGENT_RATIO = 0.2;
   const TIMER_URGENT_COLOR = "#FF0033";
   const TURN_MS = TIMER_SECONDS * 1000;
+  const TURN_NOTICE_SECONDS = 5;
+  const TURN_NOTICE_MS = TURN_NOTICE_SECONDS * 1000;
   const TURN_TICK_MS = 100;
   const SPIN_MS = 4200;
   const SPIN_SETTLE_MS = SPIN_MS + 100;
@@ -827,6 +840,9 @@
   let secondChanceActive = false;
   let timerId = null;
   let tickId = null;
+  let turnNoticeId = null;
+  let turnNoticeTickId = null;
+  let turnNoticePending = false;
   let catCache = {};
   let usedQuestionIds = {};
   let joker = null;
@@ -1100,6 +1116,7 @@
   }
 
   function resetMatchState() {
+    clearTurnNotice();
     stopTurnClock();
     stopEffect();
     players = [];
@@ -1628,7 +1645,77 @@
     $("tbar").style.transition = "none";
   }
 
+  function clearTurnNotice() {
+    if (turnNoticeId) {
+      clearTimeout(turnNoticeId);
+      turnNoticeId = null;
+    }
+    if (turnNoticeTickId) {
+      clearInterval(turnNoticeTickId);
+      turnNoticeTickId = null;
+    }
+    turnNoticePending = false;
+    const notice = $("turn-notice");
+    const bar = $("turn-notice-bar");
+    const progress = $("turn-notice-timer");
+    if (notice) notice.hidden = true;
+    if (progress) progress.setAttribute("aria-valuenow", "5");
+    if (bar) {
+      bar.style.transition = "none";
+      bar.style.width = "100%";
+    }
+  }
+
+  function startTurnNotice() {
+    if (turnNoticePending) {
+      clearTurnNotice();
+    }
+    const notice = $("turn-notice");
+    const text = $("turn-notice-text");
+    const bar = $("turn-notice-bar");
+    const progress = $("turn-notice-timer");
+    const nextPlayer = player();
+    if (!notice || !text || !bar || !progress || !nextPlayer) return;
+    text.textContent = `Turno de ${nextPlayer.name}`;
+    notice.style.setProperty("--tn-accent", nextPlayer.accent);
+    notice.hidden = false;
+    bar.style.transition = "none";
+    bar.style.width = "100%";
+    void bar.offsetWidth;
+    bar.style.transition = `width ${TURN_NOTICE_SECONDS}s linear`;
+    bar.style.width = "0%";
+    const screen = $("screen-question");
+    if (screen) screen.scrollTop = screen.scrollHeight;
+    progress.setAttribute("aria-valuemin", "0");
+    progress.setAttribute("aria-valuemax", String(TURN_NOTICE_SECONDS));
+    progress.setAttribute("aria-valuenow", String(TURN_NOTICE_SECONDS));
+    let secondsLeft = TURN_NOTICE_SECONDS;
+    turnNoticeTickId = setInterval(() => {
+      secondsLeft = Math.max(0, secondsLeft - 1);
+      progress.setAttribute("aria-valuenow", String(secondsLeft));
+      if (secondsLeft <= 0) {
+        if (turnNoticeTickId) {
+          clearInterval(turnNoticeTickId);
+          turnNoticeTickId = null;
+        }
+      }
+    }, 1000);
+    turnNoticeId = setTimeout(() => {
+      turnNoticeId = null;
+      if (turnNoticeTickId) {
+        clearInterval(turnNoticeTickId);
+        turnNoticeTickId = null;
+      }
+      if (turnNoticePending) {
+        turnNoticePending = false;
+        nextTurn();
+      }
+    }, TURN_NOTICE_MS);
+    turnNoticePending = true;
+  }
+
   function renderQuestion(q) {
+    clearTurnNotice();
     answered = false;
     secondChanceActive = false;
     joker = { usedOnCurrentQuestion: [] };
@@ -1670,8 +1757,10 @@
     fb.textContent = "";
     fb.className = "feedback";
     fb.hidden = true;
-    $("q-next").hidden = true;
-    $("q-next").textContent = "Siguiente turno";
+    const nextBtn = $("q-next");
+    nextBtn.hidden = true;
+    nextBtn.textContent = "Siguiente turno";
+    nextBtn.removeAttribute("aria-label");
     $("joker-panel").hidden = currentFlow === "crown-challenge";
     updateJokerControls();
     startTurnClock(() => onTimeout(q));
@@ -1822,20 +1911,41 @@
       timeout: `¡Se acabó el tiempo! ${answer}`
     }[state];
     fb.hidden = false;
-    $("q-next").hidden = false;
+    const nextBtn = $("q-next");
+    if (state === "ok") {
+      clearTurnNotice();
+      nextBtn.hidden = false;
+      nextBtn.textContent = crownPending ? "Reclamar corona" : "Siguiente turno";
+      nextBtn.removeAttribute("aria-label");
+    } else {
+      const nextPlayer = players[turn];
+      nextBtn.hidden = false;
+      nextBtn.textContent = "Empezar turno";
+      if (nextPlayer) {
+        nextBtn.setAttribute("aria-label", `Empezar turno de ${nextPlayer.name}`);
+      } else {
+        nextBtn.removeAttribute("aria-label");
+      }
+      startTurnNotice();
+    }
     renderScoreboard();
   }
 
   function showFeedbackMessage(message) {
+    clearTurnNotice();
     const fb = $("q-feedback");
     fb.className = "feedback ko";
     fb.textContent = message;
     fb.hidden = false;
-    $("q-next").hidden = true;
+    const nextBtn = $("q-next");
+    nextBtn.hidden = true;
+    nextBtn.textContent = "Siguiente turno";
+    nextBtn.removeAttribute("aria-label");
   }
 
 
   function showFlowError(message) {
+    clearTurnNotice();
     stopTurnClock();
     currentQuestion = null;
     answered = true;
@@ -1846,8 +1956,10 @@
     $("q-feedback").className = "feedback ko";
     $("q-feedback").textContent = message;
     $("q-feedback").hidden = false;
-    $("q-next").textContent = currentFlow === "crown-selection" ? "Elegir categor\u00eda" : "Volver a la ruleta";
-    $("q-next").hidden = false;
+    const nextBtn = $("q-next");
+    nextBtn.textContent = currentFlow === "crown-selection" ? "Elegir categor\u00eda" : "Volver a la ruleta";
+    nextBtn.removeAttribute("aria-label");
+    nextBtn.hidden = false;
     show("screen-question");
   }
 
@@ -2489,6 +2601,7 @@
     $("surrender-overlay").hidden = true;
     surrenderTargetIndex = null;
     surrenderOpener = null;
+    clearTurnNotice();
     answered = true;
     currentQuestion = null;
     stopTurnClock();
@@ -2498,6 +2611,7 @@
   }
 
   function finishMatch(winner, loser, surrendered) {
+    clearTurnNotice();
     stopTurnClock();
     document.querySelector(".winner-box").style.setProperty("--w-accent", winner.accent);
     $("w-crown").innerHTML = CROWN_GLYPH;
@@ -2510,6 +2624,7 @@
     renderPodium(winner, loser);
     show("screen-winner");
     $("q-next").hidden = true;
+    $("q-next").removeAttribute("aria-label");
     $("surrender-question").disabled = true;
     stopEffect();
     const overlay = $("case-overlay");
@@ -2517,6 +2632,7 @@
   }
 
   function nextTurn() {
+    clearTurnNotice();
     if (crownPending) {
       crownPending = false;
       beginCrownChallenge();
@@ -2530,6 +2646,7 @@
     currentFlow = null;
     pendingChallengeCategory = null;
     $("q-next").textContent = "Siguiente turno";
+    $("q-next").removeAttribute("aria-label");
     renderScoreboard();
     $("spin").disabled = false;
     show("screen-wheel");
